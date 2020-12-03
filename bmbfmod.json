@@ -16,10 +16,10 @@
     {
       "Type": "HookMod",
       "InstallAction": {
-        "InstallLibraryFile": "libcustom-json-data.so.so"
+        "InstallLibraryFile": "libcustom-json-data.so"
       },
       "UninstallAction": {
-        "RemoveLibraryFile": "libcustom-json-data.so.so"
+        "RemoveLibraryFile": "libcustom-json-data.so"
       }
     },
     {
