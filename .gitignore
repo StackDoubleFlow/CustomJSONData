@@ -13,3 +13,4 @@ extern/
 *.log
 
 .vscode/*
+profiling/*
