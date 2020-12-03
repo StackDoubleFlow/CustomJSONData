@@ -2,6 +2,8 @@
 
 using namespace GlobalNamespace;
 
+DEFINE_CLASS(CustomJSONData::CustomLevelInfoSaveData);
+
 void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData*>* events, 
                                                   List<BeatmapSaveData::NoteData*>* notes, 
                                                   List<BeatmapSaveData::WaypointData*>* waypoints, 
