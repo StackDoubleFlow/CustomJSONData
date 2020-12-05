@@ -3,17 +3,17 @@
 #include "custom-types/shared/logging.hpp"
 
 #include "CustomJSONDataHooks.h"
-#include "CJSLogger.h"
+#include "CJDLogger.h"
 
 
 extern "C" void setup(ModInfo &info) {
     info.id = "CustomJSONData";
     info.version = VERSION;
-    CJSLogger::modInfo = info;
+    CJDLogger::modInfo = info;
 }
 
 extern "C" void load() {
-    CJSLogger::GetLogger().info("Installing CustomJSONData Hooks!");
+    CJDLogger::GetLogger().info("Installing CustomJSONData Hooks!");
     // This prevents any and all Utils logging
     Logger::get().options.silent = true;
 
@@ -21,5 +21,5 @@ extern "C" void load() {
 
     CustomJSONData::InstallHooks();
 
-    CJSLogger::GetLogger().info("Installed CustomJSONData Hooks!");
+    CJDLogger::GetLogger().info("Installed CustomJSONData Hooks!");
 }

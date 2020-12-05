@@ -2,7 +2,7 @@
 #pragma once
 #include "beatsaber-hook/shared/utils/logging.hpp"
 
-class CJSLogger {
+class CJDLogger {
 public:
     static inline ModInfo modInfo = ModInfo();
     static const Logger& GetLogger()

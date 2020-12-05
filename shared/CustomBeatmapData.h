@@ -10,7 +10,7 @@
 #include "System/Object.hpp"
 
 #include "JSONWrapper.h"
-#include "CJSLogger.h"
+#include "CJDLogger.h"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
     DECLARE_CTOR(ctor, int numberOfLines);
@@ -21,7 +21,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
 
     REGISTER_FUNCTION(CustomBeatmapData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -41,7 +41,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::B
     DECLARE_OVERRIDE_METHOD(void, Finalize, il2cpp_utils::FindMethod("System", "Object", "Finalize"));
 
     REGISTER_FUNCTION(CustomBeatmapEventData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapEventData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapEventData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -67,7 +67,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
     DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomObstacleData,
-        CJSLogger::GetLogger().debug("Registering CustomObstacleData!");
+        CJDLogger::GetLogger().debug("Registering CustomObstacleData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -95,7 +95,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
     DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomNoteData,
-        CJSLogger::GetLogger().debug("Registering CustomNoteData!");
+        CJDLogger::GetLogger().debug("Registering CustomNoteData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -122,7 +122,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
     DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomNoteData,
-        CJSLogger::GetLogger().debug("Registering CustomWaypointData!");
+        CJDLogger::GetLogger().debug("Registering CustomWaypointData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -146,7 +146,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, System::Object,
     DECLARE_OVERRIDE_METHOD(void, Finalize, il2cpp_utils::FindMethod("System", "Object", "Finalize"));
 
     REGISTER_FUNCTION(CustomEventData,
-        CJSLogger::GetLogger().debug("Registering CustomEventData!");
+        CJDLogger::GetLogger().debug("Registering CustomEventData!");
 
         // Register fields
         REGISTER_FIELD(type);

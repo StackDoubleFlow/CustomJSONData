@@ -17,7 +17,7 @@
 #include "CustomBeatmapSaveData.h"
 #include "CustomBeatmapData.h"
 #include "CustomJSONDataHooks.h"
-#include "CJSLogger.h"
+#include "CJDLogger.h"
 
 #include <chrono>
 
@@ -42,7 +42,7 @@ CustomBeatmapSaveData *cachedSaveData;
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
 MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
-    CJSLogger::GetLogger().debug("Parsing json");
+    CJDLogger::GetLogger().debug("Parsing json");
     // CRASH_UNLESS(nullptr);
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -54,12 +54,15 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
 
     auto alloc = new rapidjson::MemoryPoolAllocator();
 
-    CJSLogger::GetLogger().debug("Parsing json success");
+    CJDLogger::GetLogger().debug("Parsing json success");
     
     
-    CJSLogger::GetLogger().debug("Parse notes");
-    // Parse notes
+    CJDLogger::GetLogger().debug("Parse notes");
     rapidjson::Value& notes_arr = doc["_notes"];
+
+    // Cache class pointer and ctor method info
+    Il2CppClass *noteDataClass = classof(CustomBeatmapSaveData_NoteData*);
+    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 5);
     List<BeatmapSaveData::NoteData*> *notes = List<BeatmapSaveData::NoteData*>::New_ctor(notes_arr.Size());
     for (rapidjson::SizeType i = 0; i < notes_arr.Size(); i++) {
         rapidjson::Value& note_json = notes_arr[i];
@@ -69,7 +72,8 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
         NoteLineLayer lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
         BeatmapSaveData::NoteType type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
         NoteCutDirection cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
-        auto note = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_NoteData*>(time, lineIndex, lineLayer, type, cutDirection));
+        auto note = (CustomBeatmapSaveData_NoteData *) il2cpp_functions::object_new(noteDataClass);
+        il2cpp_utils::RunMethod<Il2CppObject*, false>(note, noteDataCtor, time, lineIndex, lineLayer, type, cutDirection);
         if (note_json.HasMember("_customData")) {
             note->customData = new rapidjson::Value(note_json["_customData"], *alloc);
         }
@@ -77,7 +81,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     }
     notes->size = notes_arr.Size();
 
-    CJSLogger::GetLogger().debug("Parse obstacles");
+    CJDLogger::GetLogger().debug("Parse obstacles");
     rapidjson::Value& obstacles_arr = doc["_obstacles"];
 
     // Cache class pointer and ctor method info
@@ -101,7 +105,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     }
     obstacles->size = obstacles_arr.Size();
 
-    CJSLogger::GetLogger().debug("Parse events");
+    CJDLogger::GetLogger().debug("Parse events");
     // Parse events
     rapidjson::Value& events_arr = doc["_events"];
     List<BeatmapSaveData::EventData*> *events = List<BeatmapSaveData::EventData*>::New_ctor(events_arr.Size());
@@ -119,7 +123,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     }
     events->size = events_arr.Size();
 
-    CJSLogger::GetLogger().debug("Parse waypoints");
+    CJDLogger::GetLogger().debug("Parse waypoints");
     rapidjson::Value& waypoints_arr = doc["_waypoints"];
     List<BeatmapSaveData::WaypointData*> *waypoints = List<BeatmapSaveData::WaypointData*>::New_ctor(waypoints_arr.Size());
     for (rapidjson::SizeType i = 0; i < waypoints_arr.Size(); i++) {
@@ -137,27 +141,30 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     // TODO: Parse whatever the hell this is
     auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(List<BeatmapSaveData::SpecialEventsForKeyword*>::New_ctor());
 
-    CJSLogger::GetLogger().debug("Parse root");
+    CJDLogger::GetLogger().debug("Parse root");
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(events, notes, waypoints, obstacles, specialEventsKeywordFilters));
     if (doc.HasMember("_customData")) {
         saveData->customData = new rapidjson::Value(doc["_customData"], *alloc);
     }
     cachedSaveData = saveData;
 
-    CJSLogger::GetLogger().debug("Finished reading beatmap data");
+    CJDLogger::GetLogger().debug("Finished reading beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
-    CJSLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+    CJDLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
     return saveData;
 }
 
-CustomNoteData* CustomJSONDataCreateBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
-    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+CustomNoteData* CustomJSONDataCreateBasicNoteData(Il2CppClass *noteDataClass, const MethodInfo *noteDataCtor, float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
+    auto noteData = (CustomNoteData *) il2cpp_functions::object_new(noteDataClass);
+    il2cpp_utils::RunMethod<Il2CppObject*, false>(noteData, noteDataCtor, time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f);
+    return noteData;
 }
 
-CustomNoteData* CustomJSONDataCreateBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer) {
-    
-    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+CustomNoteData* CustomJSONDataCreateBombNoteData(Il2CppClass *noteDataClass, const MethodInfo *noteDataCtor, float time, int lineIndex, NoteLineLayer noteLineLayer) {
+    auto noteData = (CustomNoteData *) il2cpp_functions::object_new(noteDataClass);
+    il2cpp_utils::RunMethod<Il2CppObject*, false>(noteData, noteDataCtor, time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f);
+    return noteData;
 }
 
 const MethodInfo *getRealTimeFromBPMTimeMethodInfo;
@@ -242,6 +249,8 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
 
     Il2CppClass *obstacleDataClass = classof(CustomObstacleData*);
     const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
+    Il2CppClass *noteDataClass = classof(CustomNoteData*);
+    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 11);
     Il2CppClass *jsonWrapperClass = classof(JSONWrapper *);
 
     while (notesSaveDataIdx < notesSaveDataCount || obstaclesSaveDataIdx < obstaclesSaveDataCount) {
@@ -254,9 +263,9 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
 
             CustomNoteData *beatmapObjectData;
             if (colorType == ColorType::None) {
-                beatmapObjectData = CustomJSONDataCreateBombNoteData(time2, noteData->lineIndex, noteData->lineLayer);
+                beatmapObjectData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer);
             } else {
-                beatmapObjectData = CustomJSONDataCreateBasicNoteData(time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
+                beatmapObjectData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
             }
 
             if (noteData->customData) {
@@ -305,9 +314,9 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     }
     beatmapData->ProcessRemainingData();
 
-    CJSLogger::GetLogger().debug("Finished processing beatmap data");
+    CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
-    CJSLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+    CJDLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
     return beatmapData;
 }

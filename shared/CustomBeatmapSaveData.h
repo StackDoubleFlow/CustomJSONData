@@ -11,11 +11,11 @@
 #include "GlobalNamespace/BeatmapSaveData_SpecialEventKeywordFiltersData.hpp"
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 
-#include "CJSLogger.h"
+#include "CJDLogger.h"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData, GlobalNamespace::StandardLevelInfoSaveData,
     REGISTER_FUNCTION(CustomLevelInfoSaveData,
-        CJSLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
+        CJDLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
     )
 )
 
@@ -28,7 +28,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
                  BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters);
 
     REGISTER_FUNCTION(CustomBeatmapSaveData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapSaveData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -42,7 +42,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_NoteData, GlobalName
     DECLARE_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer, GlobalNamespace::BeatmapSaveData::NoteType type, GlobalNamespace::NoteCutDirection cutDirection);
 
     REGISTER_FUNCTION(CustomBeatmapSaveData_NoteData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapSaveData_NoteData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_NoteData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -56,7 +56,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_ObstacleData, Global
     DECLARE_CTOR(ctor, float time, int lineIndex, GlobalNamespace::ObstacleType type, float duration, int width);
 
     REGISTER_FUNCTION(CustomBeatmapSaveData_ObstacleData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapSaveData_ObstacleData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_ObstacleData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
@@ -70,7 +70,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_EventData, GlobalNam
     DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapSaveData::BeatmapEventType type, int value);
 
     REGISTER_FUNCTION(CustomBeatmapSaveData_EventData,
-        CJSLogger::GetLogger().debug("Registering CustomBeatmapSaveData_EventData!");
+        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_EventData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);

@@ -5,11 +5,11 @@
 
 #include "System/Object.hpp"
 
-#include "CJSLogger.h"
+#include "CJDLogger.h"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
     REGISTER_FUNCTION(JSONWrapper,
-        CJSLogger::GetLogger().debug("Registering JSONWrapper!");
+        CJDLogger::GetLogger().debug("Registering JSONWrapper!");
     )
 public:
     rapidjson::Value *value;

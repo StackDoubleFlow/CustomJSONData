@@ -56,7 +56,7 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
 
 void CustomJSONData::CustomObstacleData::Finalize() {
     // delete this->customData;
-    CJSLogger::GetLogger().debug("CustomObstacleData::Finalize");
+    CJDLogger::GetLogger().debug("CustomObstacleData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomNoteData);
@@ -86,7 +86,7 @@ BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
 
 void CustomJSONData::CustomNoteData::Finalize() {
     // delete this->customData;
-    CJSLogger::GetLogger().debug("CustomNoteData::Finalize");
+    CJDLogger::GetLogger().debug("CustomNoteData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomWaypointData);
@@ -105,7 +105,7 @@ BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
 }
 
 void CustomJSONData::CustomWaypointData::Finalize() {
-    CJSLogger::GetLogger().debug("CustomWaypointData::Finalize");
+    CJDLogger::GetLogger().debug("CustomWaypointData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomEventData);
