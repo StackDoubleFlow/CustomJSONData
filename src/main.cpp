@@ -15,7 +15,7 @@ extern "C" void setup(ModInfo &info) {
 extern "C" void load() {
     CJDLogger::GetLogger().info("Installing CustomJSONData Hooks!");
     // This prevents any and all Utils logging
-    Logger::get().options.silent = true;
+    // Logger::get().options.silent = true;
 
     // Install hooks
 

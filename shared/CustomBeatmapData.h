@@ -64,7 +64,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-    DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomObstacleData,
         CJDLogger::GetLogger().debug("Registering CustomObstacleData!");
@@ -79,7 +78,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
         // Register fields
         REGISTER_FIELD(customData);
         REGISTER_FIELD(bpm);
-        REGISTER_FIELD(aheadTime);    
     )
 )
 
@@ -92,7 +90,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-    DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomNoteData,
         CJDLogger::GetLogger().debug("Registering CustomNoteData!");
@@ -107,7 +104,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
         // Register fields
         REGISTER_FIELD(customData);
         REGISTER_FIELD(bpm);
-        REGISTER_FIELD(aheadTime);
     )
 )
 
@@ -119,7 +115,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
 
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-    DECLARE_INSTANCE_FIELD(float, aheadTime);
 
     REGISTER_FUNCTION(CustomNoteData,
         CJDLogger::GetLogger().debug("Registering CustomWaypointData!");
@@ -133,7 +128,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
 
         // Register fields
         REGISTER_FIELD(bpm);
-        REGISTER_FIELD(aheadTime);
     )
 )
 

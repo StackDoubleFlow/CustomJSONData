@@ -198,6 +198,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     if (cachedSaveData->customData) {
         JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
         customData->value = cachedSaveData->customData;
+        customData->associatedData = std::map<char, void*>();
         beatmapData->customData = customData;
     }
 
@@ -268,11 +269,10 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
                 beatmapObjectData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
             }
 
-            if (noteData->customData) {
-                JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
-                customData->value = noteData->customData;
-                beatmapObjectData->customData = customData;
-            }
+            JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+            customData->value = noteData->customData;
+            customData->associatedData = std::map<char, void*>();
+            beatmapObjectData->customData = customData;
             beatmapObjectData->bpm = startBpm;
 
             beatmapData->AddBeatmapObjectData(beatmapObjectData);
@@ -284,11 +284,10 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
             il2cpp_utils::RunMethod<Il2CppObject*, false>(beatmapObjectData2, obstacleDataCtor, obstacleTime, obstacleData->lineIndex, obstacleData->type, self->GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
 
             // TODO: Move this into constructor
-            if (obstacleData->customData) {
-                JSONWrapper *customData = (JSONWrapper *) il2cpp_functions::object_new(jsonWrapperClass);
-                customData->value = obstacleData->customData;
-                beatmapObjectData2->customData = customData;
-            }
+            JSONWrapper *customData = (JSONWrapper *) il2cpp_functions::object_new(jsonWrapperClass);
+            customData->value = obstacleData->customData;
+            customData->associatedData = std::map<char, void*>();
+            beatmapObjectData2->customData = customData;
             beatmapObjectData2->bpm = startBpm;
 
             beatmapData->AddBeatmapObjectData(beatmapObjectData2);
@@ -327,7 +326,6 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
 
-    static_assert(sizeof(JSONWrapper) == 24);
     // Register custom tpes
     CRASH_UNLESS(custom_types::Register::RegisterType<JSONWrapper>());
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomLevelInfoSaveData>());
