@@ -321,12 +321,13 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
 }
 
 void CustomJSONData::InstallHooks() {
+    Logger& logger = CJDLogger::GetLogger();
     // Install hooks
-    INSTALL_HOOK_OFFSETLESS(StandardLevelInfoSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "StandardLevelInfoSaveData", "DeserializeFromJSONString", 1));
-    INSTALL_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
-    INSTALL_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
+    INSTALL_HOOK_OFFSETLESS(logger, StandardLevelInfoSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "StandardLevelInfoSaveData", "DeserializeFromJSONString", 1));
+    INSTALL_HOOK_OFFSETLESS(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
+    INSTALL_HOOK_OFFSETLESS(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
 
-    // Register custom tpes
+    // Register custom types
     CRASH_UNLESS(custom_types::Register::RegisterType<JSONWrapper>());
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomLevelInfoSaveData>());
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapSaveData>());
