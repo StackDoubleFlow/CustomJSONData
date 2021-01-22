@@ -13,9 +13,9 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
-    this->CopyBeatmapObjects(this, copy);
-    this->CopyBeatmapEvents(this, copy);
-    this->CopyAvailableSpecialEventsPerKeywordDictionary(this, copy);
+    this->CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    this->CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    this->CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     copy->customData = this->customData;
     copy->customEventsData = this->customEventsData;
 
