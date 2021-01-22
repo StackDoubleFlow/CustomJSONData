@@ -12,10 +12,13 @@
 #include "GlobalNamespace/BeatmapDataLoader_BpmChangeData.hpp"
 #include "GlobalNamespace/BeatmapObjectType.hpp"
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
+#include "GlobalNamespace/BeatmapObjectCallbackController.hpp"
+#include "GlobalNamespace/IAudioTimeSource.hpp"
 #include "System/Comparison_1.hpp"
 
 #include "CustomBeatmapSaveData.h"
 #include "CustomBeatmapData.h"
+#include "CustomEventData.h"
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 
@@ -143,9 +146,27 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
 
     CJDLogger::GetLogger().debug("Parse root");
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(events, notes, waypoints, obstacles, specialEventsKeywordFilters));
+    saveData->customEventsData = new std::vector<CustomJSONData::CustomEventData>();
     if (doc.HasMember("_customData")) {
         saveData->customData = new rapidjson::Value(doc["_customData"], *alloc);
+        rapidjson::Value& customData = *saveData->customData;
+        
+        if (customData.HasMember("_customEvents")) {
+            CJDLogger::GetLogger().debug("Parse custom events");
+
+            rapidjson::Value& custom_events_arr = customData["_customEvents"];
+            for (rapidjson::SizeType i = 0; i < custom_events_arr.Size(); i++) {
+                rapidjson::Value& event_json = custom_events_arr[i];
+
+                std::string type(event_json["_type"].GetString());
+                float time = event_json["_time"].GetFloat();
+                rapidjson::Value *data = &event_json["_data"];
+                // CJDLogger::GetLogger().debug("Added custom event %s %f", type.c_str(), time);
+                saveData->customEventsData->push_back({ type, time, data });
+            }
+        }
     }
+
     cachedSaveData = saveData;
 
     CJDLogger::GetLogger().debug("Finished reading beatmap data");
@@ -262,20 +283,20 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
             float time2 = ProcessTime(self, noteData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
             ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
 
-            CustomNoteData *beatmapObjectData;
+            CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
-                beatmapObjectData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer);
+                customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer);
             } else {
-                beatmapObjectData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
+                customNoteData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
             }
 
             JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
             customData->value = noteData->customData;
             customData->associatedData = std::map<char, void*>();
-            beatmapObjectData->customData = customData;
-            beatmapObjectData->bpm = startBpm;
+            customNoteData->customData = customData;
+            customNoteData->bpm = startBpm;
 
-            beatmapData->AddBeatmapObjectData(beatmapObjectData);
+            beatmapData->AddBeatmapObjectData(customNoteData);
             notesSaveDataIdx++;
         } else if (obstacleData) {
             float obstacleTime = ProcessTime(self, obstacleData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
@@ -313,11 +334,43 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     }
     beatmapData->ProcessRemainingData();
 
+    beatmapData->customEventsData = cachedSaveData->customEventsData;
+
     CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
     CJDLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
     return beatmapData;
+}
+
+MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_Start, void, BeatmapObjectCallbackController *self) {
+    BeatmapObjectCallbackController_Start(self);
+
+    for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
+        callbackData.nextEventIndex = 0;
+    }
+}
+
+MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapObjectCallbackController *self) {
+    BeatmapObjectCallbackController_LateUpdate(self);
+
+    auto *customBeatmapData = ((CustomBeatmapData *) self->beatmapData);
+    auto *customEventsData = (std::vector<CustomEventData> *) customBeatmapData->customEventsData;
+    
+    for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
+        while (callbackData.nextEventIndex < customEventsData->size()) {
+            CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
+            if (customEventData->time - callbackData.aheadTime >= self->audioTimeSource->get_songTime()) {
+                break;
+            }
+
+            if (customEventData->time >= self->spawningStartTime || callbackData.callIfBeforeStartTime) {
+                callbackData.callback(customEventData);
+            }
+
+            callbackData.nextEventIndex++;
+        }
+    }
 }
 
 void CustomJSONData::InstallHooks() {
@@ -326,6 +379,8 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_OFFSETLESS(logger, StandardLevelInfoSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "StandardLevelInfoSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_OFFSETLESS(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
+    INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_Start, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "Start", 0));
+    INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "LateUpdate", 0));
 
     // Register custom types
     CRASH_UNLESS(custom_types::Register::RegisterType<JSONWrapper>());
@@ -338,5 +393,4 @@ void CustomJSONData::InstallHooks() {
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapEventData>());
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomObstacleData>());
     CRASH_UNLESS(custom_types::Register::RegisterType<CustomNoteData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomEventData>());
 }

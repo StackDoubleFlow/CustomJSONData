@@ -17,6 +17,7 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     this->CopyBeatmapEvents(this, copy);
     this->CopyAvailableSpecialEventsPerKeywordDictionary(this, copy);
     copy->customData = this->customData;
+    copy->customEventsData = this->customEventsData;
 
     return copy;
 }
@@ -34,7 +35,7 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType t
 }
 
 void CustomJSONData::CustomBeatmapEventData::Finalize() {
-    delete this->customData;
+    // delete this->customData;
 }
 
 DEFINE_CLASS(CustomJSONData::CustomObstacleData);
@@ -56,7 +57,7 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
 
 void CustomJSONData::CustomObstacleData::Finalize() {
     // delete this->customData;
-    CJDLogger::GetLogger().debug("CustomObstacleData::Finalize");
+    // CJDLogger::GetLogger().debug("CustomObstacleData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomNoteData);
@@ -86,7 +87,7 @@ BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
 
 void CustomJSONData::CustomNoteData::Finalize() {
     // delete this->customData;
-    CJDLogger::GetLogger().debug("CustomNoteData::Finalize");
+    // CJDLogger::GetLogger().debug("CustomNoteData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomWaypointData);
@@ -105,16 +106,5 @@ BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
 }
 
 void CustomJSONData::CustomWaypointData::Finalize() {
-    CJDLogger::GetLogger().debug("CustomWaypointData::Finalize");
-}
-
-DEFINE_CLASS(CustomJSONData::CustomEventData);
-
-void CustomJSONData::CustomEventData::ctor(Il2CppString* type, float time) {
-    this->type = type;
-    this->time = time;
-}
-
-void CustomJSONData::CustomEventData::Finalize() {
-    delete this->data;
+    // CJDLogger::GetLogger().debug("CustomWaypointData::Finalize");
 }

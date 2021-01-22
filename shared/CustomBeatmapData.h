@@ -9,6 +9,7 @@
 #include "GlobalNamespace/WaypointData.hpp"
 #include "System/Object.hpp"
 
+#include "CustomEventData.h"
 #include "JSONWrapper.h"
 #include "CJDLogger.h"
 
@@ -19,6 +20,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_OVERRIDE_METHOD(BeatmapData *, GetCopy, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopy"));
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
+    // std::vector<CustomJSONData::CustomEventData>
+    DECLARE_INSTANCE_FIELD(void *, customEventsData);
 
     REGISTER_FUNCTION(CustomBeatmapData,
         CJDLogger::GetLogger().debug("Registering CustomBeatmapData!");
@@ -32,6 +35,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
         // Register fields
         REGISTER_FIELD(customData);
+        REGISTER_FIELD(customEventsData);
     )
 )
 
@@ -129,30 +133,4 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
         // Register fields
         REGISTER_FIELD(bpm);
     )
-)
-
-DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, System::Object, 
-    DECLARE_CTOR(ctor, Il2CppString* type, float time);
-
-    DECLARE_INSTANCE_FIELD(Il2CppString*, type);
-    DECLARE_INSTANCE_FIELD(float, time);
-
-    DECLARE_OVERRIDE_METHOD(void, Finalize, il2cpp_utils::FindMethod("System", "Object", "Finalize"));
-
-    REGISTER_FUNCTION(CustomEventData,
-        CJDLogger::GetLogger().debug("Registering CustomEventData!");
-
-        // Register fields
-        REGISTER_FIELD(type);
-        REGISTER_FIELD(time);
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        // Register methods
-        REGISTER_METHOD(Finalize);
-    )
-
-public:
-    rapidjson::Value *data;
 )

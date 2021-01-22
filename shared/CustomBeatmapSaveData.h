@@ -1,7 +1,6 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "beatsaber-hook/shared/utils/typedefs.h"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
 #include "GlobalNamespace/BeatmapSaveData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_NoteData.hpp"
@@ -12,6 +11,7 @@
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 #include "System/Collections/Generic/List_1.hpp"
 
+#include "CustomEventData.h"
 #include "CJDLogger.h"
 
 template<class T>
@@ -40,6 +40,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
 
 public:
     rapidjson::Value *customData;
+    std::vector<CustomJSONData::CustomEventData> *customEventsData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_NoteData, GlobalNamespace::BeatmapSaveData::NoteData,
