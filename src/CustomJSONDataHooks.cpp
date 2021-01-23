@@ -37,10 +37,6 @@ std::string to_utf8(std::u16string_view view) {
     return {dat};
 }
 
-MAKE_HOOK_OFFSETLESS(StandardLevelInfoSaveData_DeserializeFromJSONString, StandardLevelInfoSaveData*, Il2CppString *stringData) {
-    return StandardLevelInfoSaveData_DeserializeFromJSONString(stringData);
-}
-
 CustomBeatmapSaveData *cachedSaveData;
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
@@ -376,7 +372,6 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapOb
 void CustomJSONData::InstallHooks() {
     Logger& logger = CJDLogger::GetLogger();
     // Install hooks
-    INSTALL_HOOK_OFFSETLESS(logger, StandardLevelInfoSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "StandardLevelInfoSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_OFFSETLESS(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_Start, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "Start", 0));
