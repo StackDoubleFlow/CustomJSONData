@@ -20,6 +20,8 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 
 # Creating prebuilt for dependency: modloader - version: 1.0.4
 include $(CLEAR_VARS)
+LOCAL_MODULE := 
+include $(CLEAR_VARS)
 LOCAL_MODULE := modloader
 LOCAL_EXPORT_C_INCLUDES := extern/modloader
 LOCAL_SRC_FILES := extern/libmodloader.so
@@ -38,7 +40,7 @@ LOCAL_EXPORT_C_INCLUDES := extern/codegen
 LOCAL_SRC_FILES := extern/libcodegen_0_6_2.so
 LOCAL_CPP_FEATURES += exceptions
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: custom-types - version: 0.3.5
+# Creating prebuilt for dependency: custom-types - version: 0.4.4
 include $(CLEAR_VARS)
 LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
