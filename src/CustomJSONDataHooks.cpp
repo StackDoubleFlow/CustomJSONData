@@ -57,14 +57,14 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     
     
     CJDLogger::GetLogger().debug("Parse notes");
-    rapidjson::Value& notes_arr = doc["_notes"];
+    rapidjson::Value& notesArr = doc["_notes"];
 
     // Cache class pointer and ctor method info
     Il2CppClass *noteDataClass = classof(CustomBeatmapSaveData_NoteData*);
     const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 5);
-    List<BeatmapSaveData::NoteData*> *notes = List<BeatmapSaveData::NoteData*>::New_ctor(notes_arr.Size());
-    for (rapidjson::SizeType i = 0; i < notes_arr.Size(); i++) {
-        rapidjson::Value& note_json = notes_arr[i];
+    List<BeatmapSaveData::NoteData*> *notes = List<BeatmapSaveData::NoteData*>::New_ctor(notesArr.Size());
+    for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
+        rapidjson::Value& note_json = notesArr[i];
 
         float time = note_json["_time"].GetFloat();
         int lineIndex = note_json["_lineIndex"].GetInt();
@@ -78,17 +78,17 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
         }
         notes->items->values[i] = note;
     }
-    notes->size = notes_arr.Size();
+    notes->size = notesArr.Size();
 
     CJDLogger::GetLogger().debug("Parse obstacles");
-    rapidjson::Value& obstacles_arr = doc["_obstacles"];
+    rapidjson::Value& obstaclesArr = doc["_obstacles"];
 
     // Cache class pointer and ctor method info
     Il2CppClass *obstacleDataClass = classof(CustomBeatmapSaveData_ObstacleData*);
     const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
-    List<BeatmapSaveData::ObstacleData*> *obstacles = List<BeatmapSaveData::ObstacleData*>::New_ctor(obstacles_arr.Size());
-    for (rapidjson::SizeType i = 0; i < obstacles_arr.Size(); i++) {
-        rapidjson::Value& obstacle_json = obstacles_arr[i];
+    List<BeatmapSaveData::ObstacleData*> *obstacles = List<BeatmapSaveData::ObstacleData*>::New_ctor(obstaclesArr.Size());
+    for (rapidjson::SizeType i = 0; i < obstaclesArr.Size(); i++) {
+        rapidjson::Value& obstacle_json = obstaclesArr[i];
 
         float time = obstacle_json["_time"].GetFloat();
         int lineIndex = obstacle_json["_lineIndex"].GetInt();
@@ -102,14 +102,14 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
         }
         obstacles->items->values[i] = obstacle;
     }
-    obstacles->size = obstacles_arr.Size();
+    obstacles->size = obstaclesArr.Size();
 
     CJDLogger::GetLogger().debug("Parse events");
     // Parse events
-    rapidjson::Value& events_arr = doc["_events"];
-    List<BeatmapSaveData::EventData*> *events = List<BeatmapSaveData::EventData*>::New_ctor(events_arr.Size());
-    for (rapidjson::SizeType i = 0; i < events_arr.Size(); i++) {
-        rapidjson::Value& event_json = events_arr[i];
+    rapidjson::Value& eventsArr = doc["_events"];
+    List<BeatmapSaveData::EventData*> *events = List<BeatmapSaveData::EventData*>::New_ctor(eventsArr.Size());
+    for (rapidjson::SizeType i = 0; i < eventsArr.Size(); i++) {
+        rapidjson::Value& event_json = eventsArr[i];
         
         float time = event_json["_time"].GetFloat();
         BeatmapSaveData::BeatmapEventType type = BeatmapSaveData::BeatmapEventType(event_json["_type"].GetInt());
@@ -120,7 +120,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
         } 
         events->items->values[i] = event;
     }
-    events->size = events_arr.Size();
+    events->size = eventsArr.Size();
 
     CJDLogger::GetLogger().debug("Parse waypoints");
     rapidjson::Value& waypoints_arr = doc["_waypoints"];
@@ -150,14 +150,14 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
         if (customData.HasMember("_customEvents")) {
             CJDLogger::GetLogger().debug("Parse custom events");
 
-            rapidjson::Value& custom_events_arr = customData["_customEvents"];
-            for (rapidjson::SizeType i = 0; i < custom_events_arr.Size(); i++) {
-                rapidjson::Value& event_json = custom_events_arr[i];
-
-                std::string type(event_json["_type"].GetString());
-                float time = event_json["_time"].GetFloat();
-                rapidjson::Value *data = &event_json["_data"];
-                // CJDLogger::GetLogger().debug("Added custom event %s %f", type.c_str(), time);
+            rapidjson::Value& customEventsArr = customData["_customEvents"];
+            for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
+                rapidjson::Value& eventValue = customEventsArr[i];
+                
+                std::string type(eventValue["_type"].GetString());
+                CJDLogger::GetLogger().debug("Type string creation was successful");
+                float time = eventValue["_time"].GetFloat();
+                rapidjson::Value *data = &eventValue["_data"];
                 saveData->customEventsData->push_back({ type, time, data });
             }
         }
