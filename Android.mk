@@ -26,9 +26,9 @@ LOCAL_SRC_FILES := extern/libmodloader.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: beatsaber-hook - version: 1.0.9
 include $(CLEAR_VARS)
-LOCAL_MODULE := beatsaber-hook_1_0_12
+LOCAL_MODULE := beatsaber-hook_1_1_2
 LOCAL_EXPORT_C_INCLUDES := extern/beatsaber-hook
-LOCAL_SRC_FILES := extern/libbeatsaber-hook_1_0_12.so
+LOCAL_SRC_FILES := extern/libbeatsaber-hook_1_1_2.so
 LOCAL_CPP_FEATURES += exceptions
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: codegen - version: 0.5.3
@@ -54,7 +54,7 @@ LOCAL_SRC_FILES += $(call rwildcard,src/,*.cpp)
 LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.cpp)
 LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.c)
 LOCAL_SHARED_LIBRARIES += modloader
-LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_0_12
+LOCAL_SHARED_LIBRARIES += beatsaber-hook_1_1_2
 LOCAL_SHARED_LIBRARIES += codegen_0_6_2
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_LDLIBS += -llog
