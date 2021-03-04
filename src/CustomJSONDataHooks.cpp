@@ -154,9 +154,20 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
             for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
                 rapidjson::Value& eventValue = customEventsArr[i];
                 
+                // Dammit Reaxt
+                if (!eventValue.HasMember("_time")) continue;
+
+                rapidjson::Value& timeValue = eventValue["_time"];
+                float time;
+                if (timeValue.GetType() == rapidjson::Type::kStringType) {
+                    // Reaxt why
+                    time = std::stof(timeValue.GetString());
+                } else {
+                    time = timeValue.GetFloat();
+                }
+
                 std::string type(eventValue["_type"].GetString());
-                CJDLogger::GetLogger().debug("Type string creation was successful");
-                float time = eventValue["_time"].GetFloat();
+
                 rapidjson::Value *data = &eventValue["_data"];
                 saveData->customEventsData->push_back({ type, time, data });
             }
