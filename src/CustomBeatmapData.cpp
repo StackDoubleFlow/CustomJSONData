@@ -22,20 +22,12 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     return copy;
 }
 
-void CustomJSONData::CustomBeatmapData::Finalize() {
-    // delete this->customData;
-}
-
 DEFINE_CLASS(CustomJSONData::CustomBeatmapEventData);
 
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType type, int value) {
     this->time = time;
     this->type = type;
     this->value = value;
-}
-
-void CustomJSONData::CustomBeatmapEventData::Finalize() {
-    // delete this->customData;
 }
 
 DEFINE_CLASS(CustomJSONData::CustomObstacleData);
@@ -53,11 +45,6 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
     copy->customData = this->customData;
     copy->bpm = this->bpm;
     return copy;
-}
-
-void CustomJSONData::CustomObstacleData::Finalize() {
-    // delete this->customData;
-    // CJDLogger::GetLogger().debug("CustomObstacleData::Finalize");
 }
 
 DEFINE_CLASS(CustomJSONData::CustomNoteData);
@@ -85,11 +72,6 @@ BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
     return copy;
 }
 
-void CustomJSONData::CustomNoteData::Finalize() {
-    // delete this->customData;
-    // CJDLogger::GetLogger().debug("CustomNoteData::Finalize");
-}
-
 DEFINE_CLASS(CustomJSONData::CustomWaypointData);
 
 void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalNamespace::NoteLineLayer noteLineLayer, GlobalNamespace::OffsetDirection offsetDirection) {
@@ -103,8 +85,4 @@ BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomWaypointData*>(this->time, this->lineIndex, this->noteLineLayer, this->offsetDirection));
     copy->bpm = this->bpm;
     return copy;
-}
-
-void CustomJSONData::CustomWaypointData::Finalize() {
-    // CJDLogger::GetLogger().debug("CustomWaypointData::Finalize");
 }
