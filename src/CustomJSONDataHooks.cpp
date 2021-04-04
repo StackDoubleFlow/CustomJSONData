@@ -24,6 +24,7 @@
 
 #include <chrono>
 
+using namespace System;
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 
@@ -244,7 +245,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     }
 
     // Sort by time
-    notesSaveData->Sort(il2cpp_utils::MakeDelegate<System::Comparison_1<BeatmapSaveData::NoteData*>*>(classof(System::Comparison_1<BeatmapSaveData::NoteData*>*), (void*)nullptr, 
+    notesSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::NoteData*>*>(classof(Comparison_1<BeatmapSaveData::NoteData*>*), (void*) nullptr, 
         +[](BeatmapSaveData::NoteData *x, BeatmapSaveData::NoteData *y) {
             if (x->time >= y->time) {
                 return 1;
@@ -252,7 +253,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
             return -1;
         }
     ));
-    waypointsSaveData->Sort(il2cpp_utils::MakeDelegate<System::Comparison_1<BeatmapSaveData::WaypointData*>*>(classof(System::Comparison_1<BeatmapSaveData::WaypointData*>*), (void*)nullptr, 
+    waypointsSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::WaypointData*>*>(classof(Comparison_1<BeatmapSaveData::WaypointData*>*), (void*) nullptr, 
         +[](BeatmapSaveData::WaypointData *x, BeatmapSaveData::WaypointData *y) {
             if (x->time >= y->time) {
                 return 1;
@@ -260,7 +261,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
             return -1;
         }
     ));
-    obstaclesSaveData->Sort(il2cpp_utils::MakeDelegate<System::Comparison_1<BeatmapSaveData::ObstacleData*>*>(classof(System::Comparison_1<BeatmapSaveData::ObstacleData*>*), (void*)nullptr, 
+    obstaclesSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::ObstacleData*>*>(classof(Comparison_1<BeatmapSaveData::ObstacleData*>*), (void*) nullptr, 
         +[](BeatmapSaveData::ObstacleData *x, BeatmapSaveData::ObstacleData *y) {
             if (x->time >= y->time) {
                 return 1;
@@ -276,6 +277,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     int obstaclesSaveDataCount = obstaclesSaveData->get_Count();
     int waypointsSaveDataCount = waypointsSaveData->get_Count();
 
+    // Cache il2cpp classes
     Il2CppClass *obstacleDataClass = classof(CustomObstacleData*);
     const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
     Il2CppClass *noteDataClass = classof(CustomNoteData*);
@@ -283,9 +285,9 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     Il2CppClass *jsonWrapperClass = classof(JSONWrapper *);
 
     while (notesSaveDataIdx < notesSaveDataCount || obstaclesSaveDataIdx < obstaclesSaveDataCount) {
-        auto noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData *) notesSaveData->items->values[notesSaveDataIdx] : nullptr;
-        auto waypointData = (notesSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData *) waypointsSaveData->items->values[notesSaveDataIdx] : nullptr;
-        auto obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData *) obstaclesSaveData->items->values[obstaclesSaveDataIdx] : nullptr;
+        auto noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData->items->values[notesSaveDataIdx] : nullptr;
+        auto waypointData = (notesSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData->items->values[notesSaveDataIdx] : nullptr;
+        auto obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData*) obstaclesSaveData->items->values[obstaclesSaveDataIdx] : nullptr;
         if (noteData && (!obstacleData || noteData->time <= obstacleData->time)) {
             float time2 = ProcessTime(self, noteData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
             ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
@@ -308,11 +310,11 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
         } else if (obstacleData) {
             float obstacleTime = ProcessTime(self, obstacleData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
 
-            auto beatmapObjectData2 = (CustomObstacleData *) il2cpp_functions::object_new(obstacleDataClass);
+            auto beatmapObjectData2 = (CustomObstacleData*) il2cpp_functions::object_new(obstacleDataClass);
             il2cpp_utils::RunMethod<Il2CppObject*, false>(beatmapObjectData2, obstacleDataCtor, obstacleTime, obstacleData->lineIndex, obstacleData->type, self->GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
 
             // TODO: Move this into constructor
-            JSONWrapper *customData = (JSONWrapper *) il2cpp_functions::object_new(jsonWrapperClass);
+            JSONWrapper *customData = (JSONWrapper*) il2cpp_functions::object_new(jsonWrapperClass);
             customData->value = obstacleData->customData;
             customData->associatedData = std::map<char, void*>();
             beatmapObjectData2->customData = customData;
@@ -322,8 +324,9 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
             obstaclesSaveDataIdx++;
         }
     }
-    for (int i = 0; i < eventsSaveData->get_Count(); i++) {
-        auto *eventData = (CustomBeatmapSaveData_EventData *) eventsSaveData->get_Item(i);
+
+    for (int i = 0; i < eventsSaveData->items->Length(); i++) {
+        auto *eventData = (CustomBeatmapSaveData_EventData*) eventsSaveData->items->values[i];
         float time = eventData->time;
         while (bpmChangesDataIdx < bpmChangesData->get_Count() - 1 && bpmChangesData->get_Item(bpmChangesDataIdx + 1).bpmChangeStartBpmTime < time) {
             bpmChangesDataIdx++;
@@ -367,8 +370,8 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_Start, void, BeatmapObjectC
 MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_LateUpdate(self);
 
-    auto *customBeatmapData = ((CustomBeatmapData *) self->beatmapData);
-    auto *customEventsData = (std::vector<CustomEventData> *) customBeatmapData->customEventsData;
+    auto *customBeatmapData = ((CustomBeatmapData*) self->beatmapData);
+    auto *customEventsData = (std::vector<CustomEventData>*) customBeatmapData->customEventsData;
     
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
         while (callbackData.nextEventIndex < customEventsData->size()) {
@@ -386,24 +389,31 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapOb
     }
 }
 
+MAKE_HOOK_OFFSETLESS(BeatmapDataCtor, void, BeatmapData *self, int numberOfLines) {
+    BeatmapDataCtor(self, numberOfLines);
+    self->prevAddedBeatmapObjectDataTime = -std::numeric_limits<float>::infinity();
+}
+
 void CustomJSONData::InstallHooks() {
     Logger& logger = CJDLogger::GetLogger();
 
     // Install hooks
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_Start, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "Start", 0));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "LateUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(logger, BeatmapDataCtor, il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1));
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
 
     // Register custom types
-    CRASH_UNLESS(custom_types::Register::RegisterType<JSONWrapper>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomLevelInfoSaveData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapSaveData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapSaveData_NoteData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapSaveData_ObstacleData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapSaveData_EventData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomBeatmapEventData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomObstacleData>());
-    CRASH_UNLESS(custom_types::Register::RegisterType<CustomNoteData>());
+    custom_types::Register::RegisterTypes<JSONWrapper,
+                                          CustomLevelInfoSaveData, 
+                                          CustomBeatmapSaveData, 
+                                          CustomBeatmapSaveData_NoteData, 
+                                          CustomBeatmapSaveData_ObstacleData, 
+                                          CustomBeatmapSaveData_EventData, 
+                                          CustomBeatmapData, 
+                                          CustomBeatmapEventData, 
+                                          CustomObstacleData, 
+                                          CustomNoteData>();
+
 }

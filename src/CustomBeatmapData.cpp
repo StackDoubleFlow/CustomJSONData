@@ -13,6 +13,7 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
+    CJDLogger::GetLogger().info("COPYING THE THINGY NOW");
     this->CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     this->CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     this->CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
