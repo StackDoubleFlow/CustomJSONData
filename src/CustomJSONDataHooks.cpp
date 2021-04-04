@@ -46,16 +46,15 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     // CRASH_UNLESS(nullptr);
     auto startTime = std::chrono::high_resolution_clock::now();
 
-
     std::string str = to_utf8(csstrtostr(stringData));
     
     rapidjson::Document doc;
     doc.Parse(str.c_str());
 
+    // Heap allocated allocator so that values don't get deallocated at the end of this function
     auto alloc = new rapidjson::MemoryPoolAllocator();
 
     CJDLogger::GetLogger().debug("Parsing json success");
-    
     
     CJDLogger::GetLogger().debug("Parse notes");
     rapidjson::Value& notesArr = doc["_notes"];
@@ -218,6 +217,11 @@ float ProcessTime(BeatmapDataLoader *self, float bpmTime, int &bpmChangesDataIdx
     return bpmChangeData.bpmChangeStartTime + realTime;
 }
 
+template <class T>
+bool TimeCompare(T a, T b) {
+    return (a->time < b->time);
+}
+
 MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self, List<BeatmapSaveData::NoteData *> *notesSaveData, List<BeatmapSaveData::WaypointData *> *waypointsSaveData, 
     List<BeatmapSaveData::ObstacleData *> *obstaclesSaveData, List<BeatmapSaveData::EventData *> *eventsSaveData, BeatmapSaveData::SpecialEventKeywordFiltersData *evironmentSpecialEventFilterData, float startBpm, float shuffle, float shufflePeriod) {
     
@@ -245,30 +249,9 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     }
 
     // Sort by time
-    notesSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::NoteData*>*>(classof(Comparison_1<BeatmapSaveData::NoteData*>*), (void*) nullptr, 
-        +[](BeatmapSaveData::NoteData *x, BeatmapSaveData::NoteData *y) {
-            if (x->time >= y->time) {
-                return 1;
-            }
-            return -1;
-        }
-    ));
-    waypointsSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::WaypointData*>*>(classof(Comparison_1<BeatmapSaveData::WaypointData*>*), (void*) nullptr, 
-        +[](BeatmapSaveData::WaypointData *x, BeatmapSaveData::WaypointData *y) {
-            if (x->time >= y->time) {
-                return 1;
-            }
-            return -1;
-        }
-    ));
-    obstaclesSaveData->Sort(il2cpp_utils::MakeDelegate<Comparison_1<BeatmapSaveData::ObstacleData*>*>(classof(Comparison_1<BeatmapSaveData::ObstacleData*>*), (void*) nullptr, 
-        +[](BeatmapSaveData::ObstacleData *x, BeatmapSaveData::ObstacleData *y) {
-            if (x->time >= y->time) {
-                return 1;
-            }
-            return -1;
-        }
-    ));
+    std::sort(notesSaveData->items->values, notesSaveData->items->values + notesSaveData->items->Length(), TimeCompare<BeatmapSaveData::NoteData*>);
+    std::sort(waypointsSaveData->items->values, waypointsSaveData->items->values + waypointsSaveData->items->Length(), TimeCompare<BeatmapSaveData::WaypointData*>);
+    std::sort(obstaclesSaveData->items->values, obstaclesSaveData->items->values + obstaclesSaveData->items->Length(), TimeCompare<BeatmapSaveData::ObstacleData*>);
 
     int notesSaveDataIdx = 0;
     int obstaclesSaveDataIdx = 0;
@@ -277,26 +260,26 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     int obstaclesSaveDataCount = obstaclesSaveData->get_Count();
     int waypointsSaveDataCount = waypointsSaveData->get_Count();
 
-    // Cache il2cpp classes
+    // Cache il2cpp classes and methods
     Il2CppClass *obstacleDataClass = classof(CustomObstacleData*);
-    const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
     Il2CppClass *noteDataClass = classof(CustomNoteData*);
-    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 11);
     Il2CppClass *jsonWrapperClass = classof(JSONWrapper *);
+    const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
+    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 11);
 
     while (notesSaveDataIdx < notesSaveDataCount || obstaclesSaveDataIdx < obstaclesSaveDataCount) {
         auto noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData->items->values[notesSaveDataIdx] : nullptr;
         auto waypointData = (notesSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData->items->values[notesSaveDataIdx] : nullptr;
         auto obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData*) obstaclesSaveData->items->values[obstaclesSaveDataIdx] : nullptr;
         if (noteData && (!obstacleData || noteData->time <= obstacleData->time)) {
-            float time2 = ProcessTime(self, noteData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
+            float time = ProcessTime(self, noteData->time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
             ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
 
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
-                customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer);
+                customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer);
             } else {
-                customNoteData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time2, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
+                customNoteData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
             }
 
             JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
@@ -406,14 +389,14 @@ void CustomJSONData::InstallHooks() {
 
     // Register custom types
     custom_types::Register::RegisterTypes<JSONWrapper,
-                                          CustomLevelInfoSaveData, 
-                                          CustomBeatmapSaveData, 
-                                          CustomBeatmapSaveData_NoteData, 
-                                          CustomBeatmapSaveData_ObstacleData, 
-                                          CustomBeatmapSaveData_EventData, 
-                                          CustomBeatmapData, 
-                                          CustomBeatmapEventData, 
-                                          CustomObstacleData, 
+                                          CustomLevelInfoSaveData,
+                                          CustomBeatmapSaveData,
+                                          CustomBeatmapSaveData_NoteData,
+                                          CustomBeatmapSaveData_ObstacleData,
+                                          CustomBeatmapSaveData_EventData,
+                                          CustomBeatmapData,
+                                          CustomBeatmapEventData,
+                                          CustomObstacleData,
                                           CustomNoteData>();
 
 }
