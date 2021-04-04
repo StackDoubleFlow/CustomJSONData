@@ -228,12 +228,10 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     auto startTime = std::chrono::high_resolution_clock::now();
 
     CustomBeatmapData *beatmapData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapData*>(4));
-    if (cachedSaveData->customData) {
-        JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
-        customData->value = cachedSaveData->customData;
-        customData->associatedData = std::map<char, void*>();
-        beatmapData->customData = customData;
-    }
+    JSONWrapper *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    beatmapCustomData->value = cachedSaveData->customData;
+    beatmapCustomData->associatedData = std::map<char, void*>();
+    beatmapData->customData = beatmapCustomData;
 
     List<BeatmapDataLoader::BpmChangeData> *bpmChangesData = List<BeatmapDataLoader::BpmChangeData>::New_ctor();
     bpmChangesData->Add(BeatmapDataLoader::BpmChangeData(0, 0, startBpm));
