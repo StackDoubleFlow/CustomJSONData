@@ -2,7 +2,7 @@
 
 #include "JSONWrapper.h"
 
-DEFINE_CLASS(CustomJSONData::JSONWrapper);
+DEFINE_TYPE(CustomJSONData::JSONWrapper);
 
 void CustomJSONData::JSONWrapper::Finalize() {
     delete value;

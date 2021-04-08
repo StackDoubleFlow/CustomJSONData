@@ -2,7 +2,7 @@
 
 using namespace GlobalNamespace;
 
-DEFINE_CLASS(CustomJSONData::CustomLevelInfoSaveData);
+DEFINE_TYPE(CustomJSONData::CustomLevelInfoSaveData);
 
 void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData*>* events, 
                                                   List<BeatmapSaveData::NoteData*>* notes, 
@@ -16,7 +16,7 @@ void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData
     this->specialEventsKeywordFilters = specialEventsKeywordFilters;
 }
 
-DEFINE_CLASS(CustomJSONData::CustomBeatmapSaveData);
+DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData);
 
 void CustomJSONData::CustomBeatmapSaveData_NoteData::ctor(float time, int lineIndex, NoteLineLayer lineLayer, BeatmapSaveData::NoteType type, NoteCutDirection cutDirection) {
     this->time = time;
@@ -26,7 +26,7 @@ void CustomJSONData::CustomBeatmapSaveData_NoteData::ctor(float time, int lineIn
     this->cutDirection = cutDirection;
 }
 
-DEFINE_CLASS(CustomJSONData::CustomBeatmapSaveData_NoteData);
+DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData_NoteData);
 
 void CustomJSONData::CustomBeatmapSaveData_ObstacleData::ctor(float time, int lineIndex, ObstacleType type, float duration, int width) {
     this->time = time;
@@ -36,7 +36,7 @@ void CustomJSONData::CustomBeatmapSaveData_ObstacleData::ctor(float time, int li
     this->width = width;
 }
 
-DEFINE_CLASS(CustomJSONData::CustomBeatmapSaveData_ObstacleData);
+DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData_ObstacleData);
 
 void CustomJSONData::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type, int value) {
     this->time = time;
@@ -44,4 +44,4 @@ void CustomJSONData::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSa
     this->value = value;
 }
 
-DEFINE_CLASS(CustomJSONData::CustomBeatmapSaveData_EventData);
+DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData_EventData);
