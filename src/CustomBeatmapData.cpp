@@ -7,16 +7,20 @@ DEFINE_CLASS(CustomJSONData::CustomBeatmapData);
 void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, numberOfLines));
+    this->prevAddedBeatmapObjectDataTime = -std::numeric_limits<float>::infinity();
     this->customData = nullptr;
 }
 
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
-    CJDLogger::GetLogger().info("COPYING THE THINGY NOW");
-    this->CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    this->CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    this->CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    CJDLogger::GetLogger().info("COPYING THE THINGY NOW %f", copy->prevAddedBeatmapObjectDataTime);
+    // std::string times;
+    // for (int i = 0; i < this->get_beatmapObjectsData()->)
+    BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    CJDLogger::GetLogger().info("DONE COPYING THE THINGY NOW");
+    BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     copy->customData = this->customData;
     copy->customEventsData = this->customEventsData;
 

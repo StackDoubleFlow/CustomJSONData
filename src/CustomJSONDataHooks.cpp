@@ -224,7 +224,8 @@ bool TimeCompare(T a, T b) {
 
 MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self, List<BeatmapSaveData::NoteData *> *notesSaveData, List<BeatmapSaveData::WaypointData *> *waypointsSaveData, 
     List<BeatmapSaveData::ObstacleData *> *obstaclesSaveData, List<BeatmapSaveData::EventData *> *eventsSaveData, BeatmapSaveData::SpecialEventKeywordFiltersData *evironmentSpecialEventFilterData, float startBpm, float shuffle, float shufflePeriod) {
-    
+    // il2cpp_functions
+
     auto startTime = std::chrono::high_resolution_clock::now();
 
     CustomBeatmapData *beatmapData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapData*>(4));
@@ -332,6 +333,10 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     beatmapData->ProcessRemainingData();
 
     beatmapData->customEventsData = cachedSaveData->customEventsData;
+    for (auto& customEventData : *((std::vector<CustomEventData>*) beatmapData->customEventsData)) {
+        float eventTime = ProcessTime(self, customEventData.time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
+        customEventData.time = eventTime;
+    }
 
     CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
@@ -370,18 +375,20 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapOb
     }
 }
 
-MAKE_HOOK_OFFSETLESS(BeatmapDataCtor, void, BeatmapData *self, int numberOfLines) {
-    BeatmapDataCtor(self, numberOfLines);
-    self->prevAddedBeatmapObjectDataTime = -std::numeric_limits<float>::infinity();
+MAKE_HOOK_OFFSETLESS(BeatmapData_AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
+    if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
+        CJDLogger::GetLogger().info("AddBeatmapObjectData time %f < prev %f", beatmapObjectData->time, self->prevAddedBeatmapObjectDataTime);
+    }
+    BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
 
 void CustomJSONData::InstallHooks() {
     Logger& logger = CJDLogger::GetLogger();
 
     // Install hooks
+    INSTALL_HOOK_OFFSETLESS(logger, BeatmapData_AddBeatmapObjectData, il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_Start, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "Start", 0));
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(logger, BeatmapDataCtor, il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1));
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
 
