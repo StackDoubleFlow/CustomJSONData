@@ -31,11 +31,15 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
                  List<GlobalNamespace::BeatmapSaveData::ObstacleData*>* obstacles,
                  BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters);
 
+    DECLARE_SIMPLE_DTOR();
+
     REGISTER_FUNCTION(
         CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData!");
 
         // Register constructor
         REGISTER_METHOD(ctor);
+
+        REGISTER_SIMPLE_DTOR();
     )
 
 public:
