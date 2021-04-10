@@ -14,7 +14,7 @@ using ADMAP = std::map<char, void*>;
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
     DECLARE_OVERRIDE_METHOD(void, Finalize, il2cpp_utils::FindMethod("System", "Object", "Finalize"));
 
-    REGISTER_FUNCTION(JSONWrapper,
+    REGISTER_FUNCTION(
         CJDLogger::GetLogger().debug("Registering JSONWrapper!");
     )
 public:
