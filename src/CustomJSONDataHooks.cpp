@@ -333,7 +333,11 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     beatmapData->ProcessRemainingData();
 
     beatmapData->customEventsData = cachedSaveData->customEventsData;
-    for (auto& customEventData : *((std::vector<CustomEventData>*) beatmapData->customEventsData)) {
+    std::vector<CustomEventData> *customEventsData = (std::vector<CustomEventData>*) beatmapData->customEventsData;
+    std::sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData& a, CustomEventData& b) {
+        return a.time < b.time;
+    });
+    for (auto& customEventData : *customEventsData) {
         float eventTime = ProcessTime(self, customEventData.time, bpmChangesDataIdx, bpmChangesData, shuffle, shufflePeriod);
         customEventData.time = eventTime;
     }
