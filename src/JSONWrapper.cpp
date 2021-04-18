@@ -2,9 +2,10 @@
 
 #include "JSONWrapper.h"
 
-DEFINE_TYPE(CustomJSONData::JSONWrapper);
+using namespace CustomJSONData;
 
-void CustomJSONData::JSONWrapper::Finalize() {
+DEFINE_TYPE(JSONWrapper);
+
+JSONWrapper::~JSONWrapper() {
     delete value;
-    associatedData.clear();
 }

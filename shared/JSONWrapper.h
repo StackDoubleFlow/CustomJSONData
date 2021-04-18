@@ -7,12 +7,9 @@
 
 #include "CJDLogger.h"
 
-#include <map>
-
-using ADMAP = std::map<char, void*>;
+#include <unordered_map>
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
-    DECLARE_OVERRIDE_METHOD(void, Finalize, il2cpp_utils::FindMethod("System", "Object", "Finalize"));
     DECLARE_DEFAULT_CTOR();
     DECLARE_SIMPLE_DTOR();
 
@@ -22,6 +19,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
         REGISTER_SIMPLE_DTOR();
     )
 public:
+    ~JSONWrapper();
     rapidjson::Value *value;
-    ADMAP associatedData;
+    std::unordered_map<char, void*> associatedData;
 )
