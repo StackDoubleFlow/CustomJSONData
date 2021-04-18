@@ -8,6 +8,7 @@
 #include "CJDLogger.h"
 
 #include <unordered_map>
+#include <any>
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject,
     DECLARE_DEFAULT_CTOR();
@@ -33,5 +34,5 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
     )
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> value;
-    std::unordered_map<char, void*> associatedData;
+    std::unordered_map<char, std::any> associatedData;
 )
