@@ -9,6 +9,7 @@ void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData
                                                   List<BeatmapSaveData::WaypointData*>* waypoints, 
                                                   List<BeatmapSaveData::ObstacleData*>* obstacles,
                                                   BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters) {
+    INVOKE_CTOR();
     this->events = events;
     this->notes = notes;
     this->waypoints = waypoints;
@@ -19,6 +20,7 @@ void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData
 DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData);
 
 void CustomJSONData::CustomBeatmapSaveData_NoteData::ctor(float time, int lineIndex, NoteLineLayer lineLayer, BeatmapSaveData::NoteType type, NoteCutDirection cutDirection) {
+    INVOKE_CTOR();
     this->time = time;
     this->lineIndex = lineIndex;
     this->lineLayer = lineLayer;
@@ -29,6 +31,7 @@ void CustomJSONData::CustomBeatmapSaveData_NoteData::ctor(float time, int lineIn
 DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData_NoteData);
 
 void CustomJSONData::CustomBeatmapSaveData_ObstacleData::ctor(float time, int lineIndex, ObstacleType type, float duration, int width) {
+    INVOKE_CTOR();
     this->time = time;
     this->lineIndex = lineIndex;
     this->type = type;
@@ -39,6 +42,7 @@ void CustomJSONData::CustomBeatmapSaveData_ObstacleData::ctor(float time, int li
 DEFINE_TYPE(CustomJSONData::CustomBeatmapSaveData_ObstacleData);
 
 void CustomJSONData::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type, int value) {
+    INVOKE_CTOR();
     this->time = time;
     this->type = type;
     this->value = value;

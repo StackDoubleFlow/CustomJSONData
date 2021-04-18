@@ -19,6 +19,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_OVERRIDE_METHOD(BeatmapData *, GetCopy, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopy"));
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
+    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
     // std::vector<CustomJSONData::CustomEventData>
     DECLARE_INSTANCE_FIELD(void *, customEventsData);
 
@@ -33,6 +34,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
         // Register fields
         REGISTER_FIELD(customData);
+        REGISTER_FIELD(doc);
         REGISTER_FIELD(customEventsData);
     )
 )

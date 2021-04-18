@@ -5,7 +5,4 @@
 using namespace CustomJSONData;
 
 DEFINE_TYPE(JSONWrapper);
-
-JSONWrapper::~JSONWrapper() {
-    delete value;
-}
+DEFINE_TYPE(DocumentWrapper);

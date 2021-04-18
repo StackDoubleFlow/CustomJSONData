@@ -10,7 +10,7 @@ namespace CustomJSONData {
 
 class CustomEventData {
 public:
-    std::string type;
+    std::string_view type;
     float time;
     rapidjson::Value *data;
 };

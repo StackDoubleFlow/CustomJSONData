@@ -43,8 +43,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
     )
 
 public:
-    rapidjson::Value *customData;
     std::vector<CustomJSONData::CustomEventData> *customEventsData;
+    std::shared_ptr<rapidjson::Document> doc;
+    std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_NoteData, GlobalNamespace::BeatmapSaveData::NoteData,
@@ -58,7 +59,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_NoteData, GlobalName
     )
 
 public:
-    rapidjson::Value *customData;
+    std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_ObstacleData, GlobalNamespace::BeatmapSaveData::ObstacleData,
@@ -72,7 +73,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_ObstacleData, Global
     )
 
 public:
-    rapidjson::Value *customData;
+    std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_EventData, GlobalNamespace::BeatmapSaveData::EventData,
@@ -86,6 +87,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_EventData, GlobalNam
     )
 
 public:
-    rapidjson::Value *customData;
+    std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
 
