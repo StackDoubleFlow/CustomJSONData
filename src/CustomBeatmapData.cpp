@@ -14,10 +14,32 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
-    CJDLogger::GetLogger().info("COPYING THE THINGY NOW %f", copy->prevAddedBeatmapObjectDataTime);
     BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    CJDLogger::GetLogger().info("DONE COPYING THE THINGY NOW");
     BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    copy->doc = this->doc;
+    copy->customData = this->customData;
+    copy->customEventsData = this->customEventsData;
+
+    return copy;
+}
+
+BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutBeatmapObjects() {
+    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
+
+    BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    copy->doc = this->doc;
+    copy->customData = this->customData;
+    copy->customEventsData = this->customEventsData;
+
+    return copy;
+}
+
+BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutEvents() {
+    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
+
+    BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     copy->doc = this->doc;
     copy->customData = this->customData;

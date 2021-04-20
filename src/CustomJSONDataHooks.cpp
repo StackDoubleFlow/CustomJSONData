@@ -216,7 +216,7 @@ float ProcessTime(BeatmapDataLoader *self, float bpmTime, int &bpmChangesDataIdx
     return bpmChangeData.bpmChangeStartTime + realTime;
 }
 
-template <class T>
+template <typename T>
 bool TimeCompare(T a, T b) {
     return (a->time < b->time);
 }
@@ -386,7 +386,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapData_AddBeatmapObjectData, void, BeatmapData *self, 
 }
 
 void CustomJSONData::InstallHooks() {
-    Logger& logger = CJDLogger::GetLogger();
+    auto logger = CJDLogger::GetLogger().WithContext("InstallHooks");
 
     // Install hooks
     INSTALL_HOOK_OFFSETLESS(logger, BeatmapData_AddBeatmapObjectData, il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1));

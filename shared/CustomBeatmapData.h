@@ -16,12 +16,15 @@
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
     DECLARE_CTOR(ctor, int numberOfLines);
 
-    DECLARE_OVERRIDE_METHOD(BeatmapData *, GetCopy, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopy"));
+    DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopy"));
+    DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopyWithoutBeatmapObjects, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopyWithoutBeatmapObjects"));
+    DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopyWithoutEvents, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopyWithoutEvents"));
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
+    // TODO: Clean this up in a Finalize method
     // std::vector<CustomJSONData::CustomEventData>
-    DECLARE_INSTANCE_FIELD(void *, customEventsData);
+    DECLARE_INSTANCE_FIELD(void*, customEventsData);
 
     REGISTER_FUNCTION(
         CJDLogger::GetLogger().debug("Registering CustomBeatmapData!");
@@ -31,6 +34,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
         // Register methods
         REGISTER_METHOD(GetCopy);
+        REGISTER_METHOD(GetCopyWithoutBeatmapObjects);
+        REGISTER_METHOD(GetCopyWithoutEvents);
 
         // Register fields
         REGISTER_FIELD(customData);
@@ -59,7 +64,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::B
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::ObstacleData,
     DECLARE_CTOR(ctor, float time, int lineIndex, GlobalNamespace::ObstacleType obstacleType, float duration, int width);
 
-    DECLARE_OVERRIDE_METHOD(BeatmapObjectData *, GetCopy, il2cpp_utils::FindMethod("", "BeatmapObjectData", "GetCopy"));
+    DECLARE_OVERRIDE_METHOD(BeatmapObjectData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapObjectData", "GetCopy"));
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
