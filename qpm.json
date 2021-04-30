@@ -8,7 +8,9 @@
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
-      "branchName": "main"
+      "branchName": "version-v0.6.0",
+      "soLink": "https://github.com/StackDoubleFlow/CustomJSONData/releases/download/v0.6.0/libcustom-json-data.so.so",
+      "debugSoLink": "https://github.com/StackDoubleFlow/CustomJSONData/releases/download/v0.6.0/debug_libcustom-json-data.so"
     }
   },
   "dependencies": [
