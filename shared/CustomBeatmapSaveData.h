@@ -14,9 +14,6 @@
 #include "CustomEventData.h"
 #include "CJDLogger.h"
 
-template<class T>
-using List = System::Collections::Generic::List_1<T>;
-
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData, GlobalNamespace::StandardLevelInfoSaveData,
     REGISTER_FUNCTION(
         CJDLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
@@ -25,10 +22,10 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData, GlobalNamespace::
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::BeatmapSaveData,
     DECLARE_CTOR(ctor, 
-                 List<GlobalNamespace::BeatmapSaveData::EventData*>* events, 
-                 List<GlobalNamespace::BeatmapSaveData::NoteData*>* notes, 
-                 List<GlobalNamespace::BeatmapSaveData::WaypointData*>* waypoints, 
-                 List<GlobalNamespace::BeatmapSaveData::ObstacleData*>* obstacles,
+                 System::Collections::Generic::List_1<GlobalNamespace::BeatmapSaveData::EventData*>* events, 
+                 System::Collections::Generic::List_1<GlobalNamespace::BeatmapSaveData::NoteData*>* notes, 
+                 System::Collections::Generic::List_1<GlobalNamespace::BeatmapSaveData::WaypointData*>* waypoints, 
+                 System::Collections::Generic::List_1<GlobalNamespace::BeatmapSaveData::ObstacleData*>* obstacles,
                  BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters);
 
     DECLARE_SIMPLE_DTOR();
