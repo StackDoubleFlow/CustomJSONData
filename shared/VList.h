@@ -108,16 +108,3 @@ struct il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<VList<Ty>> {
         return classof(System::Collections::Generic::List_1<Ty>*);
     }
 };
-
-// template <typename Ty>
-// struct std::decay<VList<Ty>> {
-//     using type = System::Collections::Generic::List_1<Ty>*;
-// };
-
-// namespace il2cpp_utils {
-//     template<typename Ty>
-//     void* ExtractValue(VList<Ty> arg) {
-//         Ty test = 4;
-//         return ExtractValue(static_cast<System::Collections::Generic::List_1<Ty>*&&>(arg));
-//     }
-// }
