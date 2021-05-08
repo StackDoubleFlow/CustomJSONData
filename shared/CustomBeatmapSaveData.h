@@ -17,12 +17,6 @@
 template<class T>
 using List = System::Collections::Generic::List_1<T>;
 
-DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData, GlobalNamespace::StandardLevelInfoSaveData,
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
-    )
-)
-
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::BeatmapSaveData,
     DECLARE_CTOR(ctor, 
                  List<GlobalNamespace::BeatmapSaveData::EventData*>* events, 
