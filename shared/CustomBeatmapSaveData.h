@@ -9,13 +9,9 @@
 #include "GlobalNamespace/BeatmapSaveData_WaypointData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_SpecialEventKeywordFiltersData.hpp"
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
-#include "System/Collections/Generic/List_1.hpp"
 
 #include "CustomEventData.h"
 #include "CJDLogger.h"
-
-template<class T>
-using List = System::Collections::Generic::List_1<T>;
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::BeatmapSaveData,
     DECLARE_CTOR(ctor, 
