@@ -8,4 +8,4 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk
 
-Compress-Archive -Path "./libs/arm64-v8a/libcustom-json-data.so", "./libs/arm64-v8a/libcustom-types.so", "./libs/arm64-v8a/libbeatsaber-hook_0_8_4.so", "./bmbfmod.json" -DestinationPath "./CustomJSONData.zip" -Update
+Compress-Archive -Path "./libs/arm64-v8a/libcustom-json-data.so", "./mod.json" -DestinationPath "./CustomJSONData.zip" -Update

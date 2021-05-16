@@ -9,16 +9,9 @@
 #include "GlobalNamespace/BeatmapSaveData_WaypointData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_SpecialEventKeywordFiltersData.hpp"
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
-#include "System/Collections/Generic/List_1.hpp"
 
 #include "CustomEventData.h"
 #include "CJDLogger.h"
-
-DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData, GlobalNamespace::StandardLevelInfoSaveData,
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
-    )
-)
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::BeatmapSaveData,
     DECLARE_CTOR(ctor, 

@@ -2,13 +2,11 @@
 
 using namespace GlobalNamespace;
 
-DEFINE_TYPE(CustomJSONData::CustomLevelInfoSaveData);
-
 void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData*>* events, 
-                                                  List<BeatmapSaveData::NoteData*>* notes, 
-                                                  List<BeatmapSaveData::WaypointData*>* waypoints, 
-                                                  List<BeatmapSaveData::ObstacleData*>* obstacles,
-                                                  BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters) {
+                                                 List<BeatmapSaveData::NoteData*>* notes, 
+                                                 List<BeatmapSaveData::WaypointData*>* waypoints, 
+                                                 List<BeatmapSaveData::ObstacleData*>* obstacles,
+                                                 BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters) {
     INVOKE_CTOR();
     this->events = events;
     this->notes = notes;
