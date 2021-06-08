@@ -31,7 +31,7 @@ LOCAL_EXPORT_C_INCLUDES := extern/beatsaber-hook
 LOCAL_SRC_FILES := extern/libbeatsaber-hook_1_3_3.so
 LOCAL_CPP_FEATURES += exceptions
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: codegen - version: 0.7.2
+# Creating prebuilt for dependency: codegen - version: 0.8.1
 include $(CLEAR_VARS)
 LOCAL_MODULE := codegen_0_8_1
 LOCAL_EXPORT_C_INCLUDES := extern/codegen
