@@ -139,7 +139,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
     auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(VList<BeatmapSaveData::SpecialEventsForKeyword*>());
 
     CJDLogger::GetLogger().debug("Parse root");
-    auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(events, notes, waypoints, obstacles, specialEventsKeywordFilters));
+    auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(*events, *notes, *waypoints, *obstacles, specialEventsKeywordFilters));
     CJDLogger::GetLogger().info("eventsSaveDataList pointer right after constructor: %p", saveData->events);
     saveData->doc = sharedDoc;
     saveData->customEventsData = new std::vector<CustomJSONData::CustomEventData>();

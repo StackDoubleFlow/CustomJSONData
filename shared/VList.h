@@ -72,6 +72,10 @@ public:
     VList(InnerTy *list)
         : inner(list) {};
 
+    InnerTy* operator*() const {
+        return inner;
+    }
+
     operator InnerTy*() const {
         return inner;
     }
