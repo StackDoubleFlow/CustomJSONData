@@ -14,11 +14,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject,
     DECLARE_DEFAULT_CTOR();
     DECLARE_SIMPLE_DTOR();
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering DocumentWrapper!");
-        REGISTER_DEFAULT_CTOR();
-        REGISTER_SIMPLE_DTOR();
-    )
 public:
     std::shared_ptr<rapidjson::Document> doc;
 )
@@ -27,11 +22,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
     DECLARE_DEFAULT_CTOR();
     DECLARE_SIMPLE_DTOR();
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering JSONWrapper!");
-        REGISTER_DEFAULT_CTOR();
-        REGISTER_SIMPLE_DTOR();
-    )
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> value;
     std::unordered_map<char, std::any> associatedData;

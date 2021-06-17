@@ -23,15 +23,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
 
     DECLARE_SIMPLE_DTOR();
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        REGISTER_SIMPLE_DTOR();
-    )
-
 public:
     std::vector<CustomJSONData::CustomEventData> *customEventsData;
     std::shared_ptr<rapidjson::Document> doc;
@@ -41,13 +32,6 @@ public:
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_NoteData, GlobalNamespace::BeatmapSaveData::NoteData,
     DECLARE_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer, GlobalNamespace::BeatmapSaveData::NoteType type, GlobalNamespace::NoteCutDirection cutDirection);
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_NoteData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-    )
-
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
@@ -55,26 +39,12 @@ public:
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_ObstacleData, GlobalNamespace::BeatmapSaveData::ObstacleData,
     DECLARE_CTOR(ctor, float time, int lineIndex, GlobalNamespace::ObstacleType type, float duration, int width);
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_ObstacleData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-    )
-
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_EventData, GlobalNamespace::BeatmapSaveData::EventData,
     DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapSaveData::BeatmapEventType type, int value);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapSaveData_EventData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-    )
 
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;

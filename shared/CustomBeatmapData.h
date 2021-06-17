@@ -25,39 +25,12 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     // TODO: Clean this up in a Finalize method
     // std::vector<CustomJSONData::CustomEventData>
     DECLARE_INSTANCE_FIELD(void*, customEventsData);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        // Register methods
-        REGISTER_METHOD(GetCopy);
-        REGISTER_METHOD(GetCopyWithoutBeatmapObjects);
-        REGISTER_METHOD(GetCopyWithoutEvents);
-
-        // Register fields
-        REGISTER_FIELD(customData);
-        REGISTER_FIELD(doc);
-        REGISTER_FIELD(customEventsData);
-    )
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BeatmapEventData,
     DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapEventType type, int value);
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomBeatmapEventData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-        
-        // Register fields
-        REGISTER_FIELD(customData);
-    )
 )
 
 
@@ -69,20 +42,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomObstacleData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        // Register methods
-        REGISTER_METHOD(GetCopy);
-
-        // Register fields
-        REGISTER_FIELD(customData);
-        REGISTER_FIELD(bpm);
-    )
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
@@ -93,20 +52,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomNoteData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        // Register methods
-        REGISTER_METHOD(GetCopy);
-
-        // Register fields
-        REGISTER_FIELD(customData);
-        REGISTER_FIELD(bpm);
-    )
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::WaypointData,
@@ -116,17 +61,4 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
 
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
-
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomWaypointData!");
-
-        // Register constructor
-        REGISTER_METHOD(ctor);
-
-        // Register methods
-        REGISTER_METHOD(GetCopy);
-
-        // Register fields
-        REGISTER_FIELD(bpm);
-    )
 )

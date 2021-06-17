@@ -2,7 +2,7 @@
 
 using namespace GlobalNamespace;
 
-DEFINE_TYPE(CustomJSONData::CustomBeatmapData);
+DEFINE_TYPE(CustomJSONData, CustomBeatmapData);
 
 void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
@@ -48,7 +48,7 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutEvents() {
     return copy;
 }
 
-DEFINE_TYPE(CustomJSONData::CustomBeatmapEventData);
+DEFINE_TYPE(CustomJSONData, CustomBeatmapEventData);
 
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType type, int value) {
     INVOKE_CTOR();
@@ -57,7 +57,7 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType t
     this->value = value;
 }
 
-DEFINE_TYPE(CustomJSONData::CustomObstacleData);
+DEFINE_TYPE(CustomJSONData, CustomObstacleData);
 
 void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ObstacleType obstacleType, float duration, int width) {
     INVOKE_CTOR();
@@ -75,7 +75,7 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
     return copy;
 }
 
-DEFINE_TYPE(CustomJSONData::CustomNoteData);
+DEFINE_TYPE(CustomJSONData, CustomNoteData);
 
 void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLayer noteLineLayer, NoteLineLayer startNoteLineLayer, ColorType colorType, NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote, int flipLineIndex, float flipYSide, float duration) {
     INVOKE_CTOR();
@@ -100,7 +100,7 @@ BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
     return copy;
 }
 
-DEFINE_TYPE(CustomJSONData::CustomWaypointData);
+DEFINE_TYPE(CustomJSONData, CustomWaypointData);
 
 void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalNamespace::NoteLineLayer noteLineLayer, GlobalNamespace::OffsetDirection offsetDirection) {
     INVOKE_CTOR();

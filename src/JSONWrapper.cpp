@@ -4,5 +4,5 @@
 
 using namespace CustomJSONData;
 
-DEFINE_TYPE(JSONWrapper);
-DEFINE_TYPE(DocumentWrapper);
+DEFINE_TYPE(CustomJSONData, JSONWrapper);
+DEFINE_TYPE(CustomJSONData, DocumentWrapper);

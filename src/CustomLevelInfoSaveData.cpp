@@ -3,7 +3,7 @@
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 
-DEFINE_TYPE(CustomLevelInfoSaveData);
+DEFINE_TYPE(CustomJSONData, CustomLevelInfoSaveData);
 
 void CustomLevelInfoSaveData::ctor(Il2CppString *songName, Il2CppString *songSubName, 
                  Il2CppString *songAuthorName, Il2CppString *levelAuthorNeame, float beatsPerMinute,
@@ -19,7 +19,7 @@ void CustomLevelInfoSaveData::ctor(Il2CppString *songName, Il2CppString *songSub
                                          difficultyBeatmapSets));
 }
 
-DEFINE_TYPE(CustomDifficultyBeatmap);
+DEFINE_TYPE(CustomJSONData, CustomDifficultyBeatmap);
 
 void CustomDifficultyBeatmap::ctor(Il2CppString *difficultyName, int difficultyRank, Il2CppString *beatmapFilename, 
                                    float noteJumpMovementSpeed, float noteJumpStartBeatOffset) {

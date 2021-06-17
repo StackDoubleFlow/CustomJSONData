@@ -21,11 +21,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomLevelInfoSaveData,
 
     DECLARE_SIMPLE_DTOR();
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomLevelInfoSaveData!");
-
-        REGISTER_METHOD(ctor);
-    )
 public:
     std::shared_ptr<rapidjson::Document> doc;
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;
@@ -36,11 +31,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomDifficultyBeatmap,
     
     DECLARE_CTOR(ctor, Il2CppString *difficultyName, int difficultyRank, Il2CppString *beatmapFilename, float noteJumpMovementSpeed, float noteJumpStartBeatOffset);
 
-    REGISTER_FUNCTION(
-        CJDLogger::GetLogger().debug("Registering CustomDifficultyBeatmap!");
-
-        REGISTER_METHOD(ctor);
-    )
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )

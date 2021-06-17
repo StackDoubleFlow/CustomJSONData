@@ -239,9 +239,7 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
     VList<BeatmapDataLoader::BpmChangeData> bpmChangesData;
     bpmChangesData.push_back(BeatmapDataLoader::BpmChangeData(0, 0, startBpm));
     BeatmapDataLoader::BpmChangeData bpmChangeData = bpmChangesData[0];
-    CJDLogger::GetLogger().info("eventsSaveData size: %i", eventsSaveData.size());
     for (auto *eventData : eventsSaveData) {
-        CJDLogger::GetLogger().info("eventData pointer %p", eventData);
         if (BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type) == BeatmapEventType::Event10) {
             float time = eventData->time;
             int value = eventData->value;
@@ -450,18 +448,6 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
 
-    // Register custom types
-    custom_types::Register::RegisterTypes<JSONWrapper,
-                                          DocumentWrapper,
-                                          CustomLevelInfoSaveData,
-                                          CustomDifficultyBeatmap,
-                                          CustomBeatmapSaveData,
-                                          CustomBeatmapSaveData_NoteData,
-                                          CustomBeatmapSaveData_ObstacleData,
-                                          CustomBeatmapSaveData_EventData,
-                                          CustomBeatmapData,
-                                          CustomBeatmapEventData,
-                                          CustomObstacleData,
-                                          CustomNoteData>();
+    custom_types::Register::AutoRegister();
 
 }
