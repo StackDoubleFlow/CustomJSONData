@@ -32,8 +32,6 @@ using namespace System::Collections::Generic;
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 
-template<typename T>
-using SList = System::Collections::Generic::List_1<T>;
 
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
@@ -230,10 +228,10 @@ bool TimeCompare(T a, T b) {
 }
 
 MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self,
-                SList<BeatmapSaveData::NoteData*>* notesSaveDataL,
-                SList<BeatmapSaveData::WaypointData*>* waypointsSaveDataL,
-                SList<BeatmapSaveData::ObstacleData*>* obstaclesSaveDataL,
-                SList<BeatmapSaveData::EventData*>* eventsSaveDataL,
+                List<BeatmapSaveData::NoteData*>* notesSaveDataL,
+                List<BeatmapSaveData::WaypointData*>* waypointsSaveDataL,
+                List<BeatmapSaveData::ObstacleData*>* obstaclesSaveDataL,
+                List<BeatmapSaveData::EventData*>* eventsSaveDataL,
                 BeatmapSaveData::SpecialEventKeywordFiltersData* environmentSpecialEventFilterData,
                 float startBpm, float shuffle, float shufflePeriod) {
     List_1<BeatmapSaveData::EventData*> *eventsSaveDataList = eventsSaveDataL;
