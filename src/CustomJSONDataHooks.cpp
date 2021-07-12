@@ -1,5 +1,6 @@
 #include "custom-types/shared/register.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
+#include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
 
 #include "GlobalNamespace/BeatmapSaveData.hpp"
@@ -31,6 +32,7 @@ using namespace System::Collections::Generic;
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 
+
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
     char* dat = static_cast<char*>(calloc(view.length() + 1, sizeof(char)));
@@ -43,8 +45,11 @@ std::string to_utf8(std::u16string_view view) {
 
 CustomBeatmapSaveData *cachedSaveData;
 
+#define FindMethodGetter(qualifiedTypeName, methodName) \
+::il2cpp_utils::il2cpp_type_check::MetadataGetter<#methodName, qualifiedTypeName, decltype(&qualifiedTypeName::methodName)>::get();
+
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
-MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
+MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
     CJDLogger::GetLogger().debug("Parsing json");
     // CRASH_UNLESS(nullptr);
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -178,7 +183,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapSaveData_DeserializeFromJSONString, BeatmapSaveData*
 
     CJDLogger::GetLogger().debug("Finished reading beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
-    CJDLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+    CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
     return saveData;
 }
@@ -222,9 +227,18 @@ bool TimeCompare(T a, T b) {
     return (a->time < b->time);
 }
 
-MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self, VList<BeatmapSaveData::NoteData *> notesSaveData, VList<BeatmapSaveData::WaypointData *> waypointsSaveData, 
-    VList<BeatmapSaveData::ObstacleData *> obstaclesSaveData, VList<BeatmapSaveData::EventData *> eventsSaveData, BeatmapSaveData::SpecialEventKeywordFiltersData *evironmentSpecialEventFilterData, float startBpm, float shuffle, float shufflePeriod) {
-    List_1<BeatmapSaveData::EventData*> *eventsSaveDataList = eventsSaveData;
+MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self,
+                List<BeatmapSaveData::NoteData*>* notesSaveDataL,
+                List<BeatmapSaveData::WaypointData*>* waypointsSaveDataL,
+                List<BeatmapSaveData::ObstacleData*>* obstaclesSaveDataL,
+                List<BeatmapSaveData::EventData*>* eventsSaveDataL,
+                BeatmapSaveData::SpecialEventKeywordFiltersData* environmentSpecialEventFilterData,
+                float startBpm, float shuffle, float shufflePeriod) {
+    List_1<BeatmapSaveData::EventData*> *eventsSaveDataList = eventsSaveDataL;
+    VList<BeatmapSaveData::NoteData*> notesSaveData(notesSaveDataL);
+    VList<BeatmapSaveData::WaypointData*> waypointsSaveData(waypointsSaveDataL);
+    VList<BeatmapSaveData::ObstacleData*> obstaclesSaveData(obstaclesSaveDataL);
+    VList<BeatmapSaveData::EventData*> eventsSaveData(eventsSaveDataL);
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -307,8 +321,8 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
         }
     }
 
-    for (int i = 0; i < eventsSaveData.size(); i++) {
-        auto *eventData = (CustomBeatmapSaveData_EventData*) eventsSaveData[i];
+    for (auto & i : eventsSaveData) {
+        auto *eventData = (CustomBeatmapSaveData_EventData*) i;
         float time = eventData->time;
         while (bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < time) {
             bpmChangesDataIdx++;
@@ -343,12 +357,12 @@ MAKE_HOOK_OFFSETLESS(GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDa
 
     CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
-    CJDLogger::GetLogger().debug("This took %ims", std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+    CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
 
     return beatmapData;
 }
 
-MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_Start, void, BeatmapObjectCallbackController *self) {
+MAKE_HOOK_MATCH(BeatmapObjectCallbackController_Start, &BeatmapObjectCallbackController::Start, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_Start(self);
 
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
@@ -356,7 +370,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_Start, void, BeatmapObjectC
     }
 }
 
-MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapObjectCallbackController *self) {
+MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_LateUpdate(self);
 
     auto *customBeatmapData = ((CustomBeatmapData*) self->beatmapData);
@@ -378,7 +392,9 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectCallbackController_LateUpdate, void, BeatmapOb
     }
 }
 
-MAKE_HOOK_OFFSETLESS(StandardLevelInfoSaveData_DeserializeFromJSONString, StandardLevelInfoSaveData*, Il2CppString *stringData) {
+
+
+MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLevelInfoSaveData::DeserializeFromJSONString, StandardLevelInfoSaveData*, Il2CppString *stringData) {
     auto *original = StandardLevelInfoSaveData_DeserializeFromJSONString(stringData);
     
     ::Array<StandardLevelInfoSaveData::DifficultyBeatmapSet*> *customBeatmapSets = 
@@ -430,7 +446,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelInfoSaveData_DeserializeFromJSONString, Standa
 }
 
 
-MAKE_HOOK_OFFSETLESS(BeatmapData_AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
+MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
     if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
         CJDLogger::GetLogger().info("AddBeatmapObjectData time %f < prev %f", beatmapObjectData->time, self->prevAddedBeatmapObjectDataTime);
     }
@@ -441,12 +457,12 @@ void CustomJSONData::InstallHooks() {
     auto logger = CJDLogger::GetLogger().WithContext("InstallHooks");
 
     // Install hooks
-    INSTALL_HOOK_OFFSETLESS(logger, BeatmapData_AddBeatmapObjectData, il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1));
-    INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_Start, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "Start", 0));
-    INSTALL_HOOK_OFFSETLESS(logger, BeatmapObjectCallbackController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectCallbackController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(logger, StandardLevelInfoSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "StandardLevelInfoSaveData", "DeserializeFromJSONString", 1));
-    INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString, il2cpp_utils::FindMethodUnsafe("", "BeatmapSaveData", "DeserializeFromJSONString", 1));
-    INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData, il2cpp_utils::FindMethodUnsafe("", "BeatmapDataLoader", "GetBeatmapDataFromBeatmapSaveData", 8));
+    INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
+    INSTALL_HOOK(logger, BeatmapObjectCallbackController_Start)
+    INSTALL_HOOK(logger, BeatmapObjectCallbackController_LateUpdate)
+    INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
+    INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
+    INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
 
     custom_types::Register::AutoRegister();
 
