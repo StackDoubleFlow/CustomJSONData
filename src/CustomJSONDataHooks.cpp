@@ -174,6 +174,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                 rapidjson::Value *data = &eventValue["_data"];
                 saveData->customEventsData->push_back({ type, time, data });
             }
+
+            CJDLogger::GetLogger().debug("Parsed %lu custom events", saveData->customEventsData->size());
         }
     }
 
