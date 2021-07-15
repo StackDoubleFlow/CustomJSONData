@@ -307,8 +307,8 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             auto beatmapObjectData2 = (CustomObstacleData*) il2cpp_functions::object_new(obstacleDataClass);
             il2cpp_utils::RunMethod<Il2CppObject*, false>(beatmapObjectData2, obstacleDataCtor, obstacleTime, obstacleData->lineIndex, obstacleData->type, self->GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
 
-            // TODO: Move this into constructor
             JSONWrapper *customData = (JSONWrapper*) il2cpp_functions::object_new(jsonWrapperClass);
+            customData->__ctor();
             customData->value = obstacleData->customData;
             beatmapObjectData2->customData = customData;
             beatmapObjectData2->bpm = startBpm;
