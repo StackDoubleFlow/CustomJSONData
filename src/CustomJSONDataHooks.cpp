@@ -321,8 +321,8 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         }
     }
 
-    for (auto & i : eventsSaveData) {
-        auto *eventData = (CustomBeatmapSaveData_EventData*) i;
+    for (auto& regularEventData : eventsSaveData) {
+        auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(regularEventData);
         float time = eventData->time;
         while (bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < time) {
             bpmChangesDataIdx++;
