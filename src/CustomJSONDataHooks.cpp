@@ -32,7 +32,6 @@ using namespace System::Collections::Generic;
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 
-
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
     char* dat = static_cast<char*>(calloc(view.length() + 1, sizeof(char)));
@@ -51,7 +50,6 @@ CustomBeatmapSaveData *cachedSaveData;
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
 MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
     CJDLogger::GetLogger().debug("Parsing json");
-    // CRASH_UNLESS(nullptr);
     auto startTime = std::chrono::high_resolution_clock::now();
 
     std::string str = to_utf8(csstrtostr(stringData));
@@ -311,7 +309,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
 
             // TODO: Move this into constructor
             JSONWrapper *customData = (JSONWrapper*) il2cpp_functions::object_new(jsonWrapperClass);
-            customData->__ctor();
             customData->value = obstacleData->customData;
             beatmapObjectData2->customData = customData;
             beatmapObjectData2->bpm = startBpm;
@@ -346,7 +343,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     beatmapData->ProcessRemainingData();
 
     beatmapData->customEventsData = cachedSaveData->customEventsData;
-    std::vector<CustomEventData> *customEventsData = (std::vector<CustomEventData>*) beatmapData->customEventsData;
+    std::vector<CustomEventData> *customEventsData = beatmapData->getCustomEventsData();
     std::sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData& a, CustomEventData& b) {
         return a.time < b.time;
     });
@@ -373,8 +370,8 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_Start, &BeatmapObjectCallbackCon
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_LateUpdate(self);
 
-    auto *customBeatmapData = ((CustomBeatmapData*) self->beatmapData);
-    auto *customEventsData = (std::vector<CustomEventData>*) customBeatmapData->customEventsData;
+    auto *customBeatmapData = reinterpret_cast<CustomBeatmapData*>(self->beatmapData);
+    auto *customEventsData = customBeatmapData->getCustomEventsData();
     
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
         while (callbackData.nextEventIndex < customEventsData->size()) {
