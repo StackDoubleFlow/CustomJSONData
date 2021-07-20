@@ -464,5 +464,4 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
 
     custom_types::Register::AutoRegister();
-
 }

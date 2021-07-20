@@ -8,6 +8,6 @@ buildScript="$NDKPath/build/ndk-build"
 mkdir QMODBuild
 cp "./mod.json" "./libs/arm64-v8a/libcustom-json-data.so" ./QMODBuild
 cd QMODBuild
-zip "../CustomJSONData.zip" *
+zip "../CustomJSONData.qmod" *
 cd ..
 rm -r QMODBuild
