@@ -38,7 +38,7 @@ LOCAL_EXPORT_C_INCLUDES := extern/codegen
 LOCAL_SRC_FILES := extern/libcodegen_0_12_5.so
 LOCAL_CPP_FEATURES += exceptions
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: custom-types - version: 0.12.5
+# Creating prebuilt for dependency: custom-types - version: 0.12.6
 include $(CLEAR_VARS)
 LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
@@ -79,7 +79,7 @@ LOCAL_SHARED_LIBRARIES += songloader
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_STATIC_LIBRARIES += cryptopp
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.3.1"'
+LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.11.2"'
 LOCAL_CPPFLAGS += -std=c++2a
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
