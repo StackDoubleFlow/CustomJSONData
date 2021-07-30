@@ -466,7 +466,7 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
         for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {
             auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmapSet->difficultyBeatmaps->values[j]);
-            if (!customBeatmap || customBeatmap->beatmapFilename)
+            if (!customBeatmap || !customBeatmap->beatmapFilename)
                 continue;
 
 
