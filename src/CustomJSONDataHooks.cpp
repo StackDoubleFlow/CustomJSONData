@@ -465,7 +465,11 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
     for (int i = 0; i < customSaveData->difficultyBeatmapSets->Length(); i++) {
         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
         for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {
-            auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmapSet->difficultyBeatmaps->values[i]);
+            auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmapSet->difficultyBeatmaps->values[j]);
+            if (!customBeatmap || customBeatmap->beatmapFilename)
+                continue;
+
+
             std::string beatmapFilename = to_utf8(csstrtostr(customBeatmap->beatmapFilename));
             if (beatmapFilename == filename) {
                 levelCustomData->value = customBeatmap->customData;
