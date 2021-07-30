@@ -2,6 +2,7 @@
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "songloader/shared/API.hpp"
 
 #include "GlobalNamespace/BeatmapSaveData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_NoteData.hpp"
@@ -452,6 +453,28 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
 
+void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
+    auto *customSaveData = reinterpret_cast<CustomLevelInfoSaveData *>(standardLevelInfoSaveData);
+    auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(beatmapData);
+
+    JSONWrapper *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    beatmapCustomData->value = customSaveData->customData;
+    customBeatmapData->beatmapCustomData = beatmapCustomData;
+
+    JSONWrapper *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    for (int i = 0; i < customSaveData->difficultyBeatmapSets->Length(); i++) {
+        StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
+        for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {
+            auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmapSet->difficultyBeatmaps->values[i]);
+            std::string beatmapFilename = to_utf8(csstrtostr(customBeatmap->beatmapFilename));
+            if (beatmapFilename == filename) {
+                levelCustomData->value = customBeatmap->customData;
+            }
+        }
+    }
+    customBeatmapData->levelCustomData = levelCustomData;
+}
+
 void CustomJSONData::InstallHooks() {
     auto logger = CJDLogger::GetLogger().WithContext("InstallHooks");
 
@@ -462,6 +485,8 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
+
+    RuntimeSongLoader::API::AddBeatmapDataLoadedEvent(BeatmapDataLoadedEvent);
 
     custom_types::Register::AutoRegister();
 }
