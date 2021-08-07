@@ -1,7 +1,5 @@
 #include "custom-types/shared/register.hpp"
-#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
-#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
 #include "songloader/shared/API.hpp"
 
 #include "GlobalNamespace/BeatmapSaveData.hpp"
@@ -146,7 +144,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(*events, *notes, *waypoints, *obstacles, specialEventsKeywordFilters));
     CJDLogger::GetLogger().info("eventsSaveDataList pointer right after constructor: %p", saveData->events);
     saveData->doc = sharedDoc;
-    saveData->customEventsData = new std::vector<CustomJSONData::CustomEventData>();
+    saveData->customEventsData = std::shared_ptr<std::vector<CustomEventData>>(new std::vector<CustomJSONData::CustomEventData>());
     if (doc.HasMember("_customData")) {
         saveData->customData = doc["_customData"];
         rapidjson::Value& customData = *saveData->customData;
@@ -346,7 +344,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     beatmapData->ProcessRemainingData();
 
     beatmapData->customEventsData = cachedSaveData->customEventsData;
-    std::vector<CustomEventData> *customEventsData = beatmapData->getCustomEventsData();
+    auto &customEventsData = beatmapData->customEventsData;
     std::sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData& a, CustomEventData& b) {
         return a.time < b.time;
     });
@@ -374,7 +372,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     BeatmapObjectCallbackController_LateUpdate(self);
 
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData*>(self->beatmapData);
-    auto *customEventsData = customBeatmapData->getCustomEventsData();
+    auto &customEventsData = customBeatmapData->customEventsData;
     
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
         while (callbackData.nextEventIndex < customEventsData->size()) {

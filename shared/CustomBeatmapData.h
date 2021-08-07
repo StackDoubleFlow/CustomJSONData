@@ -15,7 +15,7 @@
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
     DECLARE_CTOR(ctor, int numberOfLines);
-    DECLARE_DTOR(dtor);
+    DECLARE_SIMPLE_DTOR();
 
     DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopy"));
     DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopyWithoutBeatmapObjects, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopyWithoutBeatmapObjects"));
@@ -25,12 +25,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, beatmapCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, levelCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
-    DECLARE_INSTANCE_FIELD(void*, customEventsData);
 
 public:
-    std::vector<CustomJSONData::CustomEventData>* getCustomEventsData() const {
-        return reinterpret_cast<std::vector<CustomJSONData::CustomEventData>*>(customEventsData);
-    }
+    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BeatmapEventData,

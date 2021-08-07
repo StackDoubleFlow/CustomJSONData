@@ -1,6 +1,6 @@
 #pragma once
 
-#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "custom-types/shared/macros.hpp"
 #include "System/Object.hpp"
 

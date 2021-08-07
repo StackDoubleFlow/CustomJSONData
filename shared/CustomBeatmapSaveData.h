@@ -1,7 +1,7 @@
 #pragma once
 
 #include "custom-types/shared/macros.hpp"
-#include "beatsaber-hook/shared/rapidjson/include/rapidjson/document.h"
+#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "GlobalNamespace/BeatmapSaveData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_NoteData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_ObstacleData.hpp"
@@ -24,7 +24,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData, GlobalNamespace::Be
     DECLARE_SIMPLE_DTOR();
 
 public:
-    std::vector<CustomJSONData::CustomEventData> *customEventsData;
+    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc;
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;
 )

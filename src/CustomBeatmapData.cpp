@@ -11,10 +11,6 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     this->prevAddedBeatmapObjectDataTime = -std::numeric_limits<float>::infinity();
 }
 
-void CustomJSONData::CustomBeatmapData::dtor() {
-    delete getCustomEventsData();
-}
-
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
