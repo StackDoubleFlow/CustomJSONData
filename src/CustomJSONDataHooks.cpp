@@ -382,7 +382,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
             }
 
             if (customEventData->time >= self->spawningStartTime || callbackData.callIfBeforeStartTime) {
-                callbackData.callback(customEventData);
+                callbackData.callback(self, customEventData);
             }
 
             callbackData.nextEventIndex++;

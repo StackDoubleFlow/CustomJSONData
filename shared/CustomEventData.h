@@ -2,9 +2,12 @@
 
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "custom-types/shared/macros.hpp"
-#include "System/Object.hpp"
 
 #include "CJDLogger.h"
+
+namespace GlobalNamespace {
+class BeatmapObjectCallbackController;
+}
 
 namespace CustomJSONData {
 
@@ -15,9 +18,9 @@ public:
     rapidjson::Value *data;
 };
 
-
 struct CustomEventCallbackData {
-    void (*callback)(CustomJSONData::CustomEventData *);
+    void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
+                     CustomJSONData::CustomEventData *);
     float aheadTime;
     bool callIfBeforeStartTime;
     int nextEventIndex;
@@ -27,8 +30,10 @@ class CustomEventCallbacks {
 public:
     static std::vector<CustomEventCallbackData> customEventCallbacks;
 
-    static void AddCustomEventCallback(void (*callback)(CustomJSONData::CustomEventData *), float aheadTime = 0, bool callIfBeforeStartTime = false);
-
+    static void AddCustomEventCallback(
+        void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
+                         CustomJSONData::CustomEventData *),
+        float aheadTime = 0, bool callIfBeforeStartTime = false);
 };
 
 } // end namespace CustomJSONData
