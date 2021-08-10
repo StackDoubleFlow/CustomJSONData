@@ -1,6 +1,4 @@
-$NDKPath = Get-Content $PSScriptRoot/ndkpath.txt
-
-$buildScript = "$NDKPath/build/ndk-build"
+$buildScript = "$env:ANDROID_NDK_LATEST_HOME/build/ndk-build"
 if (-not ($PSVersionTable.PSEdition -eq "Core")) {
     $buildScript += ".cmd"
 }

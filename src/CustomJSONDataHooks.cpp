@@ -292,10 +292,10 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 11);
 
     auto *noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData[notesSaveDataIdx] : nullptr;
-    auto *waypointData = (notesSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[notesSaveDataIdx] : nullptr;
+    auto *waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
     auto *obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData*) obstaclesSaveData[obstaclesSaveDataIdx] : nullptr;
 
-    auto ProcessTime = [&bpmChangesDataIdx, &bpmChangesData, shuffle, shufflePeriod](float bpmTime) {
+    auto ProcessTime = [&](float bpmTime) {
         for (; bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < bpmTime; bpmChangesDataIdx++)	{}
         BeatmapDataLoader::BpmChangeData bpmChangeData = bpmChangesData[bpmChangesDataIdx];
         return bpmChangeData.bpmChangeStartTime + GetRealTimeFromBPMTime(bpmTime - bpmChangeData.bpmChangeStartBpmTime, bpmChangeData.bpm, shuffle, shufflePeriod);
@@ -318,14 +318,15 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             customNoteData->customData = customData;
             customNoteData->bpm = startBpm;
 
-            notesSaveDataIdx++;
             beatmapData->AddBeatmapObjectData(customNoteData);
+            notesSaveDataIdx++;
             noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData[notesSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Waypoint) {
             float time = ProcessTime(noteData->time);
             WaypointData *beatmapObjectData = WaypointData::New_ctor(time, waypointData->lineIndex, waypointData->lineLayer, waypointData->offsetDirection);
+            beatmapData->AddBeatmapObjectData(beatmapObjectData);
             waypointsSaveDataIdx++;
-            waypointData = (notesSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[notesSaveDataIdx] : nullptr;
+            waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Obstacle) {
             float time = ProcessTime(obstacleData->time);
 
