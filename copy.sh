@@ -1,8 +1,6 @@
 #!/bin/bash
 
-NDKPath=`cat ndkpath.txt`
-
-buildScript="$NDKPath/build/ndk-build"
+buildScript="$ANDROID_NDK_HOME/build/ndk-build"
 
 ./$buildScript NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk NDK_APPLICATION_MK=./Application.mk -j8
 adb push libs/arm64-v8a/libcustom-json-data.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libcustom-json-data.so

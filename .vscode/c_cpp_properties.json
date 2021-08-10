@@ -14,11 +14,11 @@
         "${workspaceFolder}/extern",
         "${workspaceFolder}/extern/codegen/include",
         "${workspaceFolder}/extern/libil2cpp/il2cpp/libil2cpp",
-        "${workspaceFolder}/../../android-ndk-r22b/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include",
-        "${workspaceFolder}/../../android-ndk-r22b/sources/cxx-stl/llvm-libc++/include",
-        "${workspaceFolder}/../../android-ndk-r22b/sources/cxx-stl/llvm-libc++abi/include"
+        "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include",
+        "${ANDROID_NDK_HOME}/sources/cxx-stl/llvm-libc++/include",
+        "${ANDROID_NDK_HOME}/sources/cxx-stl/llvm-libc++abi/include"
       ],
-      "compilerPath": "${workspaceFolder}/../../android-ndk-r22b/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++",
+      "compilerPath": "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++",
       "cStandard": "gnu17",
       "cppStandard": "gnu++20",
       "intelliSenseMode": "clang-x64"
