@@ -1,4 +1,4 @@
-$buildScript = "$ANDROID_NDK_HOME/build/ndk-build"
+$buildScript = "$env:ANDROID_NDK_HOME/build/ndk-build"
 if (-not ($PSVersionTable.PSEdition -eq "Core")) {
     $buildScript += ".cmd"
 }
