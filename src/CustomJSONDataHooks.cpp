@@ -230,9 +230,18 @@ bool TimeCompare(T a, T b) {
 BeatmapObjectType GetMinTime(BeatmapSaveData::NoteData *note, BeatmapSaveData::WaypointData *waypoint, BeatmapSaveData::ObstacleData *obstacle) {
     float time = std::numeric_limits<float>::infinity();
     BeatmapObjectType type = BeatmapObjectType::None;
-    if (note && note->time < time) type = BeatmapObjectType::Note;
-    if (waypoint && waypoint->time < time) type = BeatmapObjectType::Waypoint;
-    if (obstacle && obstacle->time < time) type = BeatmapObjectType::Obstacle;
+    if (note && note->time < time) {
+        type = BeatmapObjectType::Note;
+        time = note->time;
+    }
+    if (waypoint && waypoint->time < time) {
+        type = BeatmapObjectType::Waypoint;
+        time = waypoint->time;
+    }
+    if (obstacle && obstacle->time < time) {
+        type = BeatmapObjectType::Obstacle;
+        time = obstacle->time;
+    }
     return type;
 }
 
@@ -305,6 +314,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
             float time = ProcessTime(noteData->time);
+            CJDLogger::GetLogger().debug("Adding note with time %f, %f", noteData->time, time);
             ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
@@ -329,6 +339,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Obstacle) {
             float time = ProcessTime(obstacleData->time);
+            CJDLogger::GetLogger().debug("Adding obstacle with time %f, %f", obstacleData->time, time);
 
             auto customObstacleData = (CustomObstacleData*) il2cpp_functions::object_new(obstacleDataClass);
             il2cpp_utils::RunMethodThrow<void, false>(customObstacleData, obstacleDataCtor, time, obstacleData->lineIndex, obstacleData->type, GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
@@ -384,6 +395,12 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
     CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+    
+    auto *objects = reinterpret_cast<System::Collections::IEnumerator *>(beatmapData->get_beatmapObjectsData());
+    while (objects->MoveNext()) {
+        auto *object = reinterpret_cast<BeatmapObjectData *>(objects->get_Current());
+        CJDLogger::GetLogger().info("Final object: %f", object->time);
+    }
 
     return beatmapData;
 }
@@ -473,8 +490,10 @@ MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLe
 
 
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
+    CJDLogger::GetLogger().info("AddBeatmapObjectData at %f", beatmapObjectData->time);
     if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
         CJDLogger::GetLogger().info("AddBeatmapObjectData time %f < prev %f", beatmapObjectData->time, self->prevAddedBeatmapObjectDataTime);
+        CJDLogger::GetLogger().Backtrace(10);
     }
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
