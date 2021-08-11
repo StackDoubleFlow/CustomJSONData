@@ -44,13 +44,13 @@ LOCAL_MODULE := custom-types
 LOCAL_EXPORT_C_INCLUDES := extern/custom-types
 LOCAL_SRC_FILES := extern/libcustom-types.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: songloader - version: 0.6.1
+# Creating prebuilt for dependency: songloader - version: 0.6.2
 include $(CLEAR_VARS)
 LOCAL_MODULE := songloader
 LOCAL_EXPORT_C_INCLUDES := extern/songloader
 LOCAL_SRC_FILES := extern/libsongloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: questui - version: 0.10.1
+# Creating prebuilt for dependency: questui - version: 0.10.2
 include $(CLEAR_VARS)
 LOCAL_MODULE := questui
 LOCAL_EXPORT_C_INCLUDES := extern/questui
@@ -79,7 +79,7 @@ LOCAL_SHARED_LIBRARIES += songloader
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_STATIC_LIBRARIES += cryptopp
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.3.1"'
+LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.11.6"'
 LOCAL_CPPFLAGS += -std=c++2a
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
