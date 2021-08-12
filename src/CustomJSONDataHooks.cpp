@@ -395,12 +395,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     CJDLogger::GetLogger().debug("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
     CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-    
-    auto *objects = reinterpret_cast<System::Collections::IEnumerator *>(beatmapData->get_beatmapObjectsData());
-    while (objects->MoveNext()) {
-        auto *object = reinterpret_cast<BeatmapObjectData *>(objects->get_Current());
-        CJDLogger::GetLogger().info("Final object: %f", object->time);
-    }
 
     return beatmapData;
 }
@@ -490,10 +484,8 @@ MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLe
 
 
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
-    CJDLogger::GetLogger().info("AddBeatmapObjectData at %f", beatmapObjectData->time);
     if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
         CJDLogger::GetLogger().info("AddBeatmapObjectData time %f < prev %f", beatmapObjectData->time, self->prevAddedBeatmapObjectDataTime);
-        CJDLogger::GetLogger().Backtrace(10);
     }
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
