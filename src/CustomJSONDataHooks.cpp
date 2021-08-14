@@ -407,8 +407,13 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_Start, &BeatmapObjectCallbackCon
 
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_LateUpdate(self);
-
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData*>(self->beatmapData);
+    
+    auto *customBeatmapDataClass = classof(CustomBeatmapData *);
+    if (!customBeatmapData || customBeatmapData->klass != customBeatmapDataClass) {
+        return;
+    }
+
     auto &customEventsData = customBeatmapData->customEventsData;
     
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
