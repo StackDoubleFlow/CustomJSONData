@@ -314,7 +314,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
             float time = ProcessTime(noteData->time);
-            CJDLogger::GetLogger().debug("Adding note with time %f, %f", noteData->time, time);
             ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
@@ -339,7 +338,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Obstacle) {
             float time = ProcessTime(obstacleData->time);
-            CJDLogger::GetLogger().debug("Adding obstacle with time %f, %f", obstacleData->time, time);
 
             auto customObstacleData = (CustomObstacleData*) il2cpp_functions::object_new(obstacleDataClass);
             il2cpp_utils::RunMethodThrow<void, false>(customObstacleData, obstacleDataCtor, time, obstacleData->lineIndex, obstacleData->type, GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
