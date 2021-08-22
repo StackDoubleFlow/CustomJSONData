@@ -12,9 +12,16 @@
 #include "GlobalNamespace/BeatmapDataLoader_BpmChangeData.hpp"
 #include "GlobalNamespace/BeatmapObjectType.hpp"
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
+#include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
+#include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
 #include "GlobalNamespace/BeatmapObjectCallbackController.hpp"
 #include "GlobalNamespace/IAudioTimeSource.hpp"
 #include "System/Comparison_1.hpp"
+#include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
+#include "System/Collections/Generic/Dictionary_2.hpp"
+#include "System/Collections/Generic/KeyValuePair_2.hpp"
+#include "System/Collections/Generic/HashSet_1.hpp"
+#include "System/Linq/Enumerable.hpp"
 
 #include "CustomLevelInfoSaveData.h"
 #include "CustomBeatmapSaveData.h"
@@ -245,6 +252,55 @@ BeatmapObjectType GetMinTime(BeatmapSaveData::NoteData *note, BeatmapSaveData::W
     return type;
 }
 
+MAKE_HOOK_MATCH(BeatmapDataMirrorTransform_CreateTransformedData, &BeatmapDataMirrorTransform::CreateTransformedData, GlobalNamespace::IReadonlyBeatmapData*, GlobalNamespace::IReadonlyBeatmapData* beatmapData) {
+    int numberOfLines = beatmapData->get_numberOfLines();
+    BeatmapData* beatmapData2;
+    if (il2cpp_utils::AssignableFrom<CustomJSONData::CustomBeatmapData*>(reinterpret_cast<Il2CppObject*>(beatmapData)->klass)) {
+        beatmapData2 = reinterpret_cast<CustomJSONData::CustomBeatmapData*>(beatmapData)->BaseCopy(); //CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapData*>(numberOfLines)); // crashes with Tracks
+    } else {
+        beatmapData2 = BeatmapData::New_ctor(numberOfLines);
+    }
+
+
+
+    auto beatmapObjectsData = System::Collections::Generic::List_1<GlobalNamespace::BeatmapObjectData*>::New_ctor(beatmapData->get_beatmapObjectsData());
+    auto beatmapEventsData = System::Collections::Generic::List_1<GlobalNamespace::BeatmapEventData*>::New_ctor(reinterpret_cast<IEnumerable_1<GlobalNamespace::BeatmapEventData*>*>(beatmapData->get_beatmapEventsData()));
+
+    for (BeatmapObjectData* beatmapObjectData : VList(beatmapObjectsData))
+    {
+        BeatmapObjectData* copy = beatmapObjectData->GetCopy();
+        BeatmapDataMirrorTransform::MirrorTransformBeatmapObject(copy, numberOfLines);
+        beatmapData2->AddBeatmapObjectData(copy);
+    }
+    for (BeatmapEventData* beatmapEventData : VList(beatmapEventsData))
+    {
+        if (BeatmapEventTypeExtensions::IsRotationEvent(beatmapEventData->type))
+        {
+            int value = 7 - beatmapEventData->value;
+            beatmapData2->AddBeatmapEventData(BeatmapEventData::New_ctor(beatmapEventData->time, beatmapEventData->type, value));
+        }
+        else
+        {
+            beatmapData2->AddBeatmapEventData(beatmapEventData);
+        }
+    }
+    using keyValuePairList = System::Collections::Generic::List_1<Il2CppString*>;
+    using dict = System::Collections::Generic::Dictionary_2<Il2CppString*, System::Collections::Generic::HashSet_1<GlobalNamespace::BeatmapEventType>*>*;
+
+    // Creating a list from constructor doesn't work
+    auto availableSpecialEventsPerKeywordDictionary = reinterpret_cast<dict>(beatmapData->get_availableSpecialEventsPerKeywordDictionary());
+    auto availableSpecialEventsPerKeywordDictionaryKeys = keyValuePairList::New_ctor(reinterpret_cast<IEnumerable_1<Il2CppString*>*>(availableSpecialEventsPerKeywordDictionary->get_Keys()));
+
+    for (int i = 0; i < availableSpecialEventsPerKeywordDictionary->get_Count(); i++)
+    {
+        auto key = availableSpecialEventsPerKeywordDictionaryKeys->get_Item(i);
+        auto value = availableSpecialEventsPerKeywordDictionary->get_Item(key);
+        beatmapData2->AddAvailableSpecialEventsPerKeyword(key, value);
+    }
+    CJDLogger::GetLogger().debug("Beatmap klass %s", il2cpp_utils::ClassStandardName(beatmapData2->klass).c_str());
+    return reinterpret_cast<IReadonlyBeatmapData *>(beatmapData2);
+}
+
 MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData, BeatmapData *, BeatmapDataLoader *self,
                 List<BeatmapSaveData::NoteData*>* notesSaveDataL,
                 List<BeatmapSaveData::WaypointData*>* waypointsSaveDataL,
@@ -415,7 +471,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     }
 
     auto &customEventsData = customBeatmapData->customEventsData;
-    
+
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
         while (callbackData.nextEventIndex < customEventsData->size()) {
             CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
@@ -529,6 +585,7 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
+    INSTALL_HOOK_ORIG(logger, BeatmapDataMirrorTransform_CreateTransformedData)
 
     RuntimeSongLoader::API::AddBeatmapDataLoadedEvent(BeatmapDataLoadedEvent);
 
