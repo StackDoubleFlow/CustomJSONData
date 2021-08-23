@@ -24,6 +24,27 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
     return copy;
 }
 
+
+// TODO: Move all copy to base copy?
+BeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
+//    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsDataCopy;
+//    customEventsDataCopy->reserve(customEventsData->size());
+//
+//    for (auto& customEventsData : *customEventsData) {
+//        customEventsDataCopy->emplace_back(customEventsData);
+//    }
+
+    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
+
+    copy->doc = this->doc;
+    copy->customEventsData = customEventsData;
+    copy->customData = customData;
+    copy->beatmapCustomData = beatmapCustomData;
+    copy->levelCustomData = levelCustomData;
+
+    return copy;
+}
+
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutBeatmapObjects() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
