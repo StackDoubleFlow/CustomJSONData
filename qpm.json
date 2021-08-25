@@ -34,7 +34,9 @@
     {
       "id": "songloader",
       "versionRange": "^0.6.1",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     }
   ],
   "additionalData": {}
