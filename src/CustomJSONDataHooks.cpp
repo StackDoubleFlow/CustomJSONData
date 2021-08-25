@@ -1,6 +1,8 @@
 #include "custom-types/shared/register.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "songloader/shared/API.hpp"
+#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+#include "pinkcore/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
 #include "GlobalNamespace/BeatmapSaveData.hpp"
 #include "GlobalNamespace/BeatmapSaveData_NoteData.hpp"
@@ -23,7 +25,6 @@
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Linq/Enumerable.hpp"
 
-#include "CustomLevelInfoSaveData.h"
 #include "CustomBeatmapSaveData.h"
 #include "CustomBeatmapData.h"
 #include "CustomEventData.h"
@@ -488,60 +489,6 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     }
 }
 
-
-/*
-MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLevelInfoSaveData::DeserializeFromJSONString, StandardLevelInfoSaveData*, Il2CppString *stringData) {
-    auto *original = StandardLevelInfoSaveData_DeserializeFromJSONString(stringData);
-    
-    ::Array<StandardLevelInfoSaveData::DifficultyBeatmapSet*> *customBeatmapSets = 
-        ::Array<StandardLevelInfoSaveData::DifficultyBeatmapSet*>::NewLength(original->difficultyBeatmapSets->Length());
-
-    CustomLevelInfoSaveData *customSaveData = CRASH_UNLESS(il2cpp_utils::New<CustomLevelInfoSaveData*>(original->songName, 
-        original->songSubName, original->songAuthorName, original->levelAuthorName, original->beatsPerMinute, original->songTimeOffset, 
-        original->shuffle, original->shufflePeriod, original->previewStartTime, original->previewDuration, original->songFilename, 
-        original->coverImageFilename, original->environmentName, original->allDirectionsEnvironmentName, customBeatmapSets));
-    
-    std::string str = to_utf8(csstrtostr(stringData));
-    
-    std::shared_ptr<rapidjson::Document> sharedDoc = std::make_shared<rapidjson::Document>();
-    customSaveData->doc = sharedDoc;
-
-    rapidjson::Document& doc = *sharedDoc;
-    doc.Parse(str.c_str());
-
-    if (doc.HasMember("_customData")) {
-        customSaveData->customData = doc["_customData"];
-    }
-
-    rapidjson::Value& beatmapSetsArr = doc["_difficultyBeatmapSets"];
-
-    for (rapidjson::SizeType i = 0; i < beatmapSetsArr.Size(); i++) {
-        rapidjson::Value& beatmapSetJson = beatmapSetsArr[i];
-        StandardLevelInfoSaveData::DifficultyBeatmapSet *standardBeatmapSet = original->difficultyBeatmapSets->values[i];
-        ::Array<StandardLevelInfoSaveData::DifficultyBeatmap*> *customBeatmaps = 
-            ::Array<StandardLevelInfoSaveData::DifficultyBeatmap*>::NewLength(standardBeatmapSet->difficultyBeatmaps->Length());
-
-        for (rapidjson::SizeType j = 0; j < standardBeatmapSet->difficultyBeatmaps->Length(); j++) {
-            rapidjson::Value& difficultyBeatmapJson = beatmapSetJson["_difficultyBeatmaps"][j];
-            StandardLevelInfoSaveData::DifficultyBeatmap *standardBeatmap = standardBeatmapSet->difficultyBeatmaps->values[j];
-
-            CustomDifficultyBeatmap *customBeatmap = CRASH_UNLESS(il2cpp_utils::New<CustomDifficultyBeatmap*>(standardBeatmap->difficulty, 
-                standardBeatmap->difficultyRank, standardBeatmap->beatmapFilename, standardBeatmap->noteJumpMovementSpeed, standardBeatmap->noteJumpStartBeatOffset));
-            
-            if (difficultyBeatmapJson.HasMember("_customData")) {
-                customBeatmap->customData = difficultyBeatmapJson["_customData"];
-            }
-
-            customBeatmaps->values[j] = customBeatmap;
-        }
-
-        customBeatmapSets->values[i] = StandardLevelInfoSaveData::DifficultyBeatmapSet::New_ctor(standardBeatmapSet->beatmapCharacteristicName, customBeatmaps);
-    }
-
-    return customSaveData;
-}
-*/
-
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
     if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
         CJDLogger::GetLogger().info("AddBeatmapObjectData time %f < prev %f", beatmapObjectData->time, self->prevAddedBeatmapObjectDataTime);
@@ -582,7 +529,6 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_Start)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_LateUpdate)
-    //INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
     INSTALL_HOOK_ORIG(logger, BeatmapDataMirrorTransform_CreateTransformedData)

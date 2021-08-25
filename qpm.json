@@ -37,6 +37,13 @@
       "additionalData": {
         "private": true
       }
+    },
+    {
+      "id": "pinkcore",
+      "versionRange": "^1.5.4",
+      "additionalData": {
+        "private": true
+      }
     }
   ],
   "additionalData": {}
