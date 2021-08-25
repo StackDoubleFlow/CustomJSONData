@@ -489,7 +489,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
 }
 
 
-
+/*
 MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLevelInfoSaveData::DeserializeFromJSONString, StandardLevelInfoSaveData*, Il2CppString *stringData) {
     auto *original = StandardLevelInfoSaveData_DeserializeFromJSONString(stringData);
     
@@ -540,7 +540,7 @@ MAKE_HOOK_MATCH(StandardLevelInfoSaveData_DeserializeFromJSONString, &StandardLe
 
     return customSaveData;
 }
-
+*/
 
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
     if (beatmapObjectData->time < self->prevAddedBeatmapObjectDataTime) {
@@ -582,7 +582,7 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_Start)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_LateUpdate)
-    INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
+    //INSTALL_HOOK(logger, StandardLevelInfoSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
     INSTALL_HOOK_ORIG(logger, BeatmapDataMirrorTransform_CreateTransformedData)
