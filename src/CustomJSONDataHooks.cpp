@@ -33,6 +33,7 @@
 #include "VList.h"
 
 #include <chrono>
+#include <codecvt>
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -371,7 +372,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
             float time = ProcessTime(noteData->time);
-            ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
+            ColorType colorType = BeatmapDataLoader::ColorTypeFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
                 customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer);
@@ -496,12 +497,31 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
 
+// Why not
+typedef rapidjson::GenericValue<rapidjson::UTF8<>> BetterValueNotUTF16Trash;
+typedef rapidjson::GenericDocument<rapidjson::UTF8<>> BetterDocNotUTF16Trash;
+
+BetterValueNotUTF16Trash& convertUTF16ToUtf8(const char16_t* chars, const std::shared_ptr<BetterDocNotUTF16Trash>& doc) {
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,char16_t> conversion;
+    std::string dat(conversion.to_bytes(chars));
+
+    return doc->Parse(dat);
+}
+
+
+
 void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
     auto *customSaveData = reinterpret_cast<CustomLevelInfoSaveData *>(standardLevelInfoSaveData);
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(beatmapData);
 
+
+
     JSONWrapper *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
-    beatmapCustomData->value = customSaveData->customData;
+
+    // I wil not convert CJD to utf16
+    if (customSaveData->customData) {
+        beatmapCustomData->value = convertUTF16ToUtf8(customSaveData->customData.value().get().GetString(), customBeatmapData->doc->doc);
+    }
     customBeatmapData->beatmapCustomData = beatmapCustomData;
 
     JSONWrapper *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
@@ -515,7 +535,7 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
 
             std::string beatmapFilename = to_utf8(csstrtostr(customBeatmap->beatmapFilename));
             if (beatmapFilename == filename) {
-                levelCustomData->value = customBeatmap->customData;
+                levelCustomData->value = convertUTF16ToUtf8(customBeatmap->customData.value().get().GetString(), customBeatmapData->doc->doc);
             }
         }
     }
