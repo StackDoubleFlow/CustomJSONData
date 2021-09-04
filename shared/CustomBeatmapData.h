@@ -24,8 +24,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_INSTANCE_METHOD(BeatmapData*, BaseCopy);
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, beatmapCustomData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, levelCustomData);
+    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
+    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
 
 public:

@@ -497,17 +497,6 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
 
-// Why not
-typedef rapidjson::GenericValue<rapidjson::UTF8<>> BetterValueNotUTF16Trash;
-typedef rapidjson::GenericDocument<rapidjson::UTF8<>> BetterDocNotUTF16Trash;
-
-BetterValueNotUTF16Trash& convertUTF16ToUtf8(const char16_t* chars, const std::shared_ptr<BetterDocNotUTF16Trash>& doc) {
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,char16_t> conversion;
-    std::string dat(conversion.to_bytes(chars));
-
-    return doc->Parse(dat);
-}
-
 
 
 void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
@@ -516,15 +505,12 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
 
 
 
-    JSONWrapper *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    JSONWrapperUTF16 *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapperUTF16*>());
+    beatmapCustomData->value = customSaveData->customData;
 
-    // I wil not convert CJD to utf16
-    if (customSaveData->customData) {
-        beatmapCustomData->value = convertUTF16ToUtf8(customSaveData->customData.value().get().GetString(), customBeatmapData->doc->doc);
-    }
     customBeatmapData->beatmapCustomData = beatmapCustomData;
 
-    JSONWrapper *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    JSONWrapperUTF16 *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapperUTF16*>());
     for (int i = 0; i < customSaveData->difficultyBeatmapSets->Length(); i++) {
         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
         for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {
@@ -535,7 +521,7 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
 
             std::string beatmapFilename = to_utf8(csstrtostr(customBeatmap->beatmapFilename));
             if (beatmapFilename == filename) {
-                levelCustomData->value = convertUTF16ToUtf8(customBeatmap->customData.value().get().GetString(), customBeatmapData->doc->doc);
+                levelCustomData->value = customBeatmap->customData;
             }
         }
     }

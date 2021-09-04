@@ -26,3 +26,14 @@ public:
     std::optional<std::reference_wrapper<rapidjson::Value>> value;
     std::unordered_map<char, std::any> associatedData;
 )
+
+typedef rapidjson::GenericValue<rapidjson::UTF16<char16_t>> ValueUTF16;
+
+DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject,
+                      DECLARE_DEFAULT_CTOR();
+                              DECLARE_SIMPLE_DTOR();
+
+                              public:
+                              std::optional<std::reference_wrapper<ValueUTF16>> value;
+                              std::unordered_map<char, std::any> associatedData;
+)
