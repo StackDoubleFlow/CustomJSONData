@@ -56,7 +56,7 @@ LOCAL_MODULE := questui
 LOCAL_EXPORT_C_INCLUDES := extern/questui
 LOCAL_SRC_FILES := extern/libquestui.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: pinkcore - version: 1.5.0
+# Creating prebuilt for dependency: pinkcore - version: 1.6.0
 include $(CLEAR_VARS)
 LOCAL_MODULE := pinkcore
 LOCAL_EXPORT_C_INCLUDES := extern/pinkcore
@@ -79,7 +79,7 @@ LOCAL_SHARED_LIBRARIES += songloader
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += pinkcore
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.3.1"'
+LOCAL_CFLAGS += -I"include" -I"shared" -I"./extern/libil2cpp/il2cpp/libil2cpp" -isystem"extern" -isystem"./extern/codegen/include" -DVERSION='"0.13.0"'
 LOCAL_CPPFLAGS += -std=c++2a
 LOCAL_C_INCLUDES += ./include ./src
 include $(BUILD_SHARED_LIBRARY)
