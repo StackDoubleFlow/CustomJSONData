@@ -5,4 +5,5 @@
 using namespace CustomJSONData;
 
 DEFINE_TYPE(CustomJSONData, JSONWrapper);
+DEFINE_TYPE(CustomJSONData, JSONWrapperUTF16);
 DEFINE_TYPE(CustomJSONData, DocumentWrapper);

@@ -33,6 +33,7 @@
 #include "VList.h"
 
 #include <chrono>
+#include <codecvt>
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -371,7 +372,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
             float time = ProcessTime(noteData->time);
-            ColorType colorType = BeatmapDataLoader::ConvertFromBeatmapSaveDataNoteType(noteData->type);
+            ColorType colorType = BeatmapDataLoader::ColorTypeFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
                 customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer);
@@ -496,15 +497,20 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
     BeatmapData_AddBeatmapObjectData(self, beatmapObjectData);
 }
 
+
+
 void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
     auto *customSaveData = reinterpret_cast<CustomLevelInfoSaveData *>(standardLevelInfoSaveData);
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(beatmapData);
 
-    JSONWrapper *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+
+
+    JSONWrapperUTF16 *beatmapCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapperUTF16*>());
     beatmapCustomData->value = customSaveData->customData;
+
     customBeatmapData->beatmapCustomData = beatmapCustomData;
 
-    JSONWrapper *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
+    JSONWrapperUTF16 *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapperUTF16*>());
     for (int i = 0; i < customSaveData->difficultyBeatmapSets->Length(); i++) {
         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
         for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {

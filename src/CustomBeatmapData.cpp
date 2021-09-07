@@ -98,7 +98,7 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
 
 DEFINE_TYPE(CustomJSONData, CustomNoteData);
 
-void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLayer noteLineLayer, NoteLineLayer startNoteLineLayer, ColorType colorType, NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote, int flipLineIndex, float flipYSide, float duration) {
+void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLayer noteLineLayer, NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType, NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote, int flipLineIndex, float flipYSide, float duration) {
     INVOKE_CTOR();
     this->time = time;
     this->lineIndex = lineIndex;
@@ -107,14 +107,14 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLay
     this->timeToNextColorNote = timeToNextColorNote;
     this->timeToPrevColorNote = timeToPrevColorNote;
     this->noteLineLayer = noteLineLayer;
-    this->startNoteLineLayer = startNoteLineLayer;
+    this->beforeJumpNoteLineLayer = beforeJumpNoteLineLayer;
     this->flipLineIndex = flipLineIndex;
     this->flipYSide = flipYSide;
     this->duration = duration;
 }
 
 BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomNoteData*>(this->time, this->lineIndex, this->noteLineLayer, this->startNoteLineLayer, 
+    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomNoteData*>(this->time, this->lineIndex, this->noteLineLayer, this->beforeJumpNoteLineLayer, 
         this->colorType, this->cutDirection, this->timeToNextColorNote, this->timeToPrevColorNote, this->flipLineIndex, this->flipYSide, this->duration));
     copy->customData = this->customData;
     copy->bpm = this->bpm;
