@@ -1,1 +1,1 @@
-ilspycmd -r "/games/SteamLibrary/steamapps/common/Beat Saber/Beat Saber_Data/Managed" -t ${1} "/games/SteamLibrary/steamapps/common/Beat Saber/Beat Saber_Data/Managed/Main.dll"
+ilspycmd -r "/home/stack/.local/share/Steam/steamapps/common/Beat Saber/Beat Saber_Data/Managed" -t ${1} "/home/stack/.local/share/Steam/steamapps/common/Beat Saber/Beat Saber_Data/Managed/Main.dll"

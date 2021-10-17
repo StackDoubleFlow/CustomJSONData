@@ -69,8 +69,6 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
         return nullptr;
     }
-
-
     CJDLogger::GetLogger().debug("Parsing json success");
     
     CJDLogger::GetLogger().debug("Parse notes");
@@ -95,8 +93,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         }
         notes[i] = note;
     }
-
-    CJDLogger::GetLogger().debug("Parsed %f notes", notesArr.Size());
+    CJDLogger::GetLogger().debug("Parsed %i notes", notes.size());
 
     CJDLogger::GetLogger().debug("Parse obstacles");
     rapidjson::Value& obstaclesArr = doc["_obstacles"];
@@ -120,7 +117,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         }
         obstacles[i] = obstacle;
     }
-    CJDLogger::GetLogger().debug("Parsed %f obstacles", obstacles.size());
+    CJDLogger::GetLogger().debug("Parsed %i obstacles", obstacles.size());
 
     CJDLogger::GetLogger().debug("Parse events");
     // Parse events
@@ -139,8 +136,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         } 
         events[i] = event;
     }
-
-    CJDLogger::GetLogger().debug("Parsed %f events", events.size());
+    CJDLogger::GetLogger().debug("Parsed %i events", events.size());
 
     CJDLogger::GetLogger().debug("Parse waypoints");
     rapidjson::Value& waypoints_arr = doc["_waypoints"];
@@ -155,28 +151,16 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
         waypoints[i] = waypoint;
     }
-
-    CJDLogger::GetLogger().debug("Parsed %f waypoints", waypoints.size());
-
-    // TODO: Parse whatever the hell this is
-
+    CJDLogger::GetLogger().debug("Parsed %i waypoints", waypoints.size());
 
     CJDLogger::GetLogger().debug("Parse specialEventsKeywordFilters");
     auto specialEventsKeywordFiltersJsonObjIt = doc.FindMember("_specialEventsKeywordFilters");
     VList<BeatmapSaveData::SpecialEventsForKeyword *> specialEventsKeywordFiltersList;
-
-
     if (specialEventsKeywordFiltersJsonObjIt != doc.MemberEnd()) {
         rapidjson::Value &specialEventsKeywordFiltersJsonObj = specialEventsKeywordFiltersJsonObjIt->value;
         specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(specialEventsKeywordFiltersJsonObj.Size());
 
-
-
-//        for (rapidjson::SizeType i = 0; i < specialEventsKeywordFiltersJsonObj.Size(); i++) {
-//            rapidjson::Value &specialEventsKeywordFilters_json = specialEventsKeywordFiltersJsonObj[i];
-
         rapidjson::Value &_keywords = specialEventsKeywordFiltersJsonObj["_keywords"];
-
         for (auto &keyword_jsonIt: _keywords.GetObject()) {
             rapidjson::Value &keyword_json = keyword_jsonIt.value;
             std::string keyword = keyword_json["_keyword"].GetString();
@@ -195,7 +179,6 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
 
             specialEventsKeywordFiltersList.push_back(BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
         }
-//        }
     }
     auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(specialEventsKeywordFiltersList);
 
