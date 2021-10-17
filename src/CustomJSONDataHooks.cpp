@@ -45,12 +45,7 @@ using namespace CustomJSONData;
 
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
-    char* dat = static_cast<char*>(calloc(view.length() + 1, sizeof(char)));
-    std::transform(view.data(), view.data() + view.size(), dat, [](auto utf16_char) {
-        return static_cast<char>(utf16_char);
-    });
-    dat[view.length()] = '\0';
-    return {dat};
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
 }
 
 CustomBeatmapSaveData *cachedSaveData;
