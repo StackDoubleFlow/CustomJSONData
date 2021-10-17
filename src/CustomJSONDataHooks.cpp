@@ -32,6 +32,9 @@
 #include "CJDLogger.h"
 #include "VList.h"
 
+// for rapidjson error parsing
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/error/en.h"
+
 #include <chrono>
 #include <codecvt>
 
@@ -64,7 +67,16 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     
     std::shared_ptr<rapidjson::Document> sharedDoc = std::make_shared<rapidjson::Document>();
     rapidjson::Document& doc = *sharedDoc;
-    doc.Parse(str.c_str());
+    rapidjson::ParseResult result = doc.Parse(str);
+
+    if (!result || doc.IsNull()) {
+        std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
+        CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
+
+        // TODO: This causes a crash. Hopefully cause RSL to show error screen instead
+        return nullptr;
+    }
+
 
     CJDLogger::GetLogger().debug("Parsing json success");
     
@@ -91,6 +103,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         notes[i] = note;
     }
 
+    CJDLogger::GetLogger().debug("Parsed %f notes", notesArr.Size());
+
     CJDLogger::GetLogger().debug("Parse obstacles");
     rapidjson::Value& obstaclesArr = doc["_obstacles"];
 
@@ -113,6 +127,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         }
         obstacles[i] = obstacle;
     }
+    CJDLogger::GetLogger().debug("Parsed %f obstacles", obstacles.size());
 
     CJDLogger::GetLogger().debug("Parse events");
     // Parse events
@@ -132,6 +147,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         events[i] = event;
     }
 
+    CJDLogger::GetLogger().debug("Parsed %f events", events.size());
+
     CJDLogger::GetLogger().debug("Parse waypoints");
     rapidjson::Value& waypoints_arr = doc["_waypoints"];
     VList<BeatmapSaveData::WaypointData*> waypoints(waypoints_arr.Size());
@@ -145,6 +162,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
         waypoints[i] = waypoint;
     }
+
+    CJDLogger::GetLogger().debug("Parsed %f waypoints", waypoints.size());
 
     // TODO: Parse whatever the hell this is
 
