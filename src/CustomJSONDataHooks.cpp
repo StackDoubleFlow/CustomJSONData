@@ -32,6 +32,9 @@
 #include "CJDLogger.h"
 #include "VList.h"
 
+// for rapidjson error parsing
+#include "beatsaber-hook/shared/rapidjson/include/rapidjson/error/en.h"
+
 #include <chrono>
 #include <codecvt>
 
@@ -42,12 +45,7 @@ using namespace CustomJSONData;
 
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
-    char* dat = static_cast<char*>(calloc(view.length() + 1, sizeof(char)));
-    std::transform(view.data(), view.data() + view.size(), dat, [](auto utf16_char) {
-        return static_cast<char>(utf16_char);
-    });
-    dat[view.length()] = '\0';
-    return {dat};
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
 }
 
 CustomBeatmapSaveData *cachedSaveData;
@@ -64,7 +62,14 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     
     std::shared_ptr<rapidjson::Document> sharedDoc = std::make_shared<rapidjson::Document>();
     rapidjson::Document& doc = *sharedDoc;
-    doc.Parse(str.c_str());
+    rapidjson::ParseResult result = doc.Parse(str);
+
+    if (!result || doc.IsNull()) {
+        std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
+        CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
+        return nullptr;
+    }
+
 
     CJDLogger::GetLogger().debug("Parsing json success");
     
@@ -91,6 +96,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         notes[i] = note;
     }
 
+    CJDLogger::GetLogger().debug("Parsed %f notes", notesArr.Size());
+
     CJDLogger::GetLogger().debug("Parse obstacles");
     rapidjson::Value& obstaclesArr = doc["_obstacles"];
 
@@ -113,6 +120,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         }
         obstacles[i] = obstacle;
     }
+    CJDLogger::GetLogger().debug("Parsed %f obstacles", obstacles.size());
 
     CJDLogger::GetLogger().debug("Parse events");
     // Parse events
@@ -132,6 +140,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         events[i] = event;
     }
 
+    CJDLogger::GetLogger().debug("Parsed %f events", events.size());
+
     CJDLogger::GetLogger().debug("Parse waypoints");
     rapidjson::Value& waypoints_arr = doc["_waypoints"];
     VList<BeatmapSaveData::WaypointData*> waypoints(waypoints_arr.Size());
@@ -146,8 +156,48 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         waypoints[i] = waypoint;
     }
 
+    CJDLogger::GetLogger().debug("Parsed %f waypoints", waypoints.size());
+
     // TODO: Parse whatever the hell this is
-    auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(VList<BeatmapSaveData::SpecialEventsForKeyword*>());
+
+
+    CJDLogger::GetLogger().debug("Parse specialEventsKeywordFilters");
+    auto specialEventsKeywordFiltersJsonObjIt = doc.FindMember("_specialEventsKeywordFilters");
+    VList<BeatmapSaveData::SpecialEventsForKeyword *> specialEventsKeywordFiltersList;
+
+
+    if (specialEventsKeywordFiltersJsonObjIt != doc.MemberEnd()) {
+        rapidjson::Value &specialEventsKeywordFiltersJsonObj = specialEventsKeywordFiltersJsonObjIt->value;
+        specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(specialEventsKeywordFiltersJsonObj.Size());
+
+
+
+//        for (rapidjson::SizeType i = 0; i < specialEventsKeywordFiltersJsonObj.Size(); i++) {
+//            rapidjson::Value &specialEventsKeywordFilters_json = specialEventsKeywordFiltersJsonObj[i];
+
+        rapidjson::Value &_keywords = specialEventsKeywordFiltersJsonObj["_keywords"];
+
+        for (auto &keyword_jsonIt: _keywords.GetObject()) {
+            rapidjson::Value &keyword_json = keyword_jsonIt.value;
+            std::string keyword = keyword_json["_keyword"].GetString();
+            Il2CppString* keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
+
+            auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
+            VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
+
+            for (auto& specialEvent : specialEventsArray) {
+                // safety, why not?
+                if (!specialEvent.IsInt())
+                    continue;
+
+                specialEvents.push_back(specialEvent.GetInt());
+            }
+
+            specialEventsKeywordFiltersList.push_back(BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
+        }
+//        }
+    }
+    auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(specialEventsKeywordFiltersList);
 
     CJDLogger::GetLogger().debug("Parse root");
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(*events, *notes, *waypoints, *obstacles, specialEventsKeywordFilters));
@@ -500,6 +550,11 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
 
 
 void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
+    if (!beatmapData) {
+        CJDLogger::GetLogger().warning("Beatmap is null, no custom level data");
+        return;
+    }
+
     auto *customSaveData = reinterpret_cast<CustomLevelInfoSaveData *>(standardLevelInfoSaveData);
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(beatmapData);
 
