@@ -72,8 +72,6 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     if (!result || doc.IsNull()) {
         std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
         CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
-
-        // TODO: This causes a crash. Hopefully cause RSL to show error screen instead
         return nullptr;
     }
 
@@ -557,6 +555,11 @@ MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObject
 
 
 void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData, const std::string &filename, BeatmapData *beatmapData) {
+    if (!beatmapData) {
+        CJDLogger::GetLogger().warning("Beatmap is null, no custom level data");
+        return;
+    }
+
     auto *customSaveData = reinterpret_cast<CustomLevelInfoSaveData *>(standardLevelInfoSaveData);
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(beatmapData);
 
