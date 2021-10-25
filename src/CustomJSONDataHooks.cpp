@@ -74,9 +74,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     CJDLogger::GetLogger().debug("Parse notes");
     rapidjson::Value& notesArr = doc["_notes"];
 
-    // Cache class pointer and ctor method info
-    Il2CppClass *noteDataClass = classof(CustomBeatmapSaveData_NoteData*);
-    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 5);
+
     VList<BeatmapSaveData::NoteData*> notes(notesArr.Size());
     for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
         rapidjson::Value& note_json = notesArr[i];
@@ -86,8 +84,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         NoteLineLayer lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
         BeatmapSaveData::NoteType type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
         NoteCutDirection cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
-        auto note = (CustomBeatmapSaveData_NoteData *) il2cpp_functions::object_new(noteDataClass);
-        il2cpp_utils::RunMethodThrow<void, false>(note, noteDataCtor, time, lineIndex, lineLayer, type, cutDirection);
+        auto note = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_NoteData *>(time, lineIndex, lineLayer, type, cutDirection));
         if (note_json.HasMember("_customData")) {
             note->customData = note_json["_customData"];
         }
@@ -99,8 +96,6 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     rapidjson::Value& obstaclesArr = doc["_obstacles"];
 
     // Cache class pointer and ctor method info
-    Il2CppClass *obstacleDataClass = classof(CustomBeatmapSaveData_ObstacleData*);
-    const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
     VList<BeatmapSaveData::ObstacleData*> obstacles(obstaclesArr.Size());
     for (rapidjson::SizeType i = 0; i < obstaclesArr.Size(); i++) {
         rapidjson::Value& obstacle_json = obstaclesArr[i];
@@ -110,8 +105,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         ObstacleType type = ObstacleType(obstacle_json["_type"].GetInt());
         float duration = obstacle_json["_duration"].GetFloat();
         int width = obstacle_json["_width"].GetInt();
-        auto obstacle = (CustomBeatmapSaveData_ObstacleData *) il2cpp_functions::object_new(obstacleDataClass);
-        il2cpp_utils::RunMethodThrow<void, false>(obstacle, obstacleDataCtor, time, lineIndex, type, duration, width);
+        auto obstacle = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_ObstacleData *>(time, lineIndex, type, duration, width));
         if (obstacle_json.HasMember("_customData")) {
             obstacle->customData = obstacle_json["_customData"];
         }
@@ -229,16 +223,12 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     return saveData;
 }
 
-CustomNoteData* CustomJSONDataCreateBasicNoteData(Il2CppClass *noteDataClass, const MethodInfo *noteDataCtor, float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
-    auto noteData = (CustomNoteData *) il2cpp_functions::object_new(noteDataClass);
-    il2cpp_utils::RunMethodThrow<void, false>(noteData, noteDataCtor, time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f);
-    return noteData;
+CustomNoteData* CustomJSONDataCreateBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
+    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
 }
 
-CustomNoteData* CustomJSONDataCreateBombNoteData(Il2CppClass *noteDataClass, const MethodInfo *noteDataCtor, float time, int lineIndex, NoteLineLayer noteLineLayer) {
-    auto noteData = (CustomNoteData *) il2cpp_functions::object_new(noteDataClass);
-    il2cpp_utils::RunMethodThrow<void, false>(noteData, noteDataCtor, time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f);
-    return noteData;
+CustomNoteData* CustomJSONDataCreateBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer) {
+    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
 }
 
 float GetRealTimeFromBPMTime(float bpmTime, float bpm, float shuffle, float shufflePeriod) {
@@ -384,13 +374,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     int obstaclesSaveDataCount = obstaclesSaveData.size();
     int waypointsSaveDataCount = waypointsSaveData.size();
 
-    // Cache il2cpp classes and methods
-    Il2CppClass *obstacleDataClass = classof(CustomObstacleData*);
-    Il2CppClass *noteDataClass = classof(CustomNoteData*);
-    Il2CppClass *jsonWrapperClass = classof(JSONWrapper *);
-    const MethodInfo *obstacleDataCtor = il2cpp_utils::FindMethodUnsafe(obstacleDataClass, ".ctor", 5);
-    const MethodInfo *noteDataCtor = il2cpp_utils::FindMethodUnsafe(noteDataClass, ".ctor", 11);
-
     auto *noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData[notesSaveDataIdx] : nullptr;
     auto *waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
     auto *obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData*) obstaclesSaveData[obstaclesSaveDataIdx] : nullptr;
@@ -408,9 +391,9 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             ColorType colorType = BeatmapDataLoader::ColorTypeFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
             if (colorType == ColorType::None) {
-                customNoteData = CustomJSONDataCreateBombNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer);
+                customNoteData = CustomJSONDataCreateBombNoteData(time, noteData->lineIndex, noteData->lineLayer);
             } else {
-                customNoteData = CustomJSONDataCreateBasicNoteData(noteDataClass, noteDataCtor, time, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
+                customNoteData = CustomJSONDataCreateBasicNoteData(time, noteData->lineIndex, noteData->lineLayer, colorType, noteData->cutDirection);
             }
 
             JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
@@ -430,11 +413,9 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         } else if (nextType == BeatmapObjectType::Obstacle) {
             float time = ProcessTime(obstacleData->time);
 
-            auto customObstacleData = (CustomObstacleData*) il2cpp_functions::object_new(obstacleDataClass);
-            il2cpp_utils::RunMethodThrow<void, false>(customObstacleData, obstacleDataCtor, time, obstacleData->lineIndex, obstacleData->type, GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width);
+            auto customObstacleData = CRASH_UNLESS(il2cpp_utils::New<CustomObstacleData*>(time, obstacleData->lineIndex, obstacleData->type, GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width));
 
-            JSONWrapper *customData = (JSONWrapper*) il2cpp_functions::object_new(jsonWrapperClass);
-            customData->__ctor();
+            JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
             customData->value = obstacleData->customData;
             customObstacleData->customData = customData;
             customObstacleData->bpm = startBpm;
