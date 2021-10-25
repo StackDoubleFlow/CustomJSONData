@@ -100,17 +100,20 @@ DEFINE_TYPE(CustomJSONData, CustomNoteData);
 
 void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLayer noteLineLayer, NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType, NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote, int flipLineIndex, float flipYSide, float duration) {
     INVOKE_CTOR();
-    this->time = time;
-    this->lineIndex = lineIndex;
-    this->colorType = colorType;
-    this->cutDirection = cutDirection;
-    this->timeToNextColorNote = timeToNextColorNote;
-    this->timeToPrevColorNote = timeToPrevColorNote;
-    this->noteLineLayer = noteLineLayer;
-    this->beforeJumpNoteLineLayer = beforeJumpNoteLineLayer;
-    this->flipLineIndex = flipLineIndex;
-    this->flipYSide = flipYSide;
-    this->duration = duration;
+    static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 13));
+    NoteData* instance = this;
+    il2cpp_utils::RunMethodThrow<void, false, NoteData*>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex, flipYSide, duration, false, false);
+//    this->time = time;
+//    this->lineIndex = lineIndex;
+//    this->colorType = colorType;
+//    this->cutDirection = cutDirection;
+//    this->timeToNextColorNote = timeToNextColorNote;
+//    this->timeToPrevColorNote = timeToPrevColorNote;
+//    this->noteLineLayer = noteLineLayer;
+//    this->beforeJumpNoteLineLayer = beforeJumpNoteLineLayer;
+//    this->flipLineIndex = flipLineIndex;
+//    this->flipYSide = flipYSide;
+//    this->duration = duration;
 }
 
 BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
