@@ -233,17 +233,17 @@ CustomNoteData* CustomJSONDataCreateBombNoteData(float time, int lineIndex, Note
 
 float GetRealTimeFromBPMTime(float bpmTime, float bpm, float shuffle, float shufflePeriod) {
     float num = bpmTime;
-    if (shufflePeriod > 0 && (int)(num * (1 / shufflePeriod)) % 2 == 1) {
+    if (shufflePeriod > 0.0f && (int)(num * (1.0f / shufflePeriod)) % 2 == 1) {
         num += shuffle * shufflePeriod;
     }
-    if (bpm > 0) {
-        num = num / bpm * 60;
+    if (bpm > 0.0f) {
+        num = num / bpm * 60.0f;
     }
     return num;
 }
 
 float ProcessTime(float bpmTime, int &bpmChangesDataIdx, VList<BeatmapDataLoader::BpmChangeData> bpmChangesData, float shuffle, float shufflePeriod) {
-    int bpmChangesDataCount = bpmChangesData.size();
+    int bpmChangesDataCount = 0;
     while(bpmChangesDataIdx < bpmChangesDataCount - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < bpmTime) {
         bpmChangesDataIdx++;
     }
@@ -369,7 +369,6 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     int notesSaveDataIdx = 0;
     int waypointsSaveDataIdx = 0;
     int obstaclesSaveDataIdx = 0;
-    int bpmChangesDataIdx = 0;
     int notesSaveDataCount = notesSaveData.size();
     int obstaclesSaveDataCount = obstaclesSaveData.size();
     int waypointsSaveDataCount = waypointsSaveData.size();
@@ -378,8 +377,11 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     auto *waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
     auto *obstacleData = (obstaclesSaveDataIdx < obstaclesSaveDataCount) ? (CustomBeatmapSaveData_ObstacleData*) obstaclesSaveData[obstaclesSaveDataIdx] : nullptr;
 
-    auto ProcessTime = [&](float bpmTime) {
-        for (; bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < bpmTime; bpmChangesDataIdx++)	{}
+    auto const ProcessTime = [&](float bpmTime) {
+        int bpmChangesDataIdx = 0;
+        while(bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < bpmTime) {
+            bpmChangesDataIdx++;
+        }
         BeatmapDataLoader::BpmChangeData bpmChangeData = bpmChangesData[bpmChangesDataIdx];
         return bpmChangeData.bpmChangeStartTime + GetRealTimeFromBPMTime(bpmTime - bpmChangeData.bpmChangeStartBpmTime, bpmChangeData.bpm, shuffle, shufflePeriod);
     };
@@ -405,7 +407,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             notesSaveDataIdx++;
             noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData[notesSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Waypoint) {
-            float time = ProcessTime(noteData->time);
+            float time = ProcessTime(waypointData->time);
             WaypointData *beatmapObjectData = WaypointData::New_ctor(time, waypointData->lineIndex, waypointData->lineLayer, waypointData->offsetDirection);
             beatmapData->AddBeatmapObjectData(beatmapObjectData);
             waypointsSaveDataIdx++;
@@ -430,12 +432,14 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
 
     for (auto& regularEventData : eventsSaveData) {
         auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(regularEventData);
-        float time = eventData->time;
-        while (bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < time) {
-            bpmChangesDataIdx++;
-        }
-        BeatmapDataLoader::BpmChangeData bpmChangeData2 = bpmChangesData[bpmChangesDataIdx];
-        float realTime = bpmChangeData2.bpmChangeStartTime + GetRealTimeFromBPMTime(time - bpmChangeData2.bpmChangeStartBpmTime, bpmChangeData2.bpm, shuffle, shufflePeriod);
+        float realTime = ProcessTime(eventData->time);
+//        float time = eventData->time;
+//        while (bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < time) {
+//            bpmChangesDataIdx++;
+//        }
+//        BeatmapDataLoader::BpmChangeData bpmChangeData2 = bpmChangesData[bpmChangesDataIdx];
+//        float realTime = bpmChangeData2.bpmChangeStartTime + GetRealTimeFromBPMTime(time - bpmChangeData2.bpmChangeStartBpmTime, bpmChangeData2.bpm, shuffle, shufflePeriod);
+//
         BeatmapEventType type = BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type);
         CustomBeatmapEventData *beatmapEventData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapEventData*>(realTime, type, eventData->value));
 
@@ -449,6 +453,26 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     if (beatmapData->beatmapEventsData->get_Count() == 0) {
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event0, 1));
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event4, 1));
+    }
+    if (environmentSpecialEventFilterData && environmentSpecialEventFilterData->keywords)
+    {
+        for (auto specialEventsForKeyword : VList(environmentSpecialEventFilterData->keywords))
+        {
+            if (specialEventsForKeyword->keyword && specialEventsForKeyword->specialEvents)
+            {
+                auto hashSet = HashSet_1<BeatmapEventType>::New_ctor();
+                for (BeatmapSaveData::BeatmapEventType beatmapEventType : VList(specialEventsForKeyword->specialEvents))
+                {
+                    hashSet->Add(BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(beatmapEventType));
+                }
+                beatmapData->AddAvailableSpecialEventsPerKeyword(specialEventsForKeyword->keyword, hashSet);
+            }
+            else
+            {
+                CJDLogger::GetLogger().error("Missing environmentSerializedName:\"%s\" and/or specialEvents set: %s",
+                                             to_utf8(csstrtostr(specialEventsForKeyword->keyword)).c_str(), to_utf8(csstrtostr(specialEventsForKeyword->specialEvents->ToString())).c_str());
+            }
+        }
     }
     beatmapData->ProcessRemainingData();
 

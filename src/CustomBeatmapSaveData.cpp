@@ -7,23 +7,27 @@ void CustomJSONData::CustomBeatmapSaveData::ctor(List<BeatmapSaveData::EventData
                                                  List<BeatmapSaveData::WaypointData*>* waypoints, 
                                                  List<BeatmapSaveData::ObstacleData*>* obstacles,
                                                  BeatmapSaveData::SpecialEventKeywordFiltersData *specialEventsKeywordFilters) {
+    static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 5);
+    CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, events, notes, waypoints, obstacles, specialEventsKeywordFilters));
     INVOKE_CTOR();
-    this->events = events;
-    this->notes = notes;
-    this->waypoints = waypoints;
-    this->obstacles = obstacles;
-    this->specialEventsKeywordFilters = specialEventsKeywordFilters;
+//    this->events = events;
+//    this->notes = notes;
+//    this->waypoints = waypoints;
+//    this->obstacles = obstacles;
+//    this->specialEventsKeywordFilters = specialEventsKeywordFilters;
 }
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapSaveData);
 
 void CustomJSONData::CustomBeatmapSaveData_NoteData::ctor(float time, int lineIndex, NoteLineLayer lineLayer, BeatmapSaveData::NoteType type, NoteCutDirection cutDirection) {
+    static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::NoteData*), ".ctor", 5);
+    CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, lineIndex, lineLayer, type, cutDirection));
     INVOKE_CTOR();
-    this->time = time;
-    this->lineIndex = lineIndex;
-    this->lineLayer = lineLayer;
-    this->type = type;
-    this->cutDirection = cutDirection;
+//    this->time = time;
+//    this->lineIndex = lineIndex;
+//    this->lineLayer = lineLayer;
+//    this->type = type;
+//    this->cutDirection = cutDirection;
 }
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapSaveData_NoteData);

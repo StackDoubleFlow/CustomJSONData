@@ -72,21 +72,27 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutEvents() {
 DEFINE_TYPE(CustomJSONData, CustomBeatmapEventData);
 
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType type, int value) {
+    static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapEventData*), ".ctor", 3));
+    BeatmapEventData* instance = this;
+    il2cpp_utils::RunMethodThrow<void, false, BeatmapEventData*>(instance, BeatmapEventData_Ctor, time, type, value);
     INVOKE_CTOR();
-    this->time = time;
-    this->type = type;
-    this->value = value;
+//    this->time = time;
+//    this->type = type;
+//    this->value = value;
 }
 
 DEFINE_TYPE(CustomJSONData, CustomObstacleData);
 
 void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ObstacleType obstacleType, float duration, int width) {
+    static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 5));
+    ObstacleData* instance = this;
+    il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, obstacleType, duration, width);
     INVOKE_CTOR();
-    this->time = time;
-    this->lineIndex = lineIndex;
-    this->obstacleType = obstacleType;
-    this->duration = duration;
-    this->width = width;
+//    this->time = time;
+//    this->lineIndex = lineIndex;
+//    this->obstacleType = obstacleType;
+//    this->duration = duration;
+//    this->width = width;
 }
 
 BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
@@ -99,10 +105,10 @@ BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
 DEFINE_TYPE(CustomJSONData, CustomNoteData);
 
 void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLayer noteLineLayer, NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType, NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote, int flipLineIndex, float flipYSide, float duration) {
-    INVOKE_CTOR();
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 13));
     NoteData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false, NoteData*>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex, flipYSide, duration, false, false);
+    INVOKE_CTOR();
 //    this->time = time;
 //    this->lineIndex = lineIndex;
 //    this->colorType = colorType;
@@ -127,11 +133,14 @@ BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
 DEFINE_TYPE(CustomJSONData, CustomWaypointData);
 
 void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalNamespace::NoteLineLayer noteLineLayer, GlobalNamespace::OffsetDirection offsetDirection) {
+    static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(WaypointData*), ".ctor", 4));
+    WaypointData* instance = this;
+    il2cpp_utils::RunMethodThrow<void, false, WaypointData*>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, offsetDirection);
     INVOKE_CTOR();
-    this->time = time;
-    this->lineIndex = lineIndex;
-    this->noteLineLayer = noteLineLayer;
-    this->offsetDirection = offsetDirection;
+//    this->time = time;
+//    this->lineIndex = lineIndex;
+//    this->noteLineLayer = noteLineLayer;
+//    this->offsetDirection = offsetDirection;
 }
 
 BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
