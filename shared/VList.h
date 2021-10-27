@@ -80,7 +80,7 @@ public:
         return inner;
     }
 
-    Ty& operator[](const size_t pos) {
+    Ty& operator[](const size_t pos) const {
         // TODO: bounds check assert
         return inner->items->values[pos];
     }
