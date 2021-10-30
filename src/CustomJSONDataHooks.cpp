@@ -433,13 +433,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     for (auto& regularEventData : eventsSaveData) {
         auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(regularEventData);
         float realTime = ProcessTime(eventData->time);
-//        float time = eventData->time;
-//        while (bpmChangesDataIdx < bpmChangesData.size() - 1 && bpmChangesData[bpmChangesDataIdx + 1].bpmChangeStartBpmTime < time) {
-//            bpmChangesDataIdx++;
-//        }
-//        BeatmapDataLoader::BpmChangeData bpmChangeData2 = bpmChangesData[bpmChangesDataIdx];
-//        float realTime = bpmChangeData2.bpmChangeStartTime + GetRealTimeFromBPMTime(time - bpmChangeData2.bpmChangeStartBpmTime, bpmChangeData2.bpm, shuffle, shufflePeriod);
-//
+        
         BeatmapEventType type = BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type);
         CustomBeatmapEventData *beatmapEventData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapEventData*>(realTime, type, eventData->value));
 

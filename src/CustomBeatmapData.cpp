@@ -76,9 +76,6 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType t
     BeatmapEventData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false, BeatmapEventData*>(instance, BeatmapEventData_Ctor, time, type, value);
     INVOKE_CTOR();
-//    this->time = time;
-//    this->type = type;
-//    this->value = value;
 }
 
 DEFINE_TYPE(CustomJSONData, CustomObstacleData);
@@ -88,11 +85,6 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, Obstacl
     ObstacleData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, obstacleType, duration, width);
     INVOKE_CTOR();
-//    this->time = time;
-//    this->lineIndex = lineIndex;
-//    this->obstacleType = obstacleType;
-//    this->duration = duration;
-//    this->width = width;
 }
 
 BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
@@ -109,17 +101,6 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLay
     NoteData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false, NoteData*>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex, flipYSide, duration, false, false);
     INVOKE_CTOR();
-//    this->time = time;
-//    this->lineIndex = lineIndex;
-//    this->colorType = colorType;
-//    this->cutDirection = cutDirection;
-//    this->timeToNextColorNote = timeToNextColorNote;
-//    this->timeToPrevColorNote = timeToPrevColorNote;
-//    this->noteLineLayer = noteLineLayer;
-//    this->beforeJumpNoteLineLayer = beforeJumpNoteLineLayer;
-//    this->flipLineIndex = flipLineIndex;
-//    this->flipYSide = flipYSide;
-//    this->duration = duration;
 }
 
 BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
@@ -137,10 +118,6 @@ void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalN
     WaypointData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false, WaypointData*>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, offsetDirection);
     INVOKE_CTOR();
-//    this->time = time;
-//    this->lineIndex = lineIndex;
-//    this->noteLineLayer = noteLineLayer;
-//    this->offsetDirection = offsetDirection;
 }
 
 BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
