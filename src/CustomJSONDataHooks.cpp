@@ -192,6 +192,9 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
             for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
                 rapidjson::Value& eventValue = customEventsArr[i];
 
+                // Any consequences? Nah never
+                if (!eventValue.HasMember("_type"))
+                    continue;
 
                 float time = 0;
                 // Dammit Reaxt
