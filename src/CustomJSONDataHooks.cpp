@@ -191,17 +191,22 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
             rapidjson::Value& customEventsArr = customData["_customEvents"];
             for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
                 rapidjson::Value& eventValue = customEventsArr[i];
-                
-                // Dammit Reaxt
-                if (!eventValue.HasMember("_time")) continue;
 
-                rapidjson::Value& timeValue = eventValue["_time"];
-                float time;
-                if (timeValue.GetType() == rapidjson::Type::kStringType) {
-                    // Reaxt why
-                    time = std::stof(timeValue.GetString());
-                } else {
-                    time = timeValue.GetFloat();
+                // Any consequences? Nah never
+                if (!eventValue.HasMember("_type"))
+                    continue;
+
+                float time = 0;
+                // Dammit Reaxt
+                auto timeIt = eventValue.FindMember("_time");
+                if (timeIt != eventValue.MemberEnd()) {
+                    rapidjson::Value& timeValue = timeIt->value;
+                    if (timeValue.GetType() == rapidjson::Type::kStringType) {
+                        // Reaxt why
+                        time = std::stof(timeValue.GetString());
+                    } else {
+                        time = timeValue.GetFloat();
+                    }
                 }
 
                 std::string_view type = eventValue["_type"].GetString();
@@ -224,11 +229,23 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
 }
 
 CustomNoteData* CustomJSONDataCreateBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
-    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+    auto b = CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, colorType, cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+
+    // too lazy to fix constructor
+    b->skipBeforeCutScoring = false;
+    b->skipAfterCutScoring = false;
+
+    return b;
 }
 
 CustomNoteData* CustomJSONDataCreateBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer) {
-    return CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+    auto b = CRASH_UNLESS(il2cpp_utils::New<CustomNoteData*>(time, lineIndex, noteLineLayer, noteLineLayer, ColorType::None, NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f));
+
+    // too lazy to fix constructor
+    b->skipBeforeCutScoring = false;
+    b->skipAfterCutScoring = false;
+
+    return b;
 }
 
 float GetRealTimeFromBPMTime(float bpmTime, float bpm, float shuffle, float shufflePeriod) {
