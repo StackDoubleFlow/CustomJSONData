@@ -36,7 +36,7 @@ jobs:
         
     - name: QPM Collect
       run: |
-        chmod +x ./QPM/QPM
+        chmod +x ./QPM/qpm-rust
         ./QPM/qpm-rust collect
 
     - name: QPM Dependencies Cache
