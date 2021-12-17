@@ -44,6 +44,11 @@
       "additionalData": {
         "private": true
       }
+    },
+    {
+      "id": "modloader",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

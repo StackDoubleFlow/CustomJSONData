@@ -1,19 +1,15 @@
 {
   "_QPVersion": "0.1.2",
   "name": "CustomJSONData",
-  "id": "custom-json-data",
+  "id": "${mod_id}",
   "author": "StackDoubleFlow",
-  "version": "0.14.1",
+  "version": "${version}",
   "packageId": "com.beatgames.beatsaber",
   "packageVersion": "1.17.1",
   "description": "Funny maps go brrr",
+  "modFiles": [],
   "dependencies": [],
-  "modFiles": [
-    "libcustom-json-data.so"
-  ],
-  "libraryFiles": [
-    "libbeatsaber-hook_2_3_2.so"
-  ],
+  "libraryFiles": [],
   "fileCopies": [],
   "copyExtensions": []
 }
