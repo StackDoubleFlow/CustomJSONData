@@ -5,6 +5,11 @@ libs/
 ndkpath.txt
 *.qmod
 
+build/
+
+# TODO: Ignore
+# mod.json
+
 # QPM
 qpm.shared.json
 extern/
