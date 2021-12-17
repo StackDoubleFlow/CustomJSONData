@@ -34,10 +34,10 @@ jobs:
         path: QPM
         repo: RedBrumbler/QuestPackageManager-Rust
         
-    - name: QPM Collect
+    - name: QPM Collapse
       run: |
         chmod +x ./QPM/qpm-rust
-        ./QPM/qpm-rust collect
+        ./QPM/qpm-rust collapse
 
     - name: QPM Dependencies Cache
       id: cache-qpm-deps

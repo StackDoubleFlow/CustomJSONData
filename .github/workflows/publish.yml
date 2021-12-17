@@ -33,10 +33,10 @@ jobs:
           path: QPM
           repo: RedBrumbler/QuestPackageManager-Rust
 
-      - name: QPM Collect
+      - name: QPM Collapse
         run: |
           chmod +x ./QPM/qpm-rust
-          ./QPM/qpm-rust collect
+          ./QPM/qpm-rust collapse
 
       # added the cache on the off chance the qpm.json stays the same across versions
       - name: QPM Dependencies Cache
