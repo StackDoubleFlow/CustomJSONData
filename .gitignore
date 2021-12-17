@@ -5,6 +5,8 @@ libs/
 ndkpath.txt
 *.qmod
 
+build/
+
 # TODO: Ignore
 # mod.json
 
