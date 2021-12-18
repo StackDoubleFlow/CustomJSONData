@@ -104,10 +104,15 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, NoteLineLay
 }
 
 BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomNoteData*>(this->time, this->lineIndex, this->noteLineLayer, this->beforeJumpNoteLineLayer, 
-        this->colorType, this->cutDirection, this->timeToNextColorNote, this->timeToPrevColorNote, this->flipLineIndex, this->flipYSide, this->duration));
+    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomNoteData*>(
+            this->time, this->lineIndex, this->noteLineLayer, this->beforeJumpNoteLineLayer,
+            this->colorType, this->cutDirection, this->timeToNextColorNote,
+            this->timeToPrevColorNote, this->flipLineIndex, this->flipYSide,
+            this->duration));
     copy->customData = this->customData;
     copy->bpm = this->bpm;
+    copy->skipBeforeCutScoring = this->skipBeforeCutScoring;
+    copy->skipAfterCutScoring = this->skipAfterCutScoring;
     return copy;
 }
 

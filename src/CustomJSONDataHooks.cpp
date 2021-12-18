@@ -58,174 +58,232 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     CJDLogger::GetLogger().debug("Parsing json");
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    std::string str = to_utf8(csstrtostr(stringData));
-    
-    std::shared_ptr<rapidjson::Document> sharedDoc = std::make_shared<rapidjson::Document>();
-    rapidjson::Document& doc = *sharedDoc;
-    rapidjson::ParseResult result = doc.Parse(str);
-
-    if (!result || doc.IsNull()) {
-        std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
-        CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
+    if (!stringData) {
+        CJDLogger::GetLogger().error("No string data");
         return nullptr;
     }
-    CJDLogger::GetLogger().debug("Parsing json success");
-    
-    CJDLogger::GetLogger().debug("Parse notes");
-    rapidjson::Value& notesArr = doc["_notes"];
 
+    try {
+        std::string str = to_utf8(csstrtostr(stringData));
 
-    VList<BeatmapSaveData::NoteData*> notes(notesArr.Size());
-    for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
-        rapidjson::Value& note_json = notesArr[i];
+        auto sharedDoc = std::make_shared<rapidjson::Document>();
+        rapidjson::Document &doc = *sharedDoc;
+        rapidjson::ParseResult result = doc.Parse(str);
 
-        float time = note_json["_time"].GetFloat();
-        int lineIndex = note_json["_lineIndex"].GetInt();
-        NoteLineLayer lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
-        BeatmapSaveData::NoteType type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
-        NoteCutDirection cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
-        auto note = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_NoteData *>(time, lineIndex, lineLayer, type, cutDirection));
-        if (note_json.HasMember("_customData")) {
-            note->customData = note_json["_customData"];
+        if (!result || doc.IsNull() || doc.HasParseError()) {
+            std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
+            CJDLogger::GetLogger().debug("Unable to parse json due to %s", errorCodeStr.c_str());
+            return nullptr;
         }
-        notes[i] = note;
-    }
-    CJDLogger::GetLogger().debug("Parsed %i notes", notes.size());
+        CJDLogger::GetLogger().debug("Parsing json success");
 
-    CJDLogger::GetLogger().debug("Parse obstacles");
-    rapidjson::Value& obstaclesArr = doc["_obstacles"];
+        CJDLogger::GetLogger().debug("Parse notes");
 
-    // Cache class pointer and ctor method info
-    VList<BeatmapSaveData::ObstacleData*> obstacles(obstaclesArr.Size());
-    for (rapidjson::SizeType i = 0; i < obstaclesArr.Size(); i++) {
-        rapidjson::Value& obstacle_json = obstaclesArr[i];
+        VList<BeatmapSaveData::NoteData *> notes;
+        auto notesArrIt = doc.FindMember("_notes");
 
-        float time = obstacle_json["_time"].GetFloat();
-        int lineIndex = obstacle_json["_lineIndex"].GetInt();
-        ObstacleType type = ObstacleType(obstacle_json["_type"].GetInt());
-        float duration = obstacle_json["_duration"].GetFloat();
-        int width = obstacle_json["_width"].GetInt();
-        auto obstacle = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_ObstacleData *>(time, lineIndex, type, duration, width));
-        if (obstacle_json.HasMember("_customData")) {
-            obstacle->customData = obstacle_json["_customData"];
-        }
-        obstacles[i] = obstacle;
-    }
-    CJDLogger::GetLogger().debug("Parsed %i obstacles", obstacles.size());
+        if (notesArrIt != doc.MemberEnd() && notesArrIt->value.IsArray()) {
+            auto &notesArr = notesArrIt->value;
+            notes = VList<BeatmapSaveData::NoteData *>(notesArr.Size());
 
-    CJDLogger::GetLogger().debug("Parse events");
-    // Parse events
-    rapidjson::Value& eventsArr = doc["_events"];
-    VList<BeatmapSaveData::EventData*> events(eventsArr.Size());
-    CJDLogger::GetLogger().info("eventsSaveData old size: %i", events.size());
-    for (rapidjson::SizeType i = 0; i < eventsArr.Size(); i++) {
-        rapidjson::Value& event_json = eventsArr[i];
-        
-        float time = event_json["_time"].GetFloat();
-        BeatmapSaveData::BeatmapEventType type = BeatmapSaveData::BeatmapEventType(event_json["_type"].GetInt());
-        int value = event_json["_value"].GetInt();
-        auto event = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(time, type, value));
-        if (event_json.HasMember("_customData")) {
-            event->customData = event_json["_customData"];
-        } 
-        events[i] = event;
-    }
-    CJDLogger::GetLogger().debug("Parsed %i events", events.size());
 
-    CJDLogger::GetLogger().debug("Parse waypoints");
-    rapidjson::Value& waypoints_arr = doc["_waypoints"];
-    VList<BeatmapSaveData::WaypointData*> waypoints(waypoints_arr.Size());
-    for (rapidjson::SizeType i = 0; i < waypoints_arr.Size(); i++) {
-        rapidjson::Value& waypoint_json = waypoints_arr[i];
-        
-        float time = waypoint_json["_time"].GetFloat();
-        int lineIndex = waypoint_json["_lineIndex"].GetInt();
-        NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
-        OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
-        auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
-        waypoints[i] = waypoint;
-    }
-    CJDLogger::GetLogger().debug("Parsed %i waypoints", waypoints.size());
+            for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
+                rapidjson::Value &note_json = notesArr[i];
 
-    CJDLogger::GetLogger().debug("Parse specialEventsKeywordFilters");
-    auto specialEventsKeywordFiltersJsonObjIt = doc.FindMember("_specialEventsKeywordFilters");
-    VList<BeatmapSaveData::SpecialEventsForKeyword *> specialEventsKeywordFiltersList;
-    if (specialEventsKeywordFiltersJsonObjIt != doc.MemberEnd()) {
-        rapidjson::Value &specialEventsKeywordFiltersJsonObj = specialEventsKeywordFiltersJsonObjIt->value;
-        specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(specialEventsKeywordFiltersJsonObj.Size());
+                float time = note_json["_time"].GetFloat();
+                int lineIndex = note_json["_lineIndex"].GetInt();
+                NoteLineLayer lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
+                BeatmapSaveData::NoteType type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
+                NoteCutDirection cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
+                auto note = CRASH_UNLESS(
+                        il2cpp_utils::New<CustomBeatmapSaveData_NoteData *>(time, lineIndex, lineLayer, type,
+                                                                            cutDirection));
 
-        rapidjson::Value &_keywords = specialEventsKeywordFiltersJsonObj["_keywords"];
-        for (auto &keyword_jsonIt: _keywords.GetObject()) {
-            rapidjson::Value &keyword_json = keyword_jsonIt.value;
-            std::string keyword = keyword_json["_keyword"].GetString();
-            Il2CppString* keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
-
-            auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
-            VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
-
-            for (auto& specialEvent : specialEventsArray) {
-                // safety, why not?
-                if (!specialEvent.IsInt())
-                    continue;
-
-                specialEvents.push_back(specialEvent.GetInt());
+                auto customDataIt = note_json.FindMember("_customData");
+                if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
+                    note->customData = customDataIt->value;
+                }
+                notes[i] = note;
             }
-
-            specialEventsKeywordFiltersList.push_back(BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
         }
-    }
-    auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(specialEventsKeywordFiltersList);
 
-    CJDLogger::GetLogger().debug("Parse root");
-    auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData*>(*events, *notes, *waypoints, *obstacles, specialEventsKeywordFilters));
-    CJDLogger::GetLogger().info("eventsSaveDataList pointer right after constructor: %p", saveData->events);
-    saveData->doc = sharedDoc;
-    saveData->customEventsData = std::shared_ptr<std::vector<CustomEventData>>(new std::vector<CustomJSONData::CustomEventData>());
-    if (doc.HasMember("_customData")) {
-        saveData->customData = doc["_customData"];
-        rapidjson::Value& customData = *saveData->customData;
-        
-        if (customData.HasMember("_customEvents")) {
-            CJDLogger::GetLogger().debug("Parse custom events");
+        CJDLogger::GetLogger().debug("Parsed %i notes", notes.size());
 
-            rapidjson::Value& customEventsArr = customData["_customEvents"];
-            for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
-                rapidjson::Value& eventValue = customEventsArr[i];
+        CJDLogger::GetLogger().debug("Parse obstacles");
+        auto obstaclesArrIt = doc.FindMember("_obstacles");
 
-                // Any consequences? Nah never
-                if (!eventValue.HasMember("_type"))
-                    continue;
+        VList<BeatmapSaveData::ObstacleData *> obstacles;
 
-                float time = 0;
-                // Dammit Reaxt
-                auto timeIt = eventValue.FindMember("_time");
-                if (timeIt != eventValue.MemberEnd()) {
-                    rapidjson::Value& timeValue = timeIt->value;
-                    if (timeValue.GetType() == rapidjson::Type::kStringType) {
-                        // Reaxt why
-                        time = std::stof(timeValue.GetString());
-                    } else {
-                        time = timeValue.GetFloat();
-                    }
+        if (obstaclesArrIt->value.IsArray()) {
+            auto &obstaclesArr = obstaclesArrIt->value;
+
+            obstacles = VList<BeatmapSaveData::ObstacleData *>(obstaclesArr.Size());
+
+            for (rapidjson::SizeType i = 0; i < obstaclesArr.Size(); i++) {
+                rapidjson::Value &obstacle_json = obstaclesArr[i];
+
+                float time = obstacle_json["_time"].GetFloat();
+                int lineIndex = obstacle_json["_lineIndex"].GetInt();
+                ObstacleType type = ObstacleType(obstacle_json["_type"].GetInt());
+                float duration = obstacle_json["_duration"].GetFloat();
+                int width = obstacle_json["_width"].GetInt();
+                auto obstacle = CRASH_UNLESS(
+                        il2cpp_utils::New<CustomBeatmapSaveData_ObstacleData *>(time, lineIndex, type, duration,
+                                                                                width));
+
+                auto customDataIt = obstacle_json.FindMember("_customData");
+                if (customDataIt != obstacle_json.MemberEnd() && customDataIt->value.IsObject()) {
+                    obstacle->customData = customDataIt->value;
+                }
+                obstacles[i] = obstacle;
+            }
+        }
+
+        CJDLogger::GetLogger().debug("Parsed %i obstacles", obstacles.size());
+
+        CJDLogger::GetLogger().debug("Parse events");
+
+        auto eventsArrIt = doc.FindMember("_events");
+        VList<BeatmapSaveData::EventData *> events;
+
+        if (eventsArrIt != doc.MemberEnd() && eventsArrIt->value.IsArray()) {
+            // Parse events
+            rapidjson::Value &eventsArr = doc["_events"];
+            events = VList<BeatmapSaveData::EventData *>(eventsArr.Size());
+
+            CJDLogger::GetLogger().info("eventsSaveData old size: %i", events.size());
+            for (rapidjson::SizeType i = 0; i < eventsArr.Size(); i++) {
+                rapidjson::Value &event_json = eventsArr[i];
+
+                float time = event_json["_time"].GetFloat();
+                BeatmapSaveData::BeatmapEventType type = BeatmapSaveData::BeatmapEventType(
+                        event_json["_type"].GetInt());
+                int value = event_json["_value"].GetInt();
+                auto event = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData *>(time, type, value));
+
+                auto customDataIt = event_json.FindMember("_customData");
+                if (customDataIt != event_json.MemberEnd() && customDataIt->value.IsObject()) {
+                    event->customData = customDataIt->value;
+                }
+                events[i] = event;
+            }
+        }
+        CJDLogger::GetLogger().debug("Parsed %i events", events.size());
+
+        CJDLogger::GetLogger().debug("Parse waypoints");
+        auto waypoints_arrIt = doc.FindMember("_waypoints");
+
+        VList<BeatmapSaveData::WaypointData *> waypoints;
+
+        if (waypoints_arrIt != doc.MemberEnd() && waypoints_arrIt->value.IsArray()) {
+            rapidjson::Value &waypoints_arr = doc["_waypoints"];
+
+            waypoints = VList<BeatmapSaveData::WaypointData *>(waypoints_arr.Size());
+
+            for (rapidjson::SizeType i = 0; i < waypoints_arr.Size(); i++) {
+                rapidjson::Value &waypoint_json = waypoints_arr[i];
+
+                float time = waypoint_json["_time"].GetFloat();
+                int lineIndex = waypoint_json["_lineIndex"].GetInt();
+                NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
+                OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
+                auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
+                waypoints[i] = waypoint;
+            }
+        }
+        CJDLogger::GetLogger().debug("Parsed %i waypoints", waypoints.size());
+
+        CJDLogger::GetLogger().debug("Parse specialEventsKeywordFilters");
+        auto specialEventsKeywordFiltersJsonObjIt = doc.FindMember("_specialEventsKeywordFilters");
+        VList<BeatmapSaveData::SpecialEventsForKeyword *> specialEventsKeywordFiltersList;
+
+        if (specialEventsKeywordFiltersJsonObjIt != doc.MemberEnd()) {
+            rapidjson::Value const &specialEventsKeywordFiltersJsonObj = specialEventsKeywordFiltersJsonObjIt->value;
+            specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(
+                    specialEventsKeywordFiltersJsonObj.Size());
+
+            rapidjson::Value const &_keywords = specialEventsKeywordFiltersJsonObj["_keywords"];
+            for (auto const &keyword_jsonIt: _keywords.GetObject()) {
+                rapidjson::Value const &keyword_json = keyword_jsonIt.value;
+                std::string keyword = keyword_json["_keyword"].GetString();
+                Il2CppString *keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
+
+                auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
+                VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
+
+                for (auto &specialEvent: specialEventsArray) {
+                    // safety, why not?
+                    if (!specialEvent.IsNumber())
+                        continue;
+
+                    specialEvents.push_back(specialEvent.GetInt());
                 }
 
-                std::string_view type = eventValue["_type"].GetString();
-
-                rapidjson::Value *data = &eventValue["_data"];
-                saveData->customEventsData->push_back({ type, time, data });
+                specialEventsKeywordFiltersList.push_back(
+                        BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
             }
-
-            CJDLogger::GetLogger().debug("Parsed %lu custom events", saveData->customEventsData->size());
         }
+        auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(
+                specialEventsKeywordFiltersList);
+
+        CJDLogger::GetLogger().debug("Parse root");
+        auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData *>(*events, *notes, *waypoints, *obstacles,
+                                                                                specialEventsKeywordFilters));
+        CJDLogger::GetLogger().info("eventsSaveDataList pointer right after constructor: %p", saveData->events);
+        saveData->doc = sharedDoc;
+        saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventData>>();
+        auto customDataIt = doc.FindMember("_customData");
+        if (customDataIt->value.IsObject()) {
+            saveData->customData = customDataIt->value;
+            rapidjson::Value &customData = *saveData->customData;
+
+            auto customEventsIt = customData.FindMember("_customEvents");
+            if (customEventsIt != customData.MemberEnd() && customEventsIt->value.IsArray()) {
+                CJDLogger::GetLogger().debug("Parse custom events");
+
+                rapidjson::Value &customEventsArr = customEventsIt->value;
+                for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
+                    rapidjson::Value &eventValue = customEventsArr[i];
+
+                    // Any consequences? Nah never
+                    if (!eventValue.HasMember("_type"))
+                        continue;
+
+                    float time = 0;
+                    // Dammit Reaxt
+                    auto timeIt = eventValue.FindMember("_time");
+                    if (timeIt != eventValue.MemberEnd()) {
+                        rapidjson::Value &timeValue = timeIt->value;
+                        if (timeValue.GetType() == rapidjson::Type::kStringType) {
+                            // Reaxt why
+                            time = std::stof(timeValue.GetString());
+                        } else {
+                            time = timeValue.GetFloat();
+                        }
+                    }
+
+                    std::string_view type = eventValue["_type"].GetString();
+
+                    rapidjson::Value *data = &eventValue["_data"];
+                    saveData->customEventsData->push_back({type, time, data});
+                }
+
+                CJDLogger::GetLogger().debug("Parsed %lu custom events", saveData->customEventsData->size());
+            }
+        }
+
+        cachedSaveData = saveData;
+
+        CJDLogger::GetLogger().debug("Finished reading beatmap data");
+        auto stopTime = std::chrono::high_resolution_clock::now();
+        CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
+                stopTime - startTime).count());
+
+        return saveData;
+    } catch (std::exception const& e) {
+        CJDLogger::GetLogger().debug("There was an error loading the beatmap through CJD. Cause of error: %s", e.what());
+        return nullptr;
     }
-
-    cachedSaveData = saveData;
-
-    CJDLogger::GetLogger().debug("Finished reading beatmap data");
-    auto stopTime = std::chrono::high_resolution_clock::now();
-    CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
-
-    return saveData;
 }
 
 CustomNoteData* CustomJSONDataCreateBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection) {
@@ -515,7 +573,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_Start, &BeatmapObjectCallbackCon
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
     BeatmapObjectCallbackController_LateUpdate(self);
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData*>(self->beatmapData);
-    
+
     auto *customBeatmapDataClass = classof(CustomBeatmapData *);
     if (!customBeatmapData || customBeatmapData->klass != customBeatmapDataClass) {
         return;
