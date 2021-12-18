@@ -82,7 +82,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         VList<BeatmapSaveData::NoteData *> notes;
         auto notesArrIt = doc.FindMember("_notes");
 
-        if (notesArrIt->value.IsArray()) {
+        if (notesArrIt != doc.MemberEnd() && notesArrIt->value.IsArray()) {
             auto &notesArr = notesArrIt->value;
             notes = VList<BeatmapSaveData::NoteData *>(notesArr.Size());
 
@@ -100,7 +100,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                                                                             cutDirection));
 
                 auto customDataIt = note_json.FindMember("_customData");
-                if (customDataIt->value.IsObject()) {
+                if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
                     note->customData = customDataIt->value;
                 }
                 notes[i] = note;
@@ -132,7 +132,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                                                                                 width));
 
                 auto customDataIt = obstacle_json.FindMember("_customData");
-                if (customDataIt->value.IsObject()) {
+                if (customDataIt != obstacle_json.MemberEnd() && customDataIt->value.IsObject()) {
                     obstacle->customData = customDataIt->value;
                 }
                 obstacles[i] = obstacle;
@@ -146,7 +146,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
         auto eventsArrIt = doc.FindMember("_events");
         VList<BeatmapSaveData::EventData *> events;
 
-        if (eventsArrIt->value.IsArray()) {
+        if (eventsArrIt != doc.MemberEnd() && eventsArrIt->value.IsArray()) {
             // Parse events
             rapidjson::Value &eventsArr = doc["_events"];
             events = VList<BeatmapSaveData::EventData *>(eventsArr.Size());
@@ -162,7 +162,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                 auto event = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData *>(time, type, value));
 
                 auto customDataIt = event_json.FindMember("_customData");
-                if (customDataIt->value.IsObject()) {
+                if (customDataIt != event_json.MemberEnd() && customDataIt->value.IsObject()) {
                     event->customData = customDataIt->value;
                 }
                 events[i] = event;
@@ -175,7 +175,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
 
         VList<BeatmapSaveData::WaypointData *> waypoints;
 
-        if (waypoints_arrIt->value.IsArray()) {
+        if (waypoints_arrIt != doc.MemberEnd() && waypoints_arrIt->value.IsArray()) {
             rapidjson::Value &waypoints_arr = doc["_waypoints"];
 
             waypoints = VList<BeatmapSaveData::WaypointData *>(waypoints_arr.Size());
@@ -238,7 +238,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
             rapidjson::Value &customData = *saveData->customData;
 
             auto customEventsIt = customData.FindMember("_customEvents");
-            if (customEventsIt->value.IsArray()) {
+            if (customEventsIt != customData.MemberEnd() && customEventsIt->value.IsArray()) {
                 CJDLogger::GetLogger().debug("Parse custom events");
 
                 rapidjson::Value &customEventsArr = customEventsIt->value;
