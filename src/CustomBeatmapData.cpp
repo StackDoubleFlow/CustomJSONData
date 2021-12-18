@@ -11,33 +11,23 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     this->prevAddedBeatmapObjectDataTime = -std::numeric_limits<float>::infinity();
 }
 
-BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
+
+CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
-    BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    // copy events
+    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsDataCopy;
+    customEventsDataCopy->reserve(customEventsData->size());
+
+    for (auto const& event : *customEventsData) {
+        // reference type is copied from emplace
+        customEventsDataCopy->emplace_back(event);
+    }
+
+    copy->customEventsData = customEventsDataCopy;
+
+    // copy the rest
     copy->doc = this->doc;
-    copy->customData = this->customData;
-    copy->customEventsData = this->customEventsData;
-
-    return copy;
-}
-
-
-// TODO: Move all copy to base copy?
-BeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
-//    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsDataCopy;
-//    customEventsDataCopy->reserve(customEventsData->size());
-//
-//    for (auto& customEventsData : *customEventsData) {
-//        customEventsDataCopy->emplace_back(customEventsData);
-//    }
-
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
-
-    copy->doc = this->doc;
-    copy->customEventsData = customEventsData;
     copy->customData = customData;
     copy->beatmapCustomData = beatmapCustomData;
     copy->levelCustomData = levelCustomData;
@@ -45,26 +35,33 @@ BeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
     return copy;
 }
 
+BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
+    auto copy = BaseCopy();
+
+    BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+    BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
+
+    return copy;
+}
+
+
+
+
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutBeatmapObjects() {
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
+    auto copy = BaseCopy();
 
     BeatmapData::CopyBeatmapEvents(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    copy->doc = this->doc;
-    copy->customData = this->customData;
-    copy->customEventsData = this->customEventsData;
 
     return copy;
 }
 
 BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutEvents() {
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
+    auto copy = BaseCopy();
 
     BeatmapData::CopyBeatmapObjects(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
     BeatmapData::CopyAvailableSpecialEventsPerKeywordDictionary(reinterpret_cast<IReadonlyBeatmapData*>(this), copy);
-    copy->doc = this->doc;
-    copy->customData = this->customData;
-    copy->customEventsData = this->customEventsData;
 
     return copy;
 }

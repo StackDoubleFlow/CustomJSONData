@@ -21,7 +21,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopyWithoutBeatmapObjects, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopyWithoutBeatmapObjects"));
     DECLARE_OVERRIDE_METHOD(BeatmapData*, GetCopyWithoutEvents, il2cpp_utils::FindMethod("", "BeatmapData", "GetCopyWithoutEvents"));
 
-    DECLARE_INSTANCE_METHOD(BeatmapData*, BaseCopy);
+    DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
