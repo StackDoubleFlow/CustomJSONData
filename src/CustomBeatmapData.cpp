@@ -15,16 +15,7 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomBeatmapData*>((int) this->beatmapLinesData->Length()));
 
-    // copy events
-    std::shared_ptr<std::vector<CustomJSONData::CustomEventData>> customEventsDataCopy;
-    customEventsDataCopy->reserve(customEventsData->size());
-
-    for (auto const& event : *customEventsData) {
-        // reference type is copied from emplace
-        customEventsDataCopy->emplace_back(event);
-    }
-
-    copy->customEventsData = customEventsDataCopy;
+    copy->customEventsData = customEventsData;
 
     // copy the rest
     copy->doc = this->doc;
