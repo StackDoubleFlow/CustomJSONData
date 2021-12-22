@@ -199,28 +199,31 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
 
         if (specialEventsKeywordFiltersJsonObjIt != doc.MemberEnd()) {
             rapidjson::Value const &specialEventsKeywordFiltersJsonObj = specialEventsKeywordFiltersJsonObjIt->value;
-            specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(
-                    specialEventsKeywordFiltersJsonObj.Size());
 
-            rapidjson::Value const &_keywords = specialEventsKeywordFiltersJsonObj["_keywords"];
-            for (auto const &keyword_jsonIt: _keywords.GetObject()) {
-                rapidjson::Value const &keyword_json = keyword_jsonIt.value;
-                std::string keyword = keyword_json["_keyword"].GetString();
-                Il2CppString *keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
 
-                auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
-                VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
+            auto _keywords = specialEventsKeywordFiltersJsonObj.FindMember("_keywords");
 
-                for (auto &specialEvent: specialEventsArray) {
-                    // safety, why not?
-                    if (!specialEvent.IsNumber())
-                        continue;
+            if (_keywords != specialEventsKeywordFiltersJsonObj.MemberEnd()) {
+                specialEventsKeywordFiltersList = VList<BeatmapSaveData::SpecialEventsForKeyword *>(_keywords->value.Size());
 
-                    specialEvents.push_back(specialEvent.GetInt());
+                for (auto const &keyword_json: _keywords->value.GetArray()) {
+                    std::string keyword = keyword_json["_keyword"].GetString();
+                    Il2CppString *keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
+
+                    auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
+                    VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
+
+                    for (auto &specialEvent: specialEventsArray) {
+                        // safety, why not?
+                        if (!specialEvent.IsNumber())
+                            continue;
+
+                        specialEvents.push_back(specialEvent.GetInt());
+                    }
+
+                    specialEventsKeywordFiltersList.push_back(
+                            BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
                 }
-
-                specialEventsKeywordFiltersList.push_back(
-                        BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
             }
         }
         auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(
@@ -414,6 +417,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     VList<BeatmapSaveData::ObstacleData*> obstaclesSaveData(obstaclesSaveDataL);
     VList<BeatmapSaveData::EventData*> eventsSaveData(eventsSaveDataL);
 
+    CJDLogger::GetLogger().debug("Parsing save data");
     auto startTime = std::chrono::high_resolution_clock::now();
 
     CustomBeatmapData *beatmapData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapData*>(4));
@@ -424,6 +428,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     beatmapDocument->doc = cachedSaveData->doc;
     beatmapData->doc = beatmapDocument;
 
+    CJDLogger::GetLogger().debug("Parsing events save data");
     VList<BeatmapDataLoader::BpmChangeData> bpmChangesData;
     bpmChangesData.push_back(BeatmapDataLoader::BpmChangeData(0, 0, startBpm));
     BeatmapDataLoader::BpmChangeData bpmChangeData = bpmChangesData[0];
@@ -436,6 +441,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         }
     }
 
+    CJDLogger::GetLogger().debug("Sorting");
     // Sort by time
     std::sort(notesSaveData.begin(), notesSaveData.end(), TimeCompare<BeatmapSaveData::NoteData*>);
     std::sort(waypointsSaveData.begin(), waypointsSaveData.end(), TimeCompare<BeatmapSaveData::WaypointData*>);
@@ -461,6 +467,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         return bpmChangeData.bpmChangeStartTime + GetRealTimeFromBPMTime(bpmTime - bpmChangeData.bpmChangeStartBpmTime, bpmChangeData.bpm, shuffle, shufflePeriod);
     };
 
+    CJDLogger::GetLogger().debug("Processing time");
     while (true) {
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
@@ -505,6 +512,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         }
     }
 
+    CJDLogger::GetLogger().debug("Processing events save data");
     for (auto& regularEventData : eventsSaveData) {
         auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(regularEventData);
         float realTime = ProcessTime(eventData->time);
@@ -523,6 +531,8 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event0, 1));
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event4, 1));
     }
+
+    CJDLogger::GetLogger().debug("Parsing environmentSpecialEventFilterData");
     if (environmentSpecialEventFilterData && environmentSpecialEventFilterData->keywords)
     {
         for (auto specialEventsForKeyword : VList(environmentSpecialEventFilterData->keywords))
@@ -545,6 +555,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     }
     beatmapData->ProcessRemainingData();
 
+    CJDLogger::GetLogger().debug("Sorting events");
     beatmapData->customEventsData = cachedSaveData->customEventsData;
     auto &customEventsData = beatmapData->customEventsData;
     std::sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData& a, CustomEventData& b) {

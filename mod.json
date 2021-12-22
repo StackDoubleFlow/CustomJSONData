@@ -1,9 +1,9 @@
 {
-  "_QPVersion": "0.1.2",
+  "_QPVersion": "0.1.1",
   "name": "CustomJSONData",
   "id": "custom-json-data",
   "author": "StackDoubleFlow",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "packageId": "com.beatgames.beatsaber",
   "packageVersion": "1.17.1",
   "description": "Funny maps go brrr",
