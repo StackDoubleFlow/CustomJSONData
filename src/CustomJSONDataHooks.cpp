@@ -411,7 +411,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
                 List<BeatmapSaveData::EventData*>* eventsSaveDataL,
                 BeatmapSaveData::SpecialEventKeywordFiltersData* environmentSpecialEventFilterData,
                 float startBpm, float shuffle, float shufflePeriod) {
-    List_1<BeatmapSaveData::EventData*> *eventsSaveDataList = eventsSaveDataL;
+    VList<BeatmapSaveData::EventData*> eventsSaveDataList = eventsSaveDataL;
     VList<BeatmapSaveData::NoteData*> notesSaveData(notesSaveDataL);
     VList<BeatmapSaveData::WaypointData*> waypointsSaveData(waypointsSaveDataL);
     VList<BeatmapSaveData::ObstacleData*> obstaclesSaveData(obstaclesSaveDataL);
@@ -432,12 +432,17 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     VList<BeatmapDataLoader::BpmChangeData> bpmChangesData;
     bpmChangesData.push_back(BeatmapDataLoader::BpmChangeData(0, 0, startBpm));
     BeatmapDataLoader::BpmChangeData bpmChangeData = bpmChangesData[0];
-    for (auto *eventData : eventsSaveData) {
-        if (BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type) == BeatmapEventType::Event10) {
-            float time = eventData->time;
-            int value = eventData->value;
-            float bpmChangeStartTime = bpmChangeData.bpmChangeStartTime + GetRealTimeFromBPMTime(time - bpmChangeData.bpmChangeStartTime, value, shuffle, shufflePeriod);
-            bpmChangesData.push_back(BeatmapDataLoader::BpmChangeData(bpmChangeStartTime, time, value));
+    if (eventsSaveDataL) {
+        for (auto *eventData: eventsSaveData) {
+            if (BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type) ==
+                BeatmapEventType::Event10) {
+                float time = eventData->time;
+                int value = eventData->value;
+                float bpmChangeStartTime = bpmChangeData.bpmChangeStartTime +
+                                           GetRealTimeFromBPMTime(time - bpmChangeData.bpmChangeStartTime, value,
+                                                                  shuffle, shufflePeriod);
+                bpmChangesData.push_back(BeatmapDataLoader::BpmChangeData(bpmChangeStartTime, time, value));
+            }
         }
     }
 
@@ -471,6 +476,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     while (true) {
         BeatmapObjectType nextType = GetMinTime(noteData, waypointData, obstacleData);
         if (nextType == BeatmapObjectType::Note) {
+            CRASH_UNLESS(noteData);
             float time = ProcessTime(noteData->time);
             ColorType colorType = BeatmapDataLoader::ColorTypeFromBeatmapSaveDataNoteType(noteData->type);
             CustomNoteData *customNoteData;
@@ -489,12 +495,14 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             notesSaveDataIdx++;
             noteData = (notesSaveDataIdx < notesSaveDataCount) ? (CustomBeatmapSaveData_NoteData*) notesSaveData[notesSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Waypoint) {
+            CRASH_UNLESS(waypointData);
             float time = ProcessTime(waypointData->time);
             WaypointData *beatmapObjectData = WaypointData::New_ctor(time, waypointData->lineIndex, waypointData->lineLayer, waypointData->offsetDirection);
             beatmapData->AddBeatmapObjectData(beatmapObjectData);
             waypointsSaveDataIdx++;
             waypointData = (waypointsSaveDataIdx < waypointsSaveDataCount) ? (BeatmapSaveData::WaypointData*) waypointsSaveData[waypointsSaveDataIdx] : nullptr;
         } else if (nextType == BeatmapObjectType::Obstacle) {
+            CRASH_UNLESS(obstacleData);
             float time = ProcessTime(obstacleData->time);
 
             auto customObstacleData = CRASH_UNLESS(il2cpp_utils::New<CustomObstacleData*>(time, obstacleData->lineIndex, obstacleData->type, GetRealTimeFromBPMTime(obstacleData->duration, startBpm, shuffle, shufflePeriod), obstacleData->width));
@@ -513,31 +521,39 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     }
 
     CJDLogger::GetLogger().debug("Processing events save data");
-    for (auto& regularEventData : eventsSaveData) {
-        auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(regularEventData);
-        float realTime = ProcessTime(eventData->time);
-        
-        BeatmapEventType type = BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type);
-        CustomBeatmapEventData *beatmapEventData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapEventData*>(realTime, type, eventData->value));
+    if (!beatmapData->beatmapEventsData)
+        beatmapData->beatmapEventsData = List_1<GlobalNamespace::BeatmapEventData*>::New_ctor();
 
-        // Assign custom data
-        JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper*>());
-        customData->value = eventData->customData;
-        beatmapEventData->customData = customData;
+    if (eventsSaveData) {
+        for (auto &regularEventData: eventsSaveData) {
+            auto *eventData = reinterpret_cast<CustomBeatmapSaveData_EventData *>(regularEventData);
+            float realTime = ProcessTime(eventData->time);
 
-        beatmapData->AddBeatmapEventData(beatmapEventData);
+            BeatmapEventType type = BeatmapDataLoader::ConvertFromBeatmapSaveDataBeatmapEventType(eventData->type);
+            CustomBeatmapEventData *beatmapEventData = CRASH_UNLESS(
+                    il2cpp_utils::New<CustomBeatmapEventData *>(realTime, type, eventData->value));
+
+            // Assign custom data
+            JSONWrapper *customData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapper *>());
+            customData->value = eventData->customData;
+            beatmapEventData->customData = customData;
+
+            beatmapData->AddBeatmapEventData(beatmapEventData);
+        }
     }
+
     if (beatmapData->beatmapEventsData->get_Count() == 0) {
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event0, 1));
         beatmapData->AddBeatmapEventData(BeatmapEventData::New_ctor(0, BeatmapEventType::Event4, 1));
     }
+
 
     CJDLogger::GetLogger().debug("Parsing environmentSpecialEventFilterData");
     if (environmentSpecialEventFilterData && environmentSpecialEventFilterData->keywords)
     {
         for (auto specialEventsForKeyword : VList(environmentSpecialEventFilterData->keywords))
         {
-            if (specialEventsForKeyword->keyword && specialEventsForKeyword->specialEvents)
+            if (specialEventsForKeyword && specialEventsForKeyword->keyword && specialEventsForKeyword->specialEvents)
             {
                 auto hashSet = HashSet_1<BeatmapEventType>::New_ctor();
                 for (BeatmapSaveData::BeatmapEventType beatmapEventType : VList(specialEventsForKeyword->specialEvents))
@@ -548,8 +564,10 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
             }
             else
             {
-                CJDLogger::GetLogger().error("Missing environmentSerializedName:\"%s\" and/or specialEvents set: %s",
-                                             to_utf8(csstrtostr(specialEventsForKeyword->keyword)).c_str(), to_utf8(csstrtostr(specialEventsForKeyword->specialEvents->ToString())).c_str());
+                auto keyWordStr = specialEventsForKeyword && specialEventsForKeyword->keyword ? to_utf8(csstrtostr(specialEventsForKeyword->keyword)) : "null";
+                auto specialEventStr = specialEventsForKeyword && specialEventsForKeyword->specialEvents ? to_utf8(csstrtostr(specialEventsForKeyword->specialEvents->ToString())) : "null";
+
+                CJDLogger::GetLogger().error("Missing environmentSerializedName:\"%s\" and/or specialEvents set: %s", keyWordStr.c_str(), specialEventStr.c_str());
             }
         }
     }
@@ -655,7 +673,7 @@ void CustomJSONData::InstallHooks() {
     auto logger = CJDLogger::GetLogger().WithContext("InstallHooks");
 
     // Install hooks
-    INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
+//    INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_Start)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_LateUpdate)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
