@@ -249,7 +249,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                     rapidjson::Value &eventValue = customEventsArr[i];
 
                     // Any consequences? Nah never
-                    if (!eventValue.HasMember("_type"))
+                    auto typeIt = eventValue.FindMember("_type");
+                    if (typeIt == eventValue.MemberEnd() || typeIt->value.IsNull())
                         continue;
 
                     float time = 0;
@@ -265,7 +266,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                         }
                     }
 
-                    std::string_view type = eventValue["_type"].GetString();
+                    std::string_view type = typeIt->value.GetString();
 
                     rapidjson::Value *data = &eventValue["_data"];
                     saveData->customEventsData->push_back({type, time, data});
@@ -358,7 +359,9 @@ BeatmapObjectType GetMinTime(BeatmapSaveData::NoteData *note, BeatmapSaveData::W
 MAKE_HOOK_MATCH(BeatmapDataMirrorTransform_CreateTransformedData, &BeatmapDataMirrorTransform::CreateTransformedData, GlobalNamespace::IReadonlyBeatmapData*, GlobalNamespace::IReadonlyBeatmapData* beatmapData) {
     int numberOfLines = beatmapData->get_numberOfLines();
     BeatmapData* beatmapData2;
-    if (il2cpp_utils::AssignableFrom<CustomJSONData::CustomBeatmapData*>(reinterpret_cast<Il2CppObject*>(beatmapData)->klass)) {
+    static auto CustomBeatmapDataKlass = classof(CustomJSONData::CustomBeatmapData*);
+
+    if (il2cpp_functions::class_is_assignable_from(CustomBeatmapDataKlass, reinterpret_cast<Il2CppObject*>(beatmapData)->klass)) {
         beatmapData2 = reinterpret_cast<CustomJSONData::CustomBeatmapData*>(beatmapData)->BaseCopy(); //CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapData*>(numberOfLines)); // crashes with Tracks
     } else {
         beatmapData2 = BeatmapData::New_ctor(numberOfLines);
@@ -652,9 +655,12 @@ void BeatmapDataLoadedEvent(StandardLevelInfoSaveData *standardLevelInfoSaveData
     customBeatmapData->beatmapCustomData = beatmapCustomData;
 
     JSONWrapperUTF16 *levelCustomData = CRASH_UNLESS(il2cpp_utils::New<JSONWrapperUTF16*>());
-    for (int i = 0; i < customSaveData->difficultyBeatmapSets->Length(); i++) {
+    auto difficultyBeatmapSetsLength = customSaveData->difficultyBeatmapSets->Length();
+    for (int i = 0; i < difficultyBeatmapSetsLength; i++) {
         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet = customSaveData->difficultyBeatmapSets->values[i];
-        for (int j = 0; j < beatmapSet->difficultyBeatmaps->Length(); j++) {
+
+        auto difficultyBeatmapsLength = beatmapSet->difficultyBeatmaps->Length();
+        for (int j = 0; j < difficultyBeatmapsLength; j++) {
             auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmapSet->difficultyBeatmaps->values[j]);
             if (!customBeatmap || !customBeatmap->beatmapFilename)
                 continue;
