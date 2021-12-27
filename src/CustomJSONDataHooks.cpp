@@ -16,6 +16,7 @@
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
 #include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
+#include "GlobalNamespace/AudioTimeSyncController.hpp"
 #include "GlobalNamespace/BeatmapObjectCallbackController.hpp"
 #include "GlobalNamespace/IAudioTimeSource.hpp"
 #include "System/Comparison_1.hpp"
@@ -595,28 +596,53 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
 }
 
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_Start, &BeatmapObjectCallbackController::Start, void, BeatmapObjectCallbackController *self) {
-    BeatmapObjectCallbackController_Start(self);
-
     for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
         callbackData.nextEventIndex = 0;
+    }
+    BeatmapObjectCallbackController_Start(self);
+}
+
+MAKE_HOOK_MATCH(BeatmapObjectCallbackController_SetNewBeatmapData, &BeatmapObjectCallbackController::SetNewBeatmapData, void, BeatmapObjectCallbackController *self, IReadonlyBeatmapData* beatmapData) {
+    for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
+        callbackData.nextEventIndex = 0;
+    }
+    BeatmapObjectCallbackController_SetNewBeatmapData(self, beatmapData);
+}
+
+float getSongTime(GlobalNamespace::IAudioTimeSource *timeSource) {
+    static auto *timeSyncControllerClass = classof(AudioTimeSyncController *);
+    auto *timeSourceObject = reinterpret_cast<Il2CppObject *>(timeSource);
+    if (timeSourceObject->klass == timeSyncControllerClass) {
+        auto *timeSyncController = reinterpret_cast<AudioTimeSyncController *>(timeSource);
+        return timeSyncController->songTime;
+    } else {
+        return timeSource->get_songTime();
     }
 }
 
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
-    BeatmapObjectCallbackController_LateUpdate(self);
-    auto *customBeatmapData = reinterpret_cast<CustomBeatmapData*>(self->beatmapData);
+    auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(self->beatmapData);
 
-    auto *customBeatmapDataClass = classof(CustomBeatmapData *);
+    static auto const* customBeatmapDataClass = classof(CustomBeatmapData *);
     if (!customBeatmapData || customBeatmapData->klass != customBeatmapDataClass) {
-        return;
+        return BeatmapObjectCallbackController_LateUpdate(self);
     }
 
     auto &customEventsData = customBeatmapData->customEventsData;
 
-    for (auto& callbackData : CustomEventCallbacks::customEventCallbacks) {
+    bool start = false;
+
+    for (auto &callbackData: CustomEventCallbacks::customEventCallbacks) {
+
         while (callbackData.nextEventIndex < customEventsData->size()) {
             CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
-            if (customEventData->time - callbackData.aheadTime >= self->audioTimeSource->get_songTime()) {
+
+            // If events are at start of song or before, set to true
+            if (customEventData->time <= self->spawningStartTime) {
+                start = true;
+            }
+
+            if (customEventData->time - callbackData.aheadTime >= getSongTime(self->audioTimeSource)) {
                 break;
             }
 
@@ -627,6 +653,17 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
             callbackData.nextEventIndex++;
         }
     }
+
+    // Restart the song since we were loading for events
+    // Restart song since loading time forced to wait
+    static auto *timeSyncControllerClass = classof(AudioTimeSyncController *);
+
+    if (start && reinterpret_cast<Il2CppObject*>(self->audioTimeSource)->klass == timeSyncControllerClass && self->audioTimeSource->get_isReady()) {
+        auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
+        audioTimeSource->StartSong(0);
+    }
+
+    BeatmapObjectCallbackController_LateUpdate(self);
 }
 
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
@@ -680,6 +717,7 @@ void CustomJSONData::InstallHooks() {
 
     // Install hooks
 //    INSTALL_HOOK(logger, BeatmapData_AddBeatmapObjectData)
+    INSTALL_HOOK(logger, BeatmapObjectCallbackController_SetNewBeatmapData)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_Start)
     INSTALL_HOOK(logger, BeatmapObjectCallbackController_LateUpdate)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
