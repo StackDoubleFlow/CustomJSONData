@@ -638,7 +638,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
             CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
 
             // If events are at start of song or before, set to true
-            if (customEventData->time <= self->spawningStartTime) {
+            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0) {
                 start = true;
             }
 
