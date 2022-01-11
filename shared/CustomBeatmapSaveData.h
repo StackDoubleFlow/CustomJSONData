@@ -44,7 +44,7 @@ public:
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapSaveData_EventData, GlobalNamespace::BeatmapSaveData::EventData,
-    DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapSaveData::BeatmapEventType type, int value);
+    DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapSaveData::BeatmapEventType type, int value, float floatValue);
 
 public:
     std::optional<std::reference_wrapper<rapidjson::Value>> customData;

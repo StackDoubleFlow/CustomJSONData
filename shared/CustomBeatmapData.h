@@ -33,7 +33,7 @@ public:
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BeatmapEventData,
-    DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapEventType type, int value);
+    DECLARE_CTOR(ctor, float time, GlobalNamespace::BeatmapEventType type, int value, float floatValue);
 
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
 )
