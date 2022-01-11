@@ -29,13 +29,16 @@
     {
       "id": "custom-types",
       "versionRange": "^0.14.0",
-      "additionalData": {}
+      "additionalData": {
+        "includeQmod": false
+      }
     },
     {
       "id": "songloader",
       "versionRange": "^0.8.0",
       "additionalData": {
-        "private": true
+        "private": true,
+        "includeQmod": false
       }
     },
     {
