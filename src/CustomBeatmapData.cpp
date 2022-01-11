@@ -60,7 +60,7 @@ BeatmapData *CustomJSONData::CustomBeatmapData::GetCopyWithoutEvents() {
 DEFINE_TYPE(CustomJSONData, CustomBeatmapEventData);
 
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, BeatmapEventType type, int value, float floatValue) {
-    static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapEventData*), ".ctor", 3));
+    static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapEventData*), ".ctor", 4));
     BeatmapEventData* instance = this;
     il2cpp_utils::RunMethodRethrow<void, false>(instance, BeatmapEventData_Ctor, time, type, value, floatValue);
     INVOKE_CTOR();

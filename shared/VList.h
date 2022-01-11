@@ -98,7 +98,7 @@ public:
     }
 
     iterator end() {
-        return inner->items.end();
+        return inner->items.begin() + size();
     }
 };
 
