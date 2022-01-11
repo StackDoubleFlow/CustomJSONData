@@ -55,6 +55,40 @@ CustomBeatmapSaveData *cachedSaveData;
 #define FindMethodGetter(qualifiedTypeName, methodName) \
 ::il2cpp_utils::il2cpp_type_check::MetadataGetter<#methodName, qualifiedTypeName, decltype(&qualifiedTypeName::methodName)>::get();
 
+static void ConvertBeatmapSaveDataPreV2_5_0(CustomBeatmapSaveData* beatmapSaveData)
+{
+    auto size = beatmapSaveData && beatmapSaveData->events ? beatmapSaveData->events->size : 0;
+    VList<BeatmapSaveData::EventData*> list(List<BeatmapSaveData::EventData*>::New_ctor(size));
+    for (auto originalEventData : VList(beatmapSaveData->events))
+    {
+        auto* eventData = reinterpret_cast<CustomBeatmapSaveData_EventData *>(originalEventData);
+        CustomBeatmapSaveData_EventData* newData = nullptr;
+        if (eventData->type == BeatmapEventType::Event10)
+        {
+            newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, BeatmapEventType::BpmChange, eventData->value, eventData->floatValue));
+            newData->customData = eventData->customData;
+        }
+
+        if (BeatmapEventTypeExtensions::IsBPMChangeEvent(static_cast<int>(eventData->type)))
+        {
+            if (eventData->value != 0)
+            {
+                newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, eventData->floatValue));
+                newData->customData = eventData->customData;
+            }
+        }
+        else
+        {
+            newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, 1.0f));
+            newData->customData = eventData->customData;
+        }
+
+        list.push_back(newData ? newData : eventData);
+    }
+
+    beatmapSaveData->events = list;
+}
+
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
 MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
     CJDLogger::GetLogger().debug("Parsing json");
@@ -284,6 +318,13 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
             }
         }
 
+        auto versionIt = doc.FindMember("_version");
+        if (versionIt != doc.MemberEnd()) {
+            saveData->version = il2cpp_utils::newcsstr(versionIt->value.GetString());
+        } else {
+            saveData->version = nullptr;
+        }
+
         // Below taken straight from BeatmapSaveData.DeserializeFromJSONString
         if (saveData->version && !csstrtostr(saveData->version).empty())
         {
@@ -292,12 +333,12 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
             Version* value = Version::New_ctor(il2cpp_utils::newcsstr("2.5.0"));
             if (versionVersion->CompareTo(value) < 0)
             {
-                BeatmapSaveData::ConvertBeatmapSaveDataPreV2_5_0(saveData);
+                ConvertBeatmapSaveDataPreV2_5_0(saveData);
             }
         }
         else
         {
-            BeatmapSaveData::ConvertBeatmapSaveDataPreV2_5_0(saveData);
+            ConvertBeatmapSaveDataPreV2_5_0(saveData);
         }
 
         cachedSaveData = saveData;
