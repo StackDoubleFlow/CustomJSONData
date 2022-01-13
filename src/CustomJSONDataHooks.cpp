@@ -686,11 +686,13 @@ float getSongTime(GlobalNamespace::IAudioTimeSource *timeSource) {
 }
 
 MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallbackController::LateUpdate, void, BeatmapObjectCallbackController *self) {
+    BeatmapObjectCallbackController_LateUpdate(self);
+
     auto *customBeatmapData = reinterpret_cast<CustomBeatmapData *>(self->beatmapData);
 
     static auto const* customBeatmapDataClass = classof(CustomBeatmapData *);
     if (!customBeatmapData || customBeatmapData->klass != customBeatmapDataClass) {
-        return BeatmapObjectCallbackController_LateUpdate(self);
+        return;
     }
 
     auto &customEventsData = customBeatmapData->customEventsData;
@@ -727,8 +729,6 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
         auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
         audioTimeSource->StartSong(0);
     }
-
-    BeatmapObjectCallbackController_LateUpdate(self);
 }
 
 MAKE_HOOK_MATCH(BeatmapData_AddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData *self, BeatmapObjectData *beatmapObjectData) {
