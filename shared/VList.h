@@ -81,8 +81,7 @@ public:
     }
 
     Ty& operator[](const size_t pos) const {
-        // TODO: bounds check assert
-        return inner->items->values[pos];
+        return inner->items.get(pos);
     }
 
     int size() const {
@@ -95,11 +94,11 @@ public:
     }
 
     iterator begin() {
-        return &inner->items->values[0];
+        return inner->items.begin();
     }
 
     iterator end() {
-        return &inner->items->values[size()];
+        return inner->items.begin() + size();
     }
 };
 

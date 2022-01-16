@@ -43,11 +43,12 @@ void CustomJSONData::CustomBeatmapSaveData_ObstacleData::ctor(float time, int li
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapSaveData_ObstacleData);
 
-void CustomJSONData::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type, int value) {
+void CustomJSONData::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type, int value, float floatValue) {
     INVOKE_CTOR();
     this->time = time;
     this->type = type;
     this->value = value;
+    this->floatValue = floatValue;
 }
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapSaveData_EventData);

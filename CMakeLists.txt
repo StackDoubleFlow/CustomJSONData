@@ -1,6 +1,9 @@
 # include some defines automatically made by qpm
 include(qpm_defines.cmake)
 
+# Link time optimizatrion
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 cmake_minimum_required(VERSION 3.21)
 project(${COMPILE_ID})
 
@@ -19,6 +22,7 @@ add_compile_options(-O3)
 add_compile_definitions(VERSION=\"${MOD_VERSION}\")
 add_compile_definitions(ID=\"${MOD_ID}\")
 add_compile_definitions(MOD_ID=\"${MOD_ID}\")
+add_compile_definitions(USE_CODEGEN_FIELDS)
 
 # recursively get all src files
 RECURSE_FILES(cpp_file_list ${SOURCE_DIR}/*.cpp)
@@ -46,12 +50,17 @@ target_link_libraries(${COMPILE_ID} PRIVATE -llog)
 include(extern.cmake)
 
 add_custom_command(TARGET ${COMPILE_ID} POST_BUILD
-        COMMAND ${CMAKE_STRIP} -g -S -d --strip-all
+        COMMAND ${CMAKE_STRIP} -d --strip-all
         "lib${COMPILE_ID}.so" -o "stripped_lib${COMPILE_ID}.so"
         COMMENT "Strip debug symbols done on final binary.")
 
 add_custom_command(TARGET ${COMPILE_ID} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E rename lib${COMPILE_ID}.so debug_lib${COMPILE_ID}.so
+        COMMAND ${CMAKE_COMMAND} -E make_directory debug
+        COMMENT "Rename the lib to debug_ since it has debug symbols"
+        )
+
+add_custom_command(TARGET ${COMPILE_ID} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rename lib${COMPILE_ID}.so debug/lib${COMPILE_ID}.so
         COMMENT "Rename the lib to debug_ since it has debug symbols"
         )
 
