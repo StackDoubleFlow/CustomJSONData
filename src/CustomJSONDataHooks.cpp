@@ -705,8 +705,10 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
             CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
 
             // If events are at start of song or before, set to true
-            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0) {
+            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0 && !start && self->audioTimeSource->get_isReady()) {
                 start = true;
+                auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
+                audioTimeSource->Pause();
             }
 
             if (customEventData->time - callbackData.aheadTime >= getSongTime(self->audioTimeSource)) {
@@ -725,9 +727,9 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     // Restart song since loading time forced to wait
     static auto *timeSyncControllerClass = classof(AudioTimeSyncController *);
 
-    if (start && reinterpret_cast<Il2CppObject*>(self->audioTimeSource)->klass == timeSyncControllerClass && self->audioTimeSource->get_isReady()) {
+    if (start && reinterpret_cast<Il2CppObject*>(self->audioTimeSource)->klass == timeSyncControllerClass) {
         auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
-        audioTimeSource->StartSong(0);
+        audioTimeSource->Resume();
     }
 }
 
