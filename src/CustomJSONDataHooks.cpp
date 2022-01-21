@@ -704,15 +704,16 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
         while (callbackData.nextEventIndex < customEventsData->size()) {
             CustomEventData *customEventData = &(*customEventsData)[callbackData.nextEventIndex];
 
-            // If events are at start of song or before, set to true
-            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0 && !start && self->audioTimeSource->get_isReady()) {
-                start = true;
-                auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
-                audioTimeSource->Pause();
-            }
-
             if (customEventData->time - callbackData.aheadTime >= getSongTime(self->audioTimeSource)) {
                 break;
+            }
+
+            // If events are at start of song or before, set to true
+            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0 && !start) {
+                start = true;
+
+                auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
+                audioTimeSource->Pause();
             }
 
             if (customEventData->time >= self->spawningStartTime || callbackData.callIfBeforeStartTime) {
