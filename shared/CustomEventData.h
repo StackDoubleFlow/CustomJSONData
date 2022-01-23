@@ -47,7 +47,7 @@ public:
     static void AddCustomEventCallback(
         void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
                          CustomJSONData::CustomEventData *),
-        float aheadTime = 0, bool callIfBeforeStartTime = false);
+        float aheadTime = 0, bool callIfBeforeStartTime = true);
 };
 
 } // end namespace CustomJSONData
