@@ -311,7 +311,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
                     std::string_view type = typeIt->value.GetString();
 
                     rapidjson::Value *data = &eventValue["_data"];
-                    saveData->customEventsData->push_back({type, time, data});
+                    saveData->customEventsData->emplace_back(type, time, data);
                 }
 
                 CJDLogger::GetLogger().debug("Parsed %lu custom events", saveData->customEventsData->size());
