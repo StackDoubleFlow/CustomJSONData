@@ -26,6 +26,9 @@
 #include "System/Linq/Enumerable.hpp"
 #include "System/Version.hpp"
 
+#include "GlobalNamespace/GameSongController.hpp"
+#include "UnityEngine/Resources.hpp"
+
 #include "CustomBeatmapSaveData.h"
 #include "CustomBeatmapData.h"
 #include "CustomEventData.h"
@@ -698,6 +701,7 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     auto &customEventsData = customBeatmapData->customEventsData;
 
     bool start = false;
+    static GlobalNamespace::GameSongController* controller = nullptr;
 
     for (auto &callbackData: CustomEventCallbacks::customEventCallbacks) {
 
@@ -709,11 +713,11 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
             }
 
             // If events are at start of song or before, set to true
-            if (customEventData->time <= self->spawningStartTime && self->spawningStartTime == 0 && !start) {
+            if (customEventData->time <= self->spawningStartTime && !start) {
                 start = true;
 
-                auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
-                audioTimeSource->Pause();
+                controller = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::GameSongController*>().get(0);
+                controller->PauseSong();
             }
 
             if (customEventData->time >= self->spawningStartTime || callbackData.callIfBeforeStartTime) {
@@ -728,9 +732,8 @@ MAKE_HOOK_MATCH(BeatmapObjectCallbackController_LateUpdate, &BeatmapObjectCallba
     // Restart song since loading time forced to wait
     static auto *timeSyncControllerClass = classof(AudioTimeSyncController *);
 
-    if (start && reinterpret_cast<Il2CppObject*>(self->audioTimeSource)->klass == timeSyncControllerClass) {
-        auto* audioTimeSource = reinterpret_cast<AudioTimeSyncController *>(self->audioTimeSource);
-        audioTimeSource->Resume();
+    if (start) {
+        controller->ResumeSong();
     }
 }
 
