@@ -93,7 +93,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomBeatmapSaveData* beatmapSaveDa
 }
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
-MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, Il2CppString *stringData) {
+MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, StringW stringData) {
     CJDLogger::GetLogger().debug("Parsing json");
     auto startTime = std::chrono::high_resolution_clock::now();
 
