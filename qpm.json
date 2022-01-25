@@ -4,7 +4,7 @@
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
-    "version": "0.3.1",
+    "version": "0.15.0",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
@@ -23,12 +23,12 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.18.0",
+      "versionRange": "^0.19.0",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.14.0",
+      "versionRange": "^0.15.0",
       "additionalData": {
         "includeQmod": false
       }
@@ -37,8 +37,8 @@
       "id": "songloader",
       "versionRange": "^0.8.0",
       "additionalData": {
-        "private": true,
-        "includeQmod": false
+        "includeQmod": false,
+        "private": true
       }
     },
     {
