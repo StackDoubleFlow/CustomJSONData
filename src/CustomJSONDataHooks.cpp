@@ -103,11 +103,9 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &GlobalNamespace::Bea
     }
 
     try {
-        std::string str = to_utf8(csstrtostr(stringData));
-
         auto sharedDoc = std::make_shared<rapidjson::Document>();
         rapidjson::Document &doc = *sharedDoc;
-        rapidjson::ParseResult result = doc.Parse(str);
+        rapidjson::ParseResult result = doc.Parse(stringData);
 
         if (!result || doc.IsNull() || doc.HasParseError()) {
             std::string errorCodeStr(rapidjson::GetParseError_En(result.Code()));
@@ -402,7 +400,7 @@ float ProcessTime(float bpmTime, int &bpmChangesDataIdx, VList<BeatmapDataLoader
 }
 
 template <typename T>
-bool TimeCompare(T a, T b) {
+constexpr bool TimeCompare(T const a, T const b) {
     return (a->time < b->time);
 }
 
@@ -521,9 +519,9 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
 
     CJDLogger::GetLogger().debug("Sorting");
     // Sort by time
-    std::sort(notesSaveData.begin(), notesSaveData.end(), TimeCompare<BeatmapSaveData::NoteData*>);
-    std::sort(waypointsSaveData.begin(), waypointsSaveData.end(), TimeCompare<BeatmapSaveData::WaypointData*>);
-    std::sort(obstaclesSaveData.begin(), obstaclesSaveData.end(), TimeCompare<BeatmapSaveData::ObstacleData*>);
+    std::stable_sort(notesSaveData.begin(), notesSaveData.end(), TimeCompare<BeatmapSaveData::NoteData*>);
+    std::stable_sort(waypointsSaveData.begin(), waypointsSaveData.end(), TimeCompare<BeatmapSaveData::WaypointData*>);
+    std::stable_sort(obstaclesSaveData.begin(), obstaclesSaveData.end(), TimeCompare<BeatmapSaveData::ObstacleData*>);
 
     int notesSaveDataIdx = 0;
     int waypointsSaveDataIdx = 0;
@@ -648,7 +646,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     CJDLogger::GetLogger().debug("Sorting events");
     beatmapData->customEventsData = cachedSaveData->customEventsData;
     auto &customEventsData = beatmapData->customEventsData;
-    std::sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData& a, CustomEventData& b) {
+    std::stable_sort(customEventsData->begin(), customEventsData->end(), [](CustomEventData const& a, CustomEventData const& b) {
         return a.time < b.time;
     });
     for (auto& customEventData : *customEventsData) {
