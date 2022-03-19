@@ -25,7 +25,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
     DECLARE_INSTANCE_METHOD(JSONWrapper*, GetCopy);
 
 public:
-    std::optional<std::reference_wrapper<rapidjson::Value>> value;
+    std::optional<std::reference_wrapper<const rapidjson::Value>> value;
     std::unordered_map<char, std::any> associatedData;
 )
 
@@ -36,7 +36,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject,
                               DECLARE_SIMPLE_DTOR();
 
                               public:
-                              std::optional<std::reference_wrapper<ValueUTF16>> value;
+                              std::optional<std::reference_wrapper<const ValueUTF16>> value;
                               std::unordered_map<char, std::any> associatedData;
 
                               DECLARE_INSTANCE_METHOD(JSONWrapperUTF16*, GetCopy);

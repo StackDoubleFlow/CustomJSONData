@@ -23,7 +23,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.20.0",
+      "versionRange": "^0.21.0",
       "additionalData": {}
     },
     {
@@ -35,7 +35,7 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.8.0",
+      "versionRange": "^0.9.0",
       "additionalData": {
         "includeQmod": false,
         "private": true
@@ -45,6 +45,18 @@
       "id": "modloader",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "paper",
+      "versionRange": "^1.0.5",
+      "additionalData": {}
+    },
+    {
+      "id": "cpp-semver",
+      "versionRange": "^0.1.1",
+      "additionalData": {
+        "private": true
+      }
     }
   ],
   "additionalData": {}

@@ -4,27 +4,38 @@
 #include "custom-types/shared/macros.hpp"
 
 #include "CJDLogger.h"
+#include "GlobalNamespace/BeatmapDataItem.hpp"
 
 namespace GlobalNamespace {
 class BeatmapObjectCallbackController;
 }
 
+DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem,
+public:
+      DECLARE_CTOR(ctor, float time, /* std::string_view*/ void* type, size_t typeHash, /* rapidjson::Value */ void* data);
+
+  public:
+  std::string_view type;
+  size_t typeHash;
+  rapidjson::Value const* data;
+)
+
 namespace CustomJSONData {
 
-class CustomEventData {
+class CustomEventSaveData {
 public:
     std::string_view type;
     size_t typeHash;
     float time;
-    rapidjson::Value *data;
+    rapidjson::Value const* data;
 
-    constexpr CustomEventData(std::string_view type, size_t typeHash, float time, rapidjson::Value *data)
+    constexpr CustomEventSaveData(std::string_view type, size_t typeHash, float time, rapidjson::Value const* data)
             : type(type),
               typeHash(typeHash),
               time(time),
               data(data) {}
 
-    constexpr CustomEventData(std::string_view type, float time, rapidjson::Value *data)
+    constexpr CustomEventSaveData(std::string_view type, float time, rapidjson::Value const* data)
             : type(type),
               time(time),
               data(data) {
@@ -34,7 +45,7 @@ public:
 
 struct CustomEventCallbackData {
     void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
-                     CustomJSONData::CustomEventData *);
+                     CustomJSONData::CustomEventSaveData *);
     float aheadTime;
     bool callIfBeforeStartTime;
     int nextEventIndex;
@@ -46,7 +57,7 @@ public:
 
     static void AddCustomEventCallback(
         void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
-                         CustomJSONData::CustomEventData *),
+                         CustomJSONData::CustomEventSaveData *),
         float aheadTime = 0, bool callIfBeforeStartTime = true);
 };
 

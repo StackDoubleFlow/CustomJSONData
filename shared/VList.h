@@ -88,6 +88,14 @@ public:
         return inner->size;
     }
 
+    auto resize(const size_t cap) {
+        return inner->EnsureCapacity(cap);
+    }
+
+    void trim() const {
+        return inner->TrimExcess();
+    }
+
     void push_back(const Ty& val) {
         // TODO: C++ impl
         return inner->Add(val);
@@ -99,6 +107,10 @@ public:
 
     iterator end() {
         return inner->items.begin() + size();
+    }
+
+    InnerTy * getInner() const {
+        return inner;
     }
 };
 
