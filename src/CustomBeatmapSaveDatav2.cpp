@@ -396,4 +396,6 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     {
         ConvertBeatmapSaveDataPreV2_5_0(saveData);
     }
+
+    return saveData;
 }

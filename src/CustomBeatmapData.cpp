@@ -3,8 +3,6 @@
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 
-#include "System/Collections/Generic/LinkedList_1.hpp"
-
 using namespace GlobalNamespace;
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapData);
@@ -20,39 +18,6 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     INVOKE_CTOR();
 }
 
-BeatmapData *CustomJSONData::CustomBeatmapData::GetFilteredCopy(System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
-    isCreatingFilteredCopy = true;
-    auto beatmapData = BaseCopy();
-    auto enumerator = allBeatmapData->get_items()->GetEnumerator();
-
-    while (true)
-    {
-        if (!enumerator.MoveNext()) {
-            break;
-        }
-
-        auto const& beatmapDataItem = enumerator.get_Current();
-
-        BeatmapDataItem* beatmapDataItem2 = processDataItem->Invoke(beatmapDataItem->GetCopy());
-        if (beatmapDataItem2)
-        {
-            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem2)) {
-                beatmapData->InsertBeatmapEventData(*event);
-            }
-
-            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem2)) {
-                beatmapData->AddBeatmapObjectData(*object);
-            }
-
-            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem2)) {
-                beatmapData->InsertCustomEventData(*customEvent);
-            }
-        }
-    }
-
-    isCreatingFilteredCopy = false;
-    return beatmapData;
-}
 
 System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppObject *obj) {
     if (obj && std::string_view(obj->klass->namespaze) == std::string_view(classof(CustomBeatmapData*)->namespaze)) {
@@ -79,40 +44,6 @@ CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy()
     return copy;
 }
 
-BeatmapData *CustomJSONData::CustomBeatmapData::GetCopy() {
-    auto copy = BaseCopy();
-
-    auto enumerator = allBeatmapData->get_items()->GetEnumerator();
-
-    while (true)
-    {
-        if (!enumerator.MoveNext()) {
-            break;
-        }
-
-        auto const& beatmapDataItem = enumerator.get_Current();
-
-        if (beatmapDataItem)
-        {
-            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
-                copy->InsertBeatmapEventData(*event);
-            }
-
-            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
-                copy->AddBeatmapObjectData(*object);
-            }
-
-            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
-                copy->InsertCustomEventData(*customEvent);
-            }
-        }
-    }
-
-    return copy;
-}
-
-
-
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, GlobalNamespace::BasicBeatmapEventType type, int value, float floatValue) {
     static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapEventData*), ".ctor", 4));
     BeatmapEventData* instance = this;
@@ -120,6 +51,11 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time, GlobalNamespace::B
     INVOKE_CTOR();
 }
 
+CustomJSONData::CustomBeatmapEventData *CustomJSONData::CustomBeatmapEventData::GetCopy() {
+    auto copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, (int) type, value, floatValue);
+    copy->customData = this->customData;
+    return copy;
+}
 
 
 void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width, int height) {
@@ -129,7 +65,7 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
     INVOKE_CTOR();
 }
 
-BeatmapObjectData *CustomJSONData::CustomObstacleData::GetCopy() {
+CustomJSONData::CustomObstacleData *CustomJSONData::CustomObstacleData::GetCopy() {
     auto copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->lineIndex, this->lineLayer, this->duration, this->width, height);
     copy->customData = this->customData;
     copy->bpm = this->bpm;
@@ -160,7 +96,7 @@ void CustomJSONData::CustomSliderData::ctor(GlobalNamespace::SliderData::Type sl
 }
 
 
-BeatmapObjectData *CustomJSONData::CustomSliderData::GetCopy() {
+CustomJSONData::CustomSliderData *CustomJSONData::CustomSliderData::GetCopy() {
     auto copy = CustomJSONData::CustomSliderData::New_ctor(sliderType, colorType, hasHeadNote, time, headLineIndex, headLineLayer, headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection,
                                                            headCutDirectionAngleOffset, hasTailNote, tailTime, tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier,
                                                            tailCutDirection, tailCutDirectionAngleOffset, midAnchorMode, sliceCount, squishAmount);
@@ -184,7 +120,7 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, ::GlobalNam
     INVOKE_CTOR();
 }
 
-BeatmapObjectData *CustomJSONData::CustomNoteData::GetCopy() {
+CustomJSONData::CustomNoteData *CustomJSONData::CustomNoteData::GetCopy() {
     auto copy = CustomJSONData::CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, gameplayType, scoringType,
                                                          colorType, cutDirection, timeToNextColorNote,
                                                          timeToPrevColorNote, flipLineIndex, flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
@@ -202,7 +138,7 @@ void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalN
     INVOKE_CTOR();
 }
 
-BeatmapObjectData *CustomJSONData::CustomWaypointData::GetCopy() {
+CustomJSONData::CustomWaypointData *CustomJSONData::CustomWaypointData::GetCopy() {
     auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomWaypointData*>(time, lineIndex, lineLayer, offsetDirection));
     copy->bpm = this->bpm;
     return copy;

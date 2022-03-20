@@ -28,6 +28,7 @@
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "System/Collections/Generic/KeyValuePair_2.hpp"
+#include "System/Collections/Generic/LinkedList_1.hpp"
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Linq/Enumerable.hpp"
@@ -91,6 +92,93 @@ static std::string_view GetVersionFromPath(std::string_view path)
     }
 
     return fallback;
+}
+
+
+BeatmapData * CustomBeatmapData_GetFilteredCopy(CustomBeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
+    self->isCreatingFilteredCopy = true;
+    auto beatmapData = self->BaseCopy();
+    auto enumerator = self->allBeatmapData->get_items()->GetEnumerator();
+
+    while (true)
+    {
+        if (!enumerator.MoveNext()) {
+            break;
+        }
+
+        auto const& beatmapDataItem = enumerator.get_Current();
+
+        BeatmapDataItem* beatmapDataItem2 = processDataItem->Invoke(beatmapDataItem->GetCopy());
+        if (beatmapDataItem2)
+        {
+            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem2)) {
+                beatmapData->InsertBeatmapEventData(*event);
+            }
+
+            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem2)) {
+                beatmapData->AddBeatmapObjectData(*object);
+            }
+
+            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem2)) {
+                beatmapData->InsertCustomEventData(*customEvent);
+            }
+        }
+    }
+
+    self->isCreatingFilteredCopy = false;
+    return beatmapData;
+}
+
+BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
+    auto copy = self->BaseCopy();
+
+    auto enumerator = self->allBeatmapData->get_items()->GetEnumerator();
+
+    while (true)
+    {
+        if (!enumerator.MoveNext()) {
+            break;
+        }
+
+        auto const& beatmapDataItem = enumerator.get_Current();
+
+        if (beatmapDataItem)
+        {
+            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
+                copy->InsertBeatmapEventData(*event);
+            }
+
+            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
+                copy->AddBeatmapObjectData(*object);
+            }
+
+            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
+                copy->InsertCustomEventData(*customEvent);
+            }
+        }
+    }
+
+    return copy;
+}
+
+MAKE_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapData *, BeatmapData* self) {
+    static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
+
+    if (self->klass == CustomBeatmapDataKlass) {
+        return CustomBeatmapData_GetCopy(reinterpret_cast<CustomBeatmapData*>(self));
+    }
+
+    return BeatmapData_GetCopy(self);
+}
+
+MAKE_HOOK_MATCH(BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilteredCopy, BeatmapData *, BeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
+    static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
+
+    if (self->klass == CustomBeatmapDataKlass) {
+        return CustomBeatmapData_GetFilteredCopy(reinterpret_cast<CustomBeatmapData*>(self), processDataItem);
+    }
+
+    return BeatmapData_GetFilteredCopy(self, processDataItem);
 }
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
@@ -760,6 +848,8 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
     INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_InsertItem);
     INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
+    INSTALL_HOOK_ORIG(logger, BeatmapData_GetFilteredCopy);
+    INSTALL_HOOK_ORIG(logger, BeatmapData_GetCopy);
 
     RuntimeSongLoader::API::AddBeatmapDataBasicInfoLoadedEvent(BeatmapDataLoadedEvent);
 

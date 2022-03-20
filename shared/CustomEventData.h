@@ -14,7 +14,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapD
 public:
       DECLARE_CTOR(ctor, float time, /* std::string_view*/ void* type, size_t typeHash, /* rapidjson::Value */ void* data);
 
-  public:
+    DECLARE_OVERRIDE_METHOD(CustomEventData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
+
+        public:
   std::string_view type;
   size_t typeHash;
   rapidjson::Value const* data;
