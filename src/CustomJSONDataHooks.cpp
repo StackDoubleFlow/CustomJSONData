@@ -45,6 +45,8 @@
 #include "CJDLogger.h"
 #include "VList.h"
 
+#include <regex>
+
 // for rapidjson error parsing
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/error/en.h"
 
@@ -74,24 +76,25 @@ std::string to_utf8(std::u16string_view view) {
 #define FindMethodGetter(qualifiedTypeName, methodName) \
 ::il2cpp_utils::il2cpp_type_check::MetadataGetter<#methodName, qualifiedTypeName, decltype(&qualifiedTypeName::methodName)>::get();
 
-static std::string_view GetVersionFromPath(std::string_view path)
+static std::string GetVersionFromPath(std::string_view path)
 {
     // SongCore has a fallback so i guess i do too
     static const std::string_view fallback = "2.0.0";
 
-    auto versionIt = path.find("_version");
-    auto size = 9;
+    auto truncatedText = path.substr(0, 50);
+    static const std::regex versionRegex (R"("_?version"\s*:\s*"[0-9]+\.[0-9]+\.?[0-9]?")");
+    std::match_results<std::string_view::const_iterator> matches;
+    if(std::regex_search(truncatedText.begin(), truncatedText.end(), matches, versionRegex)) {
+        if (!matches.empty()) {
+            auto version = matches[0].str();
+            version = version.substr(0, version.length() - 1);
+            version = version.substr(version.find_last_of('\"') + 1, version.length());
 
-    if (versionIt == std::string::npos) {
-        versionIt = path.find("version");
-        size = 8;
+            return version;
+        }
     }
 
-    if (versionIt != std::string::npos) {
-        return path.substr(versionIt, size);
-    }
-
-    return fallback;
+    return std::string(fallback);
 }
 
 
@@ -209,8 +212,10 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersi
         v3::CustomBeatmapSaveData* saveData;
 
         if (semver::lte(std::string(version), "2.6.0")) {
-             saveData = v3::CustomBeatmapSaveData::Convert2_6_0(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
+            CJDLogger::GetLogger().debug("Parsing 2.0.0 beatmap");
+            saveData = v3::CustomBeatmapSaveData::Convert2_6_0(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
         } else {
+            CJDLogger::GetLogger().debug("Parsing 3.0.0 beatmap");
             saveData = v3::CustomBeatmapSaveData::Deserialize(sharedDoc);
         }
 
@@ -220,6 +225,8 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersi
         auto stopTime = std::chrono::high_resolution_clock::now();
         CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
                 stopTime - startTime).count());
+
+        CRASH_UNLESS(saveData->bpmEvents);
 
         return saveData;
     } catch (std::exception const& e) {
@@ -572,10 +579,13 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
 
     beatmapData->InsertBeatmapEventData(BPMChangeBeatmapEventData::New_ctor(-100.0f, startBpm));
     auto bpmEvents = VList(beatmapSaveData->bpmEvents);
-    for (auto basicEventTypesForKeyword : VList(beatmapSaveData->basicEventTypesWithKeywords->get_data()))
-    {
-        beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
+    // TODO: Fix
+    if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
+        for (auto basicEventTypesForKeyword: VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
+            beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
+        }
     }
+    CRASH_UNLESS(bpmEvents);
     auto bpmTimeProcessor = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
     auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
 
@@ -853,5 +863,8 @@ void CustomJSONData::InstallHooks() {
 
     RuntimeSongLoader::API::AddBeatmapDataBasicInfoLoadedEvent(BeatmapDataLoadedEvent);
 
+    il2cpp_functions::Class_Init(classof(BeatmapData*));
+
+    custom_types::logAll(classof(BeatmapData*));
     custom_types::Register::AutoRegister();
 }

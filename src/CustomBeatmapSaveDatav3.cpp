@@ -735,7 +735,7 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
             // idc if it shadows
             for (auto const& arrIt : it.value.GetArray()) {
 
-                /* nullable */ BeatmapSaveData::IndexFilter* indexFilter;
+                /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
                 float beatDistributionParam;
                 BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
                 float rotationDistributionParam;
@@ -829,7 +829,7 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
                 }
 
                 eventBoxes.push_back(BeatmapSaveData::LightRotationEventBox::New_ctor(
-                        indexFilter,
+                        (BeatmapSaveData::IndexFilter*) indexFilter,
                         beatDistributionParam,
                         beatDistributionParamType,
                         rotationDistributionParam,
@@ -1086,6 +1086,9 @@ static float SpawnRotationForEventValue(int index) {
 
 
 CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData const *beatmap) {
+    auto startTime = std::chrono::high_resolution_clock::now();
+    CJDLogger::GetLogger().debug("Initiating converting 2.0.0 to 3.0.0 map");
+
     VList<BeatmapSaveData::ColorNoteData*> colorNotes(beatmap->notes->get_Count());
     VList<BeatmapSaveData::BombNoteData*> bombNotes(beatmap->notes->get_Count());
     VList<BeatmapSaveData::SliderData*> sliders(beatmap->sliders->get_Count());
@@ -1098,14 +1101,14 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
     VList<BeatmapSaveData::BasicEventData*> basicEvents;
 
 
-
+    CJDLogger::GetLogger().debug("Sorting");
     std::stable_sort(beatmap->notes->items.begin(), beatmap->notes->items.begin() + beatmap->notes->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>);
     std::stable_sort(beatmap->obstacles->items.begin(), beatmap->obstacles->items.begin() + beatmap->obstacles->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData*>);
     std::stable_sort(beatmap->sliders->items.begin(), beatmap->sliders->items.begin() + beatmap->sliders->get_Count(), TimeCompareSliders);
     std::stable_sort(beatmap->waypoints->items.begin(), beatmap->waypoints->items.begin() + beatmap->waypoints->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>);
     std::stable_sort(beatmap->events->items.begin(), beatmap->events->items.begin() + beatmap->events->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData*>);
 
-
+    CJDLogger::GetLogger().debug("Converting notes");
     for (auto const& n : VList(beatmap->notes)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData*>(n);
 
@@ -1128,6 +1131,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         }
     }
 
+    CJDLogger::GetLogger().debug("Converting obstacles");
     for (auto const& n : VList(beatmap->obstacles)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
 
@@ -1144,6 +1148,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         obstacles.push_back(obstacle);
     }
 
+    CJDLogger::GetLogger().debug("Converting Sliders");
     for (auto const& n : VList(beatmap->sliders)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData*>(n);
 
@@ -1166,6 +1171,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         sliders.push_back(slider);
     }
 
+    CJDLogger::GetLogger().debug("Converting waypoints");
     for (auto const& n : VList(beatmap->waypoints)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
 
@@ -1178,6 +1184,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         waypoints.push_back(waypoint);
     }
 
+    CJDLogger::GetLogger().debug("Converting events");
     for (auto const& n : VList(beatmap->events)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData*>(n);
 
@@ -1210,6 +1217,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         }
     }
 
+    CJDLogger::GetLogger().debug("Converting specialEventsKeywordFilters");
     VList<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*> keywords;
 
     for (auto const& n : VList(beatmap->specialEventsKeywordFilters->keywords)) {
@@ -1233,6 +1241,12 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                                                      VList<BeatmapSaveData::LightRotationEventBoxGroup*>(),
                                                      basicEventTypesWithKeywords,
                                                      true);
+
+    CJDLogger::GetLogger().debug("Finished converting 2.0.0 to 3.0.0 map");
+    auto stopTime = std::chrono::high_resolution_clock::now();
+
+    CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
+            stopTime - startTime).count());
 
     return v3beatmap;
 }
