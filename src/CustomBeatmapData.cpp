@@ -114,9 +114,9 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, ::GlobalNam
                                           ) {
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 14));
     NoteData* instance = this;
-    il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, gameplayType, scoringType,
-                                                colorType, cutDirection, timeToNextColorNote,
-                                                timeToPrevColorNote, flipLineIndex, flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
+    il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, gameplayType,
+                                                scoringType, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex,
+                                                flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
     INVOKE_CTOR();
 }
 

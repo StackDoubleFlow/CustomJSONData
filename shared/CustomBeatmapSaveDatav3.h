@@ -54,7 +54,7 @@ namespace CustomJSONData::v3::Constants {
     static inline const std::string_view tailLayer = "ty";
     static inline const std::string_view eventBoxes = "e";
     static inline const std::string_view groupId = "g";
-    static inline const std::string_view indexFilter = "i";
+    static inline const std::string_view indexFilter = "f";
     static inline const std::string_view beatDistributionParam = "w";
     static inline const std::string_view beatDistributionParamType = "d";
 

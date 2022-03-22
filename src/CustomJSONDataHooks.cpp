@@ -4,6 +4,7 @@
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
+#include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
@@ -23,6 +24,15 @@
 #include "GlobalNamespace/DataConvertor_1.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
 #include "GlobalNamespace/EnvironmentColorType.hpp"
+#include "GlobalNamespace/BeatmapEventDataBoxGroup.hpp"
+#include "GlobalNamespace/IIndexFilter.hpp"
+#include "GlobalNamespace/RangeIndexFilter.hpp"
+#include "GlobalNamespace/EnvironmentLightGroups_LightGroupData.hpp"
+#include "GlobalNamespace/LightColorBaseData.hpp"
+#include "GlobalNamespace/BeatmapEventDataBox.hpp"
+#include "GlobalNamespace/LightColorBeatmapEventDataBox.hpp"
+#include "GlobalNamespace/LightRotationBeatmapEventDataBox.hpp"
+#include "GlobalNamespace/LightRotationBaseData.hpp"
 
 #include "System/Comparison_1.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
@@ -31,6 +41,7 @@
 #include "System/Collections/Generic/LinkedList_1.hpp"
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
+#include "System/Collections/Generic/IEnumerator_1.hpp"
 #include "System/Linq/Enumerable.hpp"
 #include "System/Version.hpp"
 
@@ -209,7 +220,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersi
 
         auto version = GetVersionFromPath(contents);
 
-        v3::CustomBeatmapSaveData* saveData;
+        SafePtr<v3::CustomBeatmapSaveData> saveData;
 
         if (semver::lte(std::string(version), "2.6.0")) {
             CJDLogger::GetLogger().debug("Parsing 2.0.0 beatmap");
@@ -219,7 +230,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersi
             saveData = v3::CustomBeatmapSaveData::Deserialize(sharedDoc);
         }
 
-        cachedSaveData = saveData;
+        cachedSaveData = saveData.operator CustomJSONData::v3::CustomBeatmapSaveData *const();
 
         CJDLogger::GetLogger().debug("Finished reading beatmap data");
         auto stopTime = std::chrono::high_resolution_clock::now();
@@ -228,7 +239,7 @@ MAKE_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersi
 
         CRASH_UNLESS(saveData->bpmEvents);
 
-        return saveData;
+        return saveData.operator CustomJSONData::v3::CustomBeatmapSaveData *const();
     } catch (std::exception const& e) {
         CJDLogger::GetLogger().debug("There was an error loading the beatmap through CJD. Cause of error: %s", e.what());
         return nullptr;
@@ -246,18 +257,18 @@ JSONWrapper* ToJsonWrapper(v3::CustomDataOpt const& val) {
 CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType, NoteCutDirection cutDirection, v3::CustomDataOpt const& customData) {
     auto b = CustomNoteData::New_ctor(time,
                                       lineIndex,
-                                      noteLineLayer,
-                                      noteLineLayer,
-                                      NoteData::GameplayType::Normal,
-                                      NoteData::ScoringType::Normal,
-                                      colorType,
-                                      cutDirection,
-                                      0,
-                                      0,
+                                      (NoteLineLayer) noteLineLayer,
+                                      (NoteLineLayer) noteLineLayer,
+                                      (NoteData::GameplayType) NoteData::GameplayType::Normal,
+                                      (NoteData::ScoringType) NoteData::ScoringType::Normal,
+                                      (ColorType) colorType,
+                                      (NoteCutDirection) cutDirection,
+                                      0.0f,
+                                      0.0f,
                                       lineIndex,
-                                      0,
-                                      0,
-                                      1);
+                                      0.0f,
+                                      0.0f,
+                                      1.0f);
 
     b->customData = JSONWrapper::New_ctor();
     b->customData->value = customData;
@@ -270,16 +281,16 @@ CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLaye
                                       lineIndex,
                                       noteLineLayer,
                                       noteLineLayer,
-                                      NoteData::GameplayType::Bomb,
-                                      NoteData::ScoringType::NoScore,
-                                      ColorType::None,
-                                      NoteCutDirection::None,
-                                      0,
-                                      0,
+                                      (NoteData::GameplayType) NoteData::GameplayType::Bomb,
+                                      (NoteData::ScoringType) NoteData::ScoringType::NoScore,
+                                      (ColorType) ColorType::None,
+                                      (NoteCutDirection) NoteCutDirection::None,
+                                      0.0f,
+                                      0.0f,
                                       lineIndex,
-                                      0,
-                                      0,
-                                      1);
+                                      0.0f,
+                                      0.0f,
+                                      1.0f);
 
     b->customData = JSONWrapper::New_ctor();
     b->customData->value = customData;
@@ -298,8 +309,8 @@ CustomNoteData* CreateCustomBurstNoteData(float time,
                                       lineIndex,
                                       noteLineLayer,
                                       beforeJumpNoteLineLayer,
-                                      NoteData::GameplayType::BurstSliderElement,
-                                      NoteData::ScoringType::BurstSliderElement,
+                                      (NoteData::GameplayType) NoteData::GameplayType::BurstSliderElement,
+                                      (NoteData::ScoringType) NoteData::ScoringType::BurstSliderElement,
                                       colorType,
                                       cutDirection,
                                       0,
@@ -334,25 +345,25 @@ static auto CreateCustomBurstSliderData(
         v3::CustomDataOpt const& customData)
 {
     auto slider = CustomSliderData::New_ctor(
-            SliderData::Type::Burst,
+            (SliderData::Type) SliderData::Type::Burst,
             colorType,
             false,
             headTime,
             headLineIndex,
             headLineLayer,
             headBeforeJumpLineLayer,
-            0,
+            0.0f,
             headCutDirection,
-            0,
+            0.0f,
             false,
             tailTime,
             tailLineIndex,
             tailLineLayer,
             tailBeforeJumpLineLayer,
-            0,
+            0.0f,
             tailCutDirection,
-            0,
-            SliderMidAnchorMode::Straight,
+            0.0f,
+            (SliderMidAnchorMode) SliderMidAnchorMode::Straight,
             sliceCount,
             squishAmount);
     slider->customData = ToJsonWrapper(customData);
@@ -378,7 +389,7 @@ static auto CreateCustomSliderData(
         v3::CustomDataOpt const& customData)
 {
     auto slider = CustomSliderData::New_ctor(
-            SliderData::Type::Normal,
+            (SliderData::Type) SliderData::Type::Normal,
             colorType,
             false,
             headTime,
@@ -387,7 +398,7 @@ static auto CreateCustomSliderData(
             headBeforeJumpLineLayer,
             headControlPointLengthMultiplier,
             headCutDirection,
-            0,
+            0.0f,
             false,
             tailTime,
             tailLineIndex,
@@ -395,10 +406,10 @@ static auto CreateCustomSliderData(
             tailBeforeJumpLineLayer,
             tailControlPointLengthMultiplier,
             tailCutDirection,
-            0,
+            0.0f,
             midAnchorMode,
             0,
-            1);
+            1.0f);
     slider->customData = ToJsonWrapper(customData);
 
     return slider;
@@ -527,9 +538,9 @@ requires(std::is_pointer_v<T>)
 struct CppConverter {
     std::unordered_map<Il2CppClass*, std::function<T(T)>> converters;
 
-    template <typename U, typename F>
+    template <typename U>
     requires(std::is_pointer_v<U>)
-    void AddConverter(F&& o) {
+    void AddConverter(std::function<T(U)> const& o) {
         converters[classof(U)] = [o](T const& t){ return reinterpret_cast<T>(o(reinterpret_cast<U>(t))); };
     }
 
@@ -543,8 +554,229 @@ struct CppConverter {
     }
 };
 
+template <typename T, typename ExtraParam>
+requires(std::is_pointer_v<T>)
+struct CppConverter2Param {
+    std::unordered_map<Il2CppClass*, std::function<T(T, ExtraParam)>> converters;
+
+    template <typename U>
+    requires(std::is_pointer_v<U>)
+    void AddConverter(std::function<T(U, ExtraParam)> const& o) {
+        converters[classof(U)] = [o](T const& t, ExtraParam const& extraParam){ return reinterpret_cast<T>(o(reinterpret_cast<U>(t), extraParam)); };
+    }
+
+    template <typename U>
+    requires(std::is_pointer_v<U>)
+    T ProcessItem(U o, ExtraParam extraParam) const {
+        auto it = converters.find(o ? o->klass : classof(U));
+        if (it == converters.end()) return {};
+
+        return (it->second)(reinterpret_cast<T>(o), extraParam);
+    }
+};
+
+struct BpmChangeData {
+    const float bpmChangeStartTime;
+    const float bpmChangeStartBpmTime;
+    const float bpm;
+
+    constexpr BpmChangeData(float const bpmChangeStartTime, float const bpmChangeStartBpmTime, float const bpm)
+            : bpmChangeStartTime(bpmChangeStartTime), bpmChangeStartBpmTime(bpmChangeStartBpmTime), bpm(bpm) {}
+};
+
+struct BpmTimeProcessor {
+    std::vector<BpmChangeData> bpmChangeDataList;
+
+    BpmTimeProcessor(float startBpm, VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*> bpmEventsSaveData)
+    {
+        bpmChangeDataList.reserve(bpmEventsSaveData.size());
+        bpmChangeDataList.emplace_back(0,0,startBpm);
+
+//        CJDLogger::GetLogger().debug("Event list ptr %p", bpmEventsSaveData.getInner());
+//        CJDLogger::GetLogger().debug("Event inner list ptr %p", bpmEventsSaveData.getInner()->items->values);
+//        CJDLogger::GetLogger().debug("Event inner list klass %p", bpmEventsSaveData.getInner()->klass);
+//        CJDLogger::GetLogger().debug("Event inner klass %s", il2cpp_utils::ClassStandardName(bpmEventsSaveData.getInner()->klass).c_str());
+//        CJDLogger::GetLogger().debug("Event inner list ptr begin %p end %p", bpmEventsSaveData.getInner()->items.begin(), bpmEventsSaveData.getInner()->items.end());
+//        CJDLogger::GetLogger().debug("Event list ptr begin %p end %p", bpmEventsSaveData.begin(), bpmEventsSaveData.end());
+
+        for (auto const& v : bpmEventsSaveData) {
+            if (!v) continue;
+
+            auto const& bpmChangeData = bpmChangeDataList.back();
+            float beat = v->get_beat();
+            float bpm = v->get_bpm();
+            float bpmChangeStartTime = bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+            bpmChangeDataList.emplace_back(bpmChangeStartTime, beat, bpm);
+        }
+    }
+
+    float ConvertBeatToTime(float beat)
+    {
+        int num = 0;
+        while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat)
+        {
+            num++;
+        }
+        auto const& bpmChangeData = bpmChangeDataList[num];
+        return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+    }
+};
+
+static IIndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter* indexFilter, int groupSize) {
+    CRASH_UNLESS(indexFilter);
+    if (indexFilter->get_type() == BeatmapSaveData::IndexFilter::IndexFilterType::Division) {
+        int param = indexFilter->get_param0();
+        int param2 = indexFilter->get_param1();
+        auto num = (int) std::ceil((float) groupSize / (float) param);
+        if (indexFilter->get_reversed()) {
+            int num2 = groupSize - num * param2 - 1;
+            return reinterpret_cast<IIndexFilter *>(RangeIndexFilter::New_ctor(num2, std::max(0, num2 - num + 1)));
+        }
+        int num3 = num * param2;
+        return reinterpret_cast<IIndexFilter *>(RangeIndexFilter::New_ctor(num3,
+                                                                           std::min(groupSize - 1, num3 + num - 1)));
+    } else {
+        if (indexFilter->get_type() != BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset) {
+            return nullptr;
+        }
+        int param3 = indexFilter->get_param0();
+        int param4 = indexFilter->get_param1();
+        int num4 = groupSize - param3;
+        if (num4 <= 0) {
+            throw std::runtime_error("Argument out of range for index converter!");
+        }
+        int count = (param4 == 0) ? 1 : (int) std::ceil((float) num4 / (float) param4);
+        if (indexFilter->get_reversed()) {
+            return reinterpret_cast<IIndexFilter *>(BaseIndexFilter::New_ctor(groupSize - 1 - param3, -param4, count));
+        }
+        return reinterpret_cast<IIndexFilter *>(BaseIndexFilter::New_ctor(param3, param4, count));
+    }
+}
+
+static BeatmapEventDataBox::DistributionParamType DistributionParamType_Convert(BeatmapSaveData::EventBox::DistributionParamType distributionParamType) {
+    if (distributionParamType == BeatmapSaveDataVersion3::BeatmapSaveData::EventBox::DistributionParamType::Wave) {
+        return BeatmapEventDataBox::DistributionParamType::Wave;
+    }
+    if (distributionParamType != BeatmapSaveDataVersion3::BeatmapSaveData::EventBox::DistributionParamType::Step) {
+        throw std::runtime_error("distributionParamType error!");
+    }
+    return BeatmapEventDataBox::DistributionParamType::Step;
+}
+
+static LightColorBaseData* LightColorBaseData_Convert(BeatmapSaveData::LightColorBaseData* saveData) {
+    return LightColorBaseData::New_ctor(saveData->get_beat(),
+                                        ConvertBeatmapEventTransitionType(saveData->get_transitionType()),
+                                        ConvertColorType(saveData->get_colorType()), saveData->get_brightness(),
+                                        saveData->get_strobeBeatFrequency());
+}
+
+static LightRotationBaseData* LightRotationBaseData_Convert(BeatmapSaveData::LightRotationBaseData* saveData) {
+    return LightRotationBaseData::New_ctor(saveData->get_beat(), saveData->get_usePreviousEventRotationValue(),
+                                           ConvertEaseType(saveData->get_easeType()), saveData->get_rotation(),
+                                           saveData->get_loopsCount(),
+                                           ConvertRotationOrientation(saveData->get_rotationDirection()));
+}
+
+struct EventBoxGroupConvertor {
+    EventBoxGroupConvertor(EnvironmentLightGroups* lightGroups) {
+        this->lightGroups = lightGroups;
+        dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox*>([](BeatmapSaveData::LightColorEventBox* saveData, EnvironmentLightGroups::LightGroupData* lightGroupData){
+            auto indexFilter = IndexFilterConvertor_Convert(saveData->get_indexFilter(), lightGroupData->numberOfElements);
+            VList<LightColorBaseData*> list(reinterpret_cast<IReadOnlyCollection_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>*>(saveData->get_lightColorBaseDataList())->get_Count());
+
+//            auto enumerator = reinterpret_cast<IEnumerable_1<BeatmapSaveData::LightColorBaseData*>*>(list.getInner())->GetEnumerator();
+//            auto nonGenericEnumerator = reinterpret_cast<Collections::IEnumerator*>(enumerator);
+//
+//            while (true) {
+//                if (!nonGenericEnumerator->MoveNext()) {
+//                    break;
+//                }
+//                auto saveData2 = enumerator->get_Current();
+
+            for (auto saveData2 : VList(reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>*>(saveData->get_lightColorBaseDataList()))) {
+                list.push_back(LightColorBaseData_Convert(saveData2));
+            }
+
+            auto beatDistributionParamType = DistributionParamType_Convert(saveData->get_beatDistributionParamType());
+            auto brightnessDistributionParamType = DistributionParamType_Convert(saveData->get_brightnessDistributionParamType());
+            return LightColorBeatmapEventDataBox::New_ctor(indexFilter, saveData->get_beatDistributionParam(), beatDistributionParamType, saveData->get_brightnessDistributionParam(), brightnessDistributionParamType, saveData->get_brightnessDistributionShouldAffectFirstBaseEvent(),
+                                                           reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightColorBaseData *> *>(list.getInner()));
+        });
+
+        dataConvertor.AddConverter<BeatmapSaveData::LightRotationEventBox*>([](BeatmapSaveData::LightRotationEventBox* saveData, EnvironmentLightGroups::LightGroupData* lightGroupData){
+            auto indexFilter = IndexFilterConvertor_Convert(saveData->get_indexFilter(), lightGroupData->numberOfElements);
+            VList<LightRotationBaseData*> list(reinterpret_cast<IReadOnlyCollection_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(saveData->get_lightRotationBaseDataList())->get_Count());
+
+//            auto enumerator = reinterpret_cast<IEnumerable_1<BeatmapSaveData::LightRotationBaseData*>*>(list.getInner())->GetEnumerator();
+//            auto nonGenericEnumerator = reinterpret_cast<Collections::IEnumerator*>(enumerator);
+//
+//            while (true) {
+//                if (!nonGenericEnumerator->MoveNext()) {
+//                    break;
+//                }
+//
+//                auto saveData2 = enumerator->get_Current();
+            for (auto saveData2 : VList(reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(saveData->get_lightRotationBaseDataList()))) {
+                list.push_back(LightRotationBaseData_Convert(saveData2));
+            }
+
+            auto beatDistributionParamType = DistributionParamType_Convert(saveData->get_rotationDistributionParamType());
+            auto rotationDistributionParamType = DistributionParamType_Convert(saveData->get_rotationDistributionParamType());
+            return LightRotationBeatmapEventDataBox::New_ctor(indexFilter, saveData->get_beatDistributionParam(), beatDistributionParamType, ConvertAxis(saveData->get_axis()), saveData->get_flipRotation(), saveData->get_rotationDistributionParam(), rotationDistributionParamType, saveData->get_rotationDistributionShouldAffectFirstBaseEvent(),
+                                                              reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData *> *>(list.getInner()));
+        });
+    }
+
+
+    BeatmapEventDataBoxGroup* Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup* eventBoxGroupSaveData)
+    {
+        auto collection = reinterpret_cast<IReadOnlyCollection_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>*>(eventBoxGroupSaveData->get_baseEventBoxes());
+        VList<BeatmapEventDataBox*> list;
+
+
+        auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
+        if (dataForGroup == nullptr) {
+            return nullptr;
+        }
+
+//        auto enumerator = reinterpret_cast<IEnumerable_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>*>(collection)->GetEnumerator();
+//        auto nonGenericEnumerator = reinterpret_cast<Collections::IEnumerator*>(enumerator);
+//
+//        while(true) {
+//            if (!nonGenericEnumerator->MoveNext()) break;
+//
+//            auto item = enumerator->get_Current();
+        for (auto item : VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>(reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*> *>(collection))) {
+            auto beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
+            if (beatmapEventDataBox != nullptr) {
+                list.push_back(beatmapEventDataBox);
+            }
+        }
+
+        list.trim();
+        return BeatmapEventDataBoxGroup::New_ctor(eventBoxGroupSaveData->get_beat(),
+                                                  reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox *> *>(list.getInner()));
+    }
+
+    CppConverter2Param<BeatmapEventDataBox*, EnvironmentLightGroups::LightGroupData*> dataConvertor;
+
+    EnvironmentLightGroups* lightGroups;
+};
+
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem, classof(BeatmapDataSortedListForTypes_1<BeatmapDataItem*>*), "InsertItem", void, BeatmapDataSortedListForTypes_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-    self->GetList(CustomBeatmapData::GetCustomType(item))->Insert(item);
+    CJDLogger::GetLogger().debug("InsertItem hook");
+
+    auto list = self->GetList(CustomBeatmapData::GetCustomType(item));
+
+    list->Insert(item);
+    // fix method resolution
+//
+//    auto context = CJDLogger::GetLogger().WithContext("insert log");
+//
+//    il2cpp_utils::LogMethods(context, reinterpret_cast<Il2CppObject*>(list)->klass, true);
+//
+//    auto* ___internal__method = THROW_UNLESS((::il2cpp_utils::FindMethod(list, "Insert", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{&classof(BeatmapDataItem*)->byval_arg})));
+//    ::il2cpp_utils::RunMethodRethrow<::System::Collections::Generic::LinkedListNode_1<BeatmapDataItem>*, false>(list, ___internal__method, item);
 }
 
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem, classof(BeatmapDataSortedListForTypes_1<BeatmapDataItem*>*), "RemoveItem", void, BeatmapDataSortedListForTypes_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
@@ -560,7 +792,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
                 ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
                 ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents) {
 
-    CJDLogger::GetLogger().debug("Parsing save data");
+    CJDLogger::GetLogger().debug("Parsing save data %p cached %p", beatmapSaveData, cachedSaveData);
     auto startTime = std::chrono::high_resolution_clock::now();
 
     bool flag = loadingForDesignatedEnvironment || (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->get_isEmpty());
@@ -578,19 +810,32 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     }
 
     beatmapData->InsertBeatmapEventData(BPMChangeBeatmapEventData::New_ctor(-100.0f, startBpm));
-    auto bpmEvents = VList(beatmapSaveData->bpmEvents);
+    auto bpmEvents = beatmapSaveData->dyn_bpmEvents();
     // TODO: Fix
     if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
         for (auto basicEventTypesForKeyword: VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
+            if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) continue;
+
             beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
         }
     }
-    CRASH_UNLESS(bpmEvents);
-    auto bpmTimeProcessor = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
+    CRASH_UNLESS(beatmapSaveData->dyn_bpmEvents());
+    BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
+    CJDLogger::GetLogger().debug("Special events list %p", beatmapSaveData->basicEventTypesWithKeywords->d);
+
+    for (auto i = beatmapSaveData->basicEventTypesWithKeywords->d->size - 1; i >= 0; i--) {
+        auto v = beatmapSaveData->basicEventTypesWithKeywords->d->items.get(i);
+
+        if (!v) {
+            CJDLogger::GetLogger().debug("Null! %i", i);
+            beatmapSaveData->basicEventTypesWithKeywords->d->RemoveAt(i);
+        }
+    }
+
     auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
 
     auto const BeatToTime = [&bpmTimeProcessor](float beat) constexpr {
-        return bpmTimeProcessor->ConvertBeatToTime(beat);
+        return bpmTimeProcessor.ConvertBeatToTime(beat);
     };
 
     // TODO: Remove converter
@@ -677,7 +922,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     });
 
     auto dataConvertProcess = [](auto const& converter, auto const& vlist, auto const& addToBeatmap) constexpr {
-        std::sort(VList(vlist).begin(), VList(vlist).end(), TimeCompare<typename decltype(VList(vlist))::value_type>);
+        std::stable_sort(VList(vlist).begin(), VList(vlist).end(), TimeCompare<typename decltype(VList(vlist))::value_type>);
         for (auto const& o : VList(vlist)) {
             auto* beatmapObjectData = converter.ProcessItem(o);
 
@@ -732,7 +977,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         });
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
-            return BeatmapSaveData::ColorBoostEventData::New_ctor(
+            return ColorBoostBeatmapEventData::New_ctor(
                     BeatToTime(data->get_beat()),
                     data->get_boost());
         });
@@ -750,35 +995,51 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
         });
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
-            return BeatmapSaveData::ColorBoostEventData::New_ctor(
+            return ColorBoostBeatmapEventData::New_ctor(
                     BeatToTime(data->get_beat()),
                     data->get_boost());
         });
     }
 
     auto addEvent = [&beatmapData](auto o) { beatmapData->InsertBeatmapEventData(o); };
+    CJDLogger::GetLogger().debug("bpm events");
     dataConvertProcess(eventConverter, bpmEvents, addEvent);
+    CJDLogger::GetLogger().debug("basic events");
     dataConvertProcess(eventConverter, beatmapSaveData->basicBeatmapEvents, addEvent);
+    CJDLogger::GetLogger().debug("color boost events");
     dataConvertProcess(eventConverter, beatmapSaveData->colorBoostBeatmapEvents, addEvent);
+    CJDLogger::GetLogger().debug("rotation events");
     dataConvertProcess(eventConverter, beatmapSaveData->rotationEvents, addEvent);
 
+    CJDLogger::GetLogger().debug("event groups");
+    auto bpmTimeProcessorIl2cpp = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
+    auto beatmapEventDataBoxGroupLists = BeatmapEventDataBoxGroupLists::New_ctor(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
+    auto eventBoxGroupConvertor = SafePtr(BeatmapDataLoader::EventBoxGroupConvertor::New_ctor(environmentLightGroups));
 
-    auto beatmapEventDataBoxGroupLists = BeatmapEventDataBoxGroupLists::New_ctor(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessor), false);
-    auto eventBoxGroupConvertor = BeatmapDataLoader::EventBoxGroupConvertor::New_ctor(environmentLightGroups);
 
+    EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
-    auto handleEventBoxGroup = [&eventBoxGroupConvertor, &beatmapEventDataBoxGroupLists](auto const& eventGroup) {
-        std::sort(VList(eventGroup).begin(), VList(eventGroup).end(), TimeCompare<typename decltype(VList(eventGroup))::value_type>);
+    auto handleEventBoxGroup = [&eventBoxGroupConvertor, &beatmapEventDataBoxGroupLists, &environmentLightGroups, &cppEventBoxConverter](auto const& eventGroup) {
+        std::stable_sort(VList(eventGroup).begin(), VList(eventGroup).end(), TimeCompare<typename decltype(VList(eventGroup))::value_type>);
         for (auto const& o : VList(eventGroup)) {
-            auto beatmapEventDataBoxGroup = eventBoxGroupConvertor->Convert(o);
+            if (!o) continue;
+
+            CJDLogger::GetLogger().debug("Convert %p", environmentLightGroups);
+            CJDLogger::GetLogger().flush();
+            auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
             if (beatmapEventDataBoxGroup != nullptr)
             {
+                CJDLogger::GetLogger().debug("event box insert");
+                // THIS CRASHES WITH A IL2CPP NULLPTR EXCEPTION
                 beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
+                CJDLogger::GetLogger().debug("inserted");
             }
         }
     };
 
+    CJDLogger::GetLogger().debug("box group lightColorEventBoxGroups handling events");
     handleEventBoxGroup(beatmapSaveData->lightColorEventBoxGroups);
+    CJDLogger::GetLogger().debug("box group lightRotationEventBoxGroups handling events");
     handleEventBoxGroup(beatmapSaveData->lightRotationEventBoxGroups);
 
 
@@ -791,7 +1052,7 @@ MAKE_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatma
     if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData))
     {
         for (auto& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
-            beatmapData->InsertCustomEventData(CustomEventData::New_ctor(bpmTimeProcessor->ConvertBeatToTime(customEventSaveData.time),
+            beatmapData->InsertCustomEventData(CustomEventData::New_ctor(bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time),
                                                                          (void*) &customEventSaveData.type,
                                                                          customEventSaveData.typeHash,
                                                                          (void*) const_cast<rapidjson::Value*>(customEventSaveData.data)));

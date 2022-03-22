@@ -47,7 +47,6 @@ template<typename Ty>
 class VList {
 private:
     using InnerTy = System::Collections::Generic::List_1<Ty>;
-
     InnerTy *inner;
 
 public:
@@ -62,7 +61,7 @@ public:
 
 public:
     VList() 
-        : inner(InnerTy::New_ctor()) {};
+        : inner(InnerTy::New_ctor(0)) {};
     
     VList(int size) 
         : inner(InnerTy::New_ctor(size)) {
@@ -84,8 +83,8 @@ public:
         return inner->items.get(pos);
     }
 
-    int size() const {
-        return inner->size;
+    [[nodiscard]] int size() const {
+        return inner->get_Count();
     }
 
     auto resize(const size_t cap) {
@@ -109,7 +108,11 @@ public:
         return inner->items.begin() + size();
     }
 
-    InnerTy * getInner() const {
+    [[nodiscard]] InnerTy * getInner() const {
+        return inner;
+    }
+
+    [[nodiscard]] constexpr void* convert() const noexcept {
         return inner;
     }
 };
@@ -122,4 +125,11 @@ struct il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<VList<Ty>> {
     static inline Il2CppClass* get() {
         return classof(System::Collections::Generic::List_1<Ty>*);
     }
+};
+
+static_assert(il2cpp_utils::has_il2cpp_conversion<VList<int>>);
+
+template<class T>
+struct ::il2cpp_utils::il2cpp_type_check::need_box<VList<T>> {
+    constexpr static bool value = false;
 };
