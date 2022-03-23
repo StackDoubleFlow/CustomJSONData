@@ -130,7 +130,7 @@ CustomJSONData::v2::CustomBeatmapSaveData *
 CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc) {
     auto const& doc = *sharedDoc;
 
-    CJDLogger::GetLogger().debug("Parse notes");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse notes");
 
     VList<BeatmapSaveData::NoteData *> notes;
     auto notesArrIt = doc.FindMember("_notes");
@@ -158,7 +158,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         }
     }
 
-    CJDLogger::GetLogger().debug("Parsed %i notes", notes.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} notes", notes.size());
 
 
     VList<BeatmapSaveData::SliderData *> sliders;
@@ -208,9 +208,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             sliders[i] = slider;
         }
     }
-    CJDLogger::GetLogger().debug("Parsed %i sliders", sliders.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} sliders", sliders.size());
 
-    CJDLogger::GetLogger().debug("Parse obstacles");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse obstacles");
     auto obstaclesArrIt = doc.FindMember("_obstacles");
 
     VList<BeatmapSaveData::ObstacleData *> obstacles;
@@ -238,9 +238,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         }
     }
 
-    CJDLogger::GetLogger().debug("Parsed %i obstacles", obstacles.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} obstacles", obstacles.size());
 
-    CJDLogger::GetLogger().debug("Parse events");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse events");
 
     auto eventsArrIt = doc.FindMember("_events");
     VList<BeatmapSaveData::EventData *> events;
@@ -250,7 +250,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         rapidjson::Value const& eventsArr = eventsArrIt->value;
         events = VList<BeatmapSaveData::EventData *>(eventsArr.Size());
 
-        CJDLogger::GetLogger().info("eventsSaveData old size: %i", events.size());
+        CJDLogger::Logger.fmtLog<LogLevel::INF>("eventsSaveData old size: {}", events.size());
         for (rapidjson::SizeType i = 0; i < eventsArr.Size(); i++) {
             rapidjson::Value const& event_json = eventsArr[i];
 
@@ -270,9 +270,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             events[i] = event;
         }
     }
-    CJDLogger::GetLogger().debug("Parsed %i events", events.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} events", events.size());
 
-    CJDLogger::GetLogger().debug("Parse waypoints");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse waypoints");
     auto waypoints_arrIt = doc.FindMember("_waypoints");
 
     VList<BeatmapSaveData::WaypointData *> waypoints;
@@ -293,9 +293,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             waypoints[i] = waypoint;
         }
     }
-    CJDLogger::GetLogger().debug("Parsed %i waypoints", waypoints.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} waypoints", waypoints.size());
 
-    CJDLogger::GetLogger().debug("Parse specialEventsKeywordFilters");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse specialEventsKeywordFilters");
     auto specialEventsKeywordFiltersJsonObjIt = doc.FindMember("_specialEventsKeywordFilters");
     VList<BeatmapSaveData::SpecialEventsForKeyword *> specialEventsKeywordFiltersList;
 
@@ -331,10 +331,10 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(
             specialEventsKeywordFiltersList);
 
-    CJDLogger::GetLogger().debug("Parse root");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData *>(*events, *notes, *sliders, *waypoints, *obstacles,
                                                                             specialEventsKeywordFilters));
-    CJDLogger::GetLogger().info("eventsSaveDataList pointer right after constructor: %p", saveData->events);
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("eventsSaveDataList pointer right after constructor: {}", fmt::ptr(saveData->events));
     saveData->doc = sharedDoc;
     saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
     auto customDataIt = doc.FindMember("_customData");
@@ -344,7 +344,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
         auto customEventsIt = customData.FindMember("_customEvents");
         if (customEventsIt != customData.MemberEnd() && customEventsIt->value.IsArray()) {
-            CJDLogger::GetLogger().debug("Parse custom events");
+            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse custom events");
 
             rapidjson::Value const& customEventsArr = customEventsIt->value;
             for (rapidjson::SizeType i = 0; i < customEventsArr.Size(); i++) {
@@ -374,7 +374,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                 saveData->customEventsData->emplace_back(type, time, data);
             }
 
-            CJDLogger::GetLogger().debug("Parsed %lu custom events", saveData->customEventsData->size());
+            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} custom events", saveData->customEventsData->size());
         }
     }
 

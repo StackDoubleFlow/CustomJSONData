@@ -1002,8 +1002,8 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         }
     }
 
-    CJDLogger::GetLogger().debug("Parse bpm events %i", bpmEvents.size());
-    CJDLogger::GetLogger().debug("Parse notes %i", colorNotes.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse bpm events {}", bpmEvents.size());
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse notes {}", colorNotes.size());
 
     auto customEvents = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
     CustomDataOpt dataOpt = GetCustomData(doc);
@@ -1020,7 +1020,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
     for (auto const& c : colorNotes){
         if (!c) {
-            CJDLogger::GetLogger().debug("Color note is null!");
+            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Color note is null!");
         }
     }
 
@@ -1039,7 +1039,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             lightRotationEventBoxGroups.getInner(),
             BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword),
             useNormalEventsAsCompatibleEvents);
-    CJDLogger::GetLogger().debug("Bpm events %p and klass %p", bpmEvents.getInner(), bpmEvents.getInner()->klass);
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Bpm events {} and klass {}", fmt::ptr(bpmEvents.getInner()), fmt::ptr(bpmEvents.getInner()->klass));
 
     beatmap->customData = dataOpt;
 
@@ -1102,7 +1102,7 @@ static float SpawnRotationForEventValue(int index) {
 
 CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData const *beatmap) {
     auto startTime = std::chrono::high_resolution_clock::now();
-    CJDLogger::GetLogger().debug("Initiating converting 2.0.0 to 3.0.0 map");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Initiating converting 2.0.0 to 3.0.0 map");
 
     SAFEPTR_VLIST_ARG(BeatmapSaveData::ColorNoteData*, colorNotes, beatmap->notes->get_Count());
     SAFEPTR_VLIST_ARG(BeatmapSaveData::BombNoteData*, bombNotes, beatmap->notes->get_Count());
@@ -1116,14 +1116,14 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
     SAFEPTR_VLIST(BeatmapSaveData::BasicEventData*, basicEvents);
 
 
-    CJDLogger::GetLogger().debug("Sorting");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Sorting");
     std::stable_sort(beatmap->notes->items.begin(), beatmap->notes->items.begin() + beatmap->notes->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>);
     std::stable_sort(beatmap->obstacles->items.begin(), beatmap->obstacles->items.begin() + beatmap->obstacles->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData*>);
     std::stable_sort(beatmap->sliders->items.begin(), beatmap->sliders->items.begin() + beatmap->sliders->get_Count(), TimeCompareSliders);
     std::stable_sort(beatmap->waypoints->items.begin(), beatmap->waypoints->items.begin() + beatmap->waypoints->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>);
     std::stable_sort(beatmap->events->items.begin(), beatmap->events->items.begin() + beatmap->events->get_Count(), TimeCompare<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData*>);
 
-    CJDLogger::GetLogger().debug("Converting notes");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting notes");
     for (auto const& n : VList(beatmap->notes)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData*>(n);
 
@@ -1146,7 +1146,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         }
     }
 
-    CJDLogger::GetLogger().debug("Converting obstacles");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting obstacles");
     for (auto const& n : VList(beatmap->obstacles)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
 
@@ -1163,7 +1163,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         obstacles.push_back(obstacle);
     }
 
-    CJDLogger::GetLogger().debug("Converting Sliders");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting Sliders");
     for (auto const& n : VList(beatmap->sliders)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData*>(n);
 
@@ -1186,7 +1186,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         sliders.push_back(slider);
     }
 
-    CJDLogger::GetLogger().debug("Converting waypoints");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting waypoints");
     for (auto const& n : VList(beatmap->waypoints)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
 
@@ -1199,7 +1199,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         waypoints.push_back(waypoint);
     }
 
-    CJDLogger::GetLogger().debug("Converting events");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting events");
     for (auto const& n : VList(beatmap->events)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData*>(n);
 
@@ -1232,7 +1232,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         }
     }
 
-    CJDLogger::GetLogger().debug("Converting specialEventsKeywordFilters");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting specialEventsKeywordFilters");
     SAFEPTR_VLIST(BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, keywords);
 
     for (auto const& n : VList(beatmap->specialEventsKeywordFilters->keywords)) {
@@ -1260,10 +1260,10 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                                                      basicEventTypesWithKeywords,
                                                      true);
 
-    CJDLogger::GetLogger().debug("Finished converting 2.0.0 to 3.0.0 map");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished converting 2.0.0 to 3.0.0 map");
     auto stopTime = std::chrono::high_resolution_clock::now();
 
-    CJDLogger::GetLogger().debug("This took %ims", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("This took {}ms", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
             stopTime - startTime).count());
 
     return v3beatmap;
