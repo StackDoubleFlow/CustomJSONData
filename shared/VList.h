@@ -65,7 +65,6 @@ public:
     
     VList(int size) 
         : inner(InnerTy::New_ctor(size)) {
-        inner->size = size;
     };
 
     VList(InnerTy *list)
@@ -84,7 +83,7 @@ public:
     }
 
     [[nodiscard]] int size() const {
-        return inner->get_Count();
+        return inner->size;
     }
 
     auto resize(const size_t cap) {
