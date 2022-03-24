@@ -60,54 +60,54 @@ public:
     using const_iterator = const_pointer;
 
 public:
-    VList() 
+    constexpr VList()
         : inner(InnerTy::New_ctor()) {};
-    
-    VList(int size) 
+
+    constexpr VList(int size)
         : inner(InnerTy::New_ctor(size)) {
     };
 
-    VList(InnerTy *list)
+    constexpr VList(InnerTy *list)
         : inner(list) {};
 
-    InnerTy* operator*() const {
+    constexpr InnerTy* operator*() const {
         return inner;
     }
 
-    operator InnerTy*() const {
+    constexpr operator InnerTy*() const {
         return inner;
     }
 
-    Ty& operator[](const size_t pos) const {
+    constexpr Ty& operator[](const size_t pos) const {
         return inner->items.get(pos);
     }
 
-    [[nodiscard]] int size() const {
+    [[nodiscard]] constexpr int size() const {
         return inner->size;
     }
 
-    auto resize(const size_t cap) {
+    constexpr auto resize(const size_t cap) {
         return inner->EnsureCapacity(cap);
     }
 
-    void trim() const {
+    constexpr void trim() const {
         return inner->TrimExcess();
     }
 
-    void push_back(const Ty& val) {
+    constexpr void push_back(const Ty& val) {
         // TODO: C++ impl
         return inner->Add(val);
     }
 
-    iterator begin() {
+    iterator constexpr begin() {
         return inner->items.begin();
     }
 
-    iterator end() {
+    iterator constexpr end() {
         return inner->items.begin() + size();
     }
 
-    [[nodiscard]] InnerTy * getInner() const {
+    [[nodiscard]] constexpr InnerTy * getInner() const {
         return inner;
     }
 
@@ -115,11 +115,11 @@ public:
         return inner;
     }
 
-    operator std::span<Ty>() {
+    constexpr operator std::span<Ty>() {
         return std::span<Ty>(begin(), size());
     }
 
-    std::span<Ty> toSpan() {
+    constexpr std::span<Ty> toSpan() {
         return std::span<Ty>(begin(), size());
     }
 };

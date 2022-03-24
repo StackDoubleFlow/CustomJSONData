@@ -408,13 +408,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
 
-    auto addAllToVector = [](auto& vec, auto const& listPtr) {
+    auto addAllToVector = [](auto& vec, auto const& listPtr) constexpr {
         VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(reinterpret_cast<List<BeatmapSaveData::BeatmapSaveDataItem*>*>(listPtr));
 
         std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
     };
 
-    auto addAllToVector2 = [](auto& vec, auto const& listPtr) {
+    auto addAllToVector2 = [](auto& vec, auto const& listPtr) constexpr {
         VList<BeatmapSaveData::EventBoxGroup*> vList(reinterpret_cast<List<BeatmapSaveData::EventBoxGroup*>*>(listPtr));
 
         std::copy(vList.begin(), vList.end(), std::back_inserter(vec));

@@ -20,7 +20,9 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 
 
 System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppObject *obj) {
-    if (obj && std::string_view(obj->klass->namespaze) == std::string_view(classof(CustomBeatmapData*)->namespaze)) {
+    static auto CustomKlass = classof(CustomBeatmapData*);
+
+    if (obj && std::string_view(obj->klass->namespaze) == std::string_view(CustomKlass->namespaze)) {
         return il2cpp_utils::GetSystemType(obj->klass->parent);
     }
 

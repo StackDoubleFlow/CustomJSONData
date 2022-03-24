@@ -370,12 +370,12 @@ namespace CustomJSONData {
         std::unordered_map<Il2CppClass *, std::function<T(T)>> converters;
 
         template<typename U> requires(std::is_pointer_v<U>)
-        void AddConverter(std::function<T(U)> const& o) {
+        constexpr void AddConverter(std::function<T(U)> const& o) {
             converters[classof(U)] = [o](T const &t) { return reinterpret_cast<T>(o(reinterpret_cast<U>(t))); };
         }
 
         template<typename U> requires(std::is_pointer_v<U>)
-        T ProcessItem(U o) const {
+        constexpr T ProcessItem(U o) const {
             auto uKlass = o ? o->klass : classof(U);
             auto it = converters.find(uKlass);
             if (it == converters.end()) {
@@ -396,15 +396,14 @@ namespace CustomJSONData {
         std::unordered_map<Il2CppClass *, std::function<T(T, ExtraParam)>> converters;
 
         template<typename U> requires(std::is_pointer_v<U>)
-        void AddConverter(std::function<T(U, ExtraParam)> const& o) {
+        constexpr void AddConverter(std::function<T(U, ExtraParam)> const& o) {
             converters[classof(U)] = [o](T const &t, ExtraParam const &extraParam) {
                 return reinterpret_cast<T>(o(reinterpret_cast<U>(t), extraParam));
             };
         }
 
         template<typename U> requires(std::is_pointer_v<U>)
-        T ProcessItem(U
-        o, ExtraParam extraParam) const {
+        constexpr T ProcessItem(U o, ExtraParam extraParam) const {
             auto uKlass = o ? o->klass : classof(U);
             auto it = converters.find(uKlass);
             if (it == converters.end()) {
@@ -460,8 +459,7 @@ namespace CustomJSONData {
         }
     };
 
-    inline IIndexFilter *IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter *indexFilter, int groupSize) {
-        CRASH_UNLESS(indexFilter);
+    constexpr IIndexFilter *IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter *indexFilter, int groupSize) {
         if (IndexFilter_GetFilterType(indexFilter) == BeatmapSaveData::IndexFilter::IndexFilterType::Division) {
             int param = IndexFilter_GetParam0(indexFilter);
             int param2 = IndexFilter_GetParam1(indexFilter);
@@ -573,26 +571,22 @@ namespace CustomJSONData {
         }
 
 
-        BeatmapEventDataBoxGroup *
-        Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup *eventBoxGroupSaveData) {
-            auto collection = reinterpret_cast<IReadOnlyCollection_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *> *>(eventBoxGroupSaveData->get_baseEventBoxes());
-            VList<BeatmapEventDataBox *> list;
-
+        BeatmapEventDataBoxGroup * Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup *eventBoxGroupSaveData) const {
+            auto collection = reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *> *>(eventBoxGroupSaveData->get_baseEventBoxes());
+            VList<BeatmapEventDataBox *> list(collection->get_Count());
 
             auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
             if (dataForGroup == nullptr) {
                 return nullptr;
             }
 
-            for (auto item: VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *>(
-                    reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *> *>(collection))) {
+            for (auto item: VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *>(collection)) {
                 auto beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
                 if (beatmapEventDataBox != nullptr) {
                     list.push_back(beatmapEventDataBox);
                 }
             }
 
-            list.trim();
             return BeatmapEventDataBoxGroup::New_ctor(eventBoxGroupSaveData->b,
                                                       reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox *> *>(list.getInner()));
         }
