@@ -33,6 +33,7 @@
 #include "GlobalNamespace/LightColorBeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightRotationBeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightRotationBaseData.hpp"
+#include "GlobalNamespace/BasicBeatmapObjectManager.hpp"
 
 #include "System/Comparison_1.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
@@ -342,9 +343,6 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             data->get_line(),
             ConvertNoteLineLayer(data->get_layer()),
             data->customData);
-
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("creating bomb {} is bomb {}", b->gameplayType, b->gameplayType == NoteData::GameplayType::Bomb);
-
         return b;
     });
 
@@ -364,7 +362,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>([&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) {
-        return CreateCustomSliderData(
+        return CustomSliderData_CreateCustomSliderData(
                 ConvertColorType(data->get_colorType()),
                 BeatToTime(data->b),
                 data->get_headLine(),
@@ -384,7 +382,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>([&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) {
-        return CreateCustomBurstSliderData(
+        return CustomSliderData_CreateCustomBurstSliderData(
                 ConvertColorType(data->get_colorType()),
                 BeatToTime(data->b),
                 data->get_headLine(),
@@ -409,25 +407,59 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                       data->get_offsetDirection());
     });
 
-    auto dataConvertProcess = [](auto const& converter, auto const& vlist, auto const& addToBeatmap) constexpr {
-        std::stable_sort(VList(vlist).begin(), VList(vlist).end(), TimeCompare<typename decltype(VList(vlist))::value_type>);
-        for (auto const& o : VList(vlist)) {
-            auto* beatmapObjectData = converter.ProcessItem(o);
 
-            if (beatmapObjectData != nullptr) {
-                addToBeatmap(beatmapObjectData);
-            }
-        }
+    auto addAllToVector = [](auto& vec, auto const& listPtr) {
+        VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(reinterpret_cast<List<BeatmapSaveData::BeatmapSaveDataItem*>*>(listPtr));
+
+        std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
     };
 
-    auto addObj = [&beatmapData](auto o) constexpr {beatmapData->AddBeatmapObjectData(o); };
+    auto addAllToVector2 = [](auto& vec, auto const& listPtr) {
+        VList<BeatmapSaveData::EventBoxGroup*> vList(reinterpret_cast<List<BeatmapSaveData::EventBoxGroup*>*>(listPtr));
 
-    dataConvertProcess(objectConverter, beatmapSaveData->colorNotes, addObj);
-    dataConvertProcess(objectConverter, beatmapSaveData->bombNotes, addObj);
-    dataConvertProcess(objectConverter, beatmapSaveData->obstacles, addObj);
-    dataConvertProcess(objectConverter, beatmapSaveData->sliders, addObj);
-    dataConvertProcess(objectConverter, beatmapSaveData->burstSliders, addObj);
-    dataConvertProcess(objectConverter, beatmapSaveData->waypoints, addObj);
+        std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
+    };
+
+    auto cleanAndSort = [](auto& vec) constexpr {
+        for (auto it = vec.begin(); it != vec.end();) {
+            if (*it) {
+                it++;
+                continue;
+            }
+
+            it = vec.erase(it);
+        }
+
+        std::stable_sort(vec.begin(), vec.end(), TimeCompare<typename std::remove_reference_t<decltype(vec)>::const_reference>);
+    };
+
+    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataObjectItems(
+            beatmapSaveData->colorNotes->get_Count() +
+            beatmapSaveData->bombNotes->get_Count() +
+            beatmapSaveData->obstacles->get_Count() +
+            beatmapSaveData->sliders->get_Count() +
+            beatmapSaveData->burstSliders->get_Count() +
+            beatmapSaveData->waypoints->get_Count()
+    );
+
+
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->colorNotes);
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->bombNotes);
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->obstacles);
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->sliders);
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->burstSliders);
+    addAllToVector(beatmapDataObjectItems, beatmapSaveData->waypoints);
+
+
+
+    cleanAndSort(beatmapDataObjectItems);
+    for (auto const& o : beatmapDataObjectItems) {
+        auto* beatmapObjectData = objectConverter.ProcessItem(o);
+
+        if (beatmapObjectData != nullptr) {
+            beatmapData->AddBeatmapObjectData(beatmapObjectData);
+        }
+    }
 
     CppConverter<BeatmapEventData*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) {
@@ -489,43 +521,57 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         });
     }
 
-    auto addEvent = [&beatmapData](auto o) { beatmapData->InsertBeatmapEventData(o); };
+    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataEventItems(
+            bpmEvents->get_Count() +
+            beatmapSaveData->basicBeatmapEvents->get_Count() +
+            beatmapSaveData->colorBoostBeatmapEvents->get_Count() +
+            beatmapSaveData->rotationEvents->get_Count()
+    );
+
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("bpm events");
-    dataConvertProcess(eventConverter, bpmEvents, addEvent);
+    addAllToVector(beatmapDataEventItems, bpmEvents);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("basic events");
-    dataConvertProcess(eventConverter, beatmapSaveData->basicBeatmapEvents, addEvent);
+    addAllToVector(beatmapDataEventItems, beatmapSaveData->basicBeatmapEvents);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("color boost events");
-    dataConvertProcess(eventConverter, beatmapSaveData->colorBoostBeatmapEvents, addEvent);
+    addAllToVector(beatmapDataEventItems, beatmapSaveData->colorBoostBeatmapEvents);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events");
-    dataConvertProcess(eventConverter, beatmapSaveData->rotationEvents, addEvent);
+    addAllToVector(beatmapDataEventItems, beatmapSaveData->rotationEvents);
+
+    cleanAndSort(beatmapDataEventItems);
+    for (auto const& o : beatmapDataEventItems) {
+        auto* beatmapEventData = eventConverter.ProcessItem(o);
+
+        if (beatmapEventData != nullptr) {
+            beatmapData->InsertBeatmapEventData(beatmapEventData);
+        }
+    }
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
     auto bpmTimeProcessorIl2cpp = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
     auto beatmapEventDataBoxGroupLists = BeatmapEventDataBoxGroupLists::New_ctor(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
-    auto eventBoxGroupConvertor = SafePtr(BeatmapDataLoader::EventBoxGroupConvertor::New_ctor(environmentLightGroups));
-
+    auto eventBoxGroupConvertor = BeatmapDataLoader::EventBoxGroupConvertor::New_ctor(environmentLightGroups);
 
     EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
-    auto handleEventBoxGroup = [&eventBoxGroupConvertor, &beatmapEventDataBoxGroupLists, &environmentLightGroups, &cppEventBoxConverter](auto const& eventGroup) {
-        std::stable_sort(VList(eventGroup).begin(), VList(eventGroup).end(), TimeCompare<typename decltype(VList(eventGroup))::value_type>);
-        for (auto const& o : VList(eventGroup)) {
-            if (!o) continue;
-
-            auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
-            if (beatmapEventDataBoxGroup != nullptr)
-            {
-                beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
-            }
-        }
-    };
+    std::vector<BeatmapSaveData::EventBoxGroup*> eventBoxes(
+            beatmapSaveData->lightColorEventBoxGroups->get_Count() +
+            beatmapSaveData->lightRotationEventBoxGroups->get_Count()
+    );
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightColorEventBoxGroups handling events");
-    handleEventBoxGroup(beatmapSaveData->lightColorEventBoxGroups);
+    addAllToVector2(eventBoxes, beatmapSaveData->lightColorEventBoxGroups);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightRotationEventBoxGroups handling events");
-    handleEventBoxGroup(beatmapSaveData->lightRotationEventBoxGroups);
+    addAllToVector2(eventBoxes, beatmapSaveData->lightRotationEventBoxGroups);
 
+    cleanAndSort(eventBoxes);
 
+    for (auto const& o : eventBoxes) {
+        auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
+        if (beatmapEventDataBoxGroup != nullptr)
+        {
+            beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
+        }
+    }
 
     if (!flag)
     {
@@ -535,6 +581,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData))
     {
         if (customBeatmapSaveData.value()->customEventsData) {
+            std::stable_sort(customBeatmapSaveData.value()->customEventsData->begin(), customBeatmapSaveData.value()->customEventsData->end(), [](auto const& a, auto const& b) {return a.time < b.time;});
+
             for (auto &customEventSaveData: *customBeatmapSaveData.value()->customEventsData) {
                 beatmapData->InsertCustomEventData(
                         CustomEventData::New_ctor(bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time),
