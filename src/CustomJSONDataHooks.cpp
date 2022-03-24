@@ -338,7 +338,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BombNoteData*>([&BeatToTime](v3::CustomBeatmapSaveData_BombNoteData* data) {
         auto b = CreateCustomBombNoteData(
-            BeatToTime(data->get_beat()),
+            BeatToTime(data->b),
             data->get_line(),
             ConvertNoteLineLayer(data->get_layer()),
             data->customData);
@@ -349,12 +349,12 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_ObstacleData*>([&BeatToTime](v3::CustomBeatmapSaveData_ObstacleData* data) {
-        float beat = BeatToTime(data->get_beat());
+        float beat = BeatToTime(data->b);
         auto obstacle = CustomObstacleData::New_ctor(
                 beat,
                 data->get_line(),
                 GetNoteLineLayer(data->get_layer()),
-                BeatToTime(data->get_beat() + data->get_duration()) - beat,
+                BeatToTime(data->b + data->get_duration()) - beat,
                 data->get_width(),
                 data->get_height());
 
@@ -366,7 +366,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>([&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) {
         return CreateCustomSliderData(
                 ConvertColorType(data->get_colorType()),
-                BeatToTime(data->get_beat()),
+                BeatToTime(data->b),
                 data->get_headLine(),
                 ConvertNoteLineLayer(data->get_headLayer()),
                 ConvertNoteLineLayer(data->get_headLayer()),
@@ -386,7 +386,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>([&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) {
         return CreateCustomBurstSliderData(
                 ConvertColorType(data->get_colorType()),
-                BeatToTime(data->get_beat()),
+                BeatToTime(data->b),
                 data->get_headLine(),
                 ConvertNoteLineLayer(data->get_headLayer()),
                 ConvertNoteLineLayer(data->get_tailLayer()),
@@ -403,7 +403,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     objectConverter.AddConverter<BeatmapSaveData::WaypointData*>([&BeatToTime](BeatmapSaveData::WaypointData* data) {
-        return WaypointData::New_ctor(BeatToTime(data->get_beat()),
+        return WaypointData::New_ctor(BeatToTime(data->b),
                                       data->get_line(),
                                       ConvertNoteLineLayer(data->get_layer()),
                                       data->get_offsetDirection());
@@ -431,8 +431,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CppConverter<BeatmapEventData*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) {
-        return BPMChangeBeatmapEventData::New_ctor(BeatToTime(data->get_beat()),
-                                                   data->get_bpm());
+        return BPMChangeBeatmapEventData::New_ctor(BeatToTime(data->b),
+                                                   data->m);
     });
 
     eventConverter.AddConverter<BeatmapSaveData::RotationEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::RotationEventData* data) {
@@ -441,7 +441,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                                      ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
                                                                      : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
 
-        return SpawnRotationBeatmapEventData::New_ctor(BeatToTime(data->get_beat()),
+        return SpawnRotationBeatmapEventData::New_ctor(BeatToTime(data->b),
                                                         executionTime,
                                                         data->get_rotation());
     });
@@ -454,7 +454,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             }
 
             auto event = CustomBeatmapEventData::New_ctor(
-                    BeatToTime(data->get_beat()),
+                    BeatToTime(data->b),
                     (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
                     data->get_value(),
                     data->get_floatValue());
@@ -466,13 +466,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
             return ColorBoostBeatmapEventData::New_ctor(
-                    BeatToTime(data->get_beat()),
+                    BeatToTime(data->b),
                     data->get_boost());
         });
     } else {
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime](v3::CustomBeatmapSaveData_BasicEventData* data) {
             auto event = CustomBeatmapEventData::New_ctor(
-                    BeatToTime(data->get_beat()),
+                    BeatToTime(data->b),
                     (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
                     data->get_value(),
                     data->get_floatValue());
@@ -484,7 +484,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
             return ColorBoostBeatmapEventData::New_ctor(
-                    BeatToTime(data->get_beat()),
+                    BeatToTime(data->b),
                     data->get_boost());
         });
     }
