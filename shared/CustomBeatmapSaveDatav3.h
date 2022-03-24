@@ -37,6 +37,7 @@
 
 #include "CustomEventData.h"
 #include "CJDLogger.h"
+#include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
 namespace CustomJSONData::v2 {
     class CustomBeatmapSaveData;
@@ -63,6 +64,8 @@ namespace CustomJSONData::v3::Constants {
 
 namespace CustomJSONData::v3 {
     using CustomDataOpt = std::optional<std::reference_wrapper<rapidjson::Value const>>;
+    using CustomDataOptUTF16 = std::optional<std::reference_wrapper<ValueUTF16 const>>;
+
 }
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData, BeatmapSaveDataVersion3::BeatmapSaveData,
@@ -92,6 +95,8 @@ public:
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc;
     CustomDataOpt customData;
+    CustomDataOptUTF16 beatmapCustomData;
+    CustomDataOptUTF16 levelCustomData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, BeatmapSaveDataVersion3::BeatmapSaveData::ColorNoteData,

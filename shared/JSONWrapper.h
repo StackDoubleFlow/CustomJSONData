@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <any>
 
+#include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
+
 DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject,
     DECLARE_DEFAULT_CTOR();
     DECLARE_SIMPLE_DTOR();
@@ -28,8 +30,6 @@ public:
     std::optional<std::reference_wrapper<const rapidjson::Value>> value;
     std::unordered_map<char, std::any> associatedData;
 )
-
-typedef rapidjson::GenericValue<rapidjson::UTF16<char16_t>> ValueUTF16;
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject,
                       DECLARE_DEFAULT_CTOR();

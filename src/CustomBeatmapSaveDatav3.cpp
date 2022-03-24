@@ -1232,10 +1232,8 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting specialEventsKeywordFilters {} with size {}", fmt::ptr(keywordsInnerList), keywords.size());
 
     for (auto const& n : VList(beatmap->specialEventsKeywordFilters->keywords)) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Got special events {} with size {}", fmt::ptr(n->specialEvents), n->specialEvents->get_Count());
         keywords.push_back(BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(n->keyword, n->specialEvents));
     }
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converted specialEventsKeywordFilters {}", keywords.size());
 
     auto basicEventTypesWithKeywords =
                  BeatmapSaveData::BasicEventTypesWithKeywords::New_ctor(keywordsInnerList);
@@ -1257,6 +1255,10 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                                                      *VList<BeatmapSaveData::LightRotationEventBoxGroup*>(),
                                                      basicEventTypesWithKeywords,
                                                      true);
+
+    v3beatmap->customEventsData = beatmap->customEventsData;
+    v3beatmap->doc = beatmap->doc;
+    v3beatmap->customData = beatmap->customData;
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("beatmap eventkeywords {} vs our {} and finally items {}", fmt::ptr(v3beatmap->basicEventTypesWithKeywords->d), fmt::ptr(basicEventTypesWithKeywords->d), fmt::ptr(basicEventTypesWithKeywords->d->items.convert()));
 
