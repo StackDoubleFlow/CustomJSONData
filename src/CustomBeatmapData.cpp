@@ -22,11 +22,21 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppObject *obj) {
     static auto CustomKlass = classof(CustomBeatmapData*);
 
-    if (obj && std::string_view(obj->klass->namespaze) == std::string_view(CustomKlass->namespaze)) {
-        return il2cpp_utils::GetSystemType(obj->klass->parent);
+    if (!obj) return nullptr;
+
+    static std::unordered_map<Il2CppClass*, System::Type *> typeMap;
+
+    auto& typePtr = typeMap[obj->klass];
+
+    if (!typePtr) {
+        if (std::string_view(obj->klass->namespaze) == std::string_view(CustomKlass->namespaze)) {
+            typePtr = il2cpp_utils::GetSystemType(obj->klass->parent);
+        } else {
+            typePtr = il2cpp_utils::GetSystemType(obj->klass);
+        }
     }
 
-    return il2cpp_utils::GetSystemType(obj->klass);
+    return typePtr;
 }
 
 void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {

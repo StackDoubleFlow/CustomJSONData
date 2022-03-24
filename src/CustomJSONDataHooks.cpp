@@ -318,7 +318,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     };
 
     // TODO: Remove converter
-    CppConverter<BeatmapObjectData*> objectConverter;
+    CppConverter<BeatmapObjectData*, BeatmapSaveData::BeatmapSaveDataItem*> objectConverter;
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>([&BeatToTime](v3::CustomBeatmapSaveData_ColorNoteData* data) {
         auto noteData = CreateCustomBasicNoteData(
                 BeatToTime(data->b),
@@ -461,7 +461,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
-    CppConverter<BeatmapEventData*> eventConverter;
+    CppConverter<BeatmapEventData*, BeatmapSaveData::BeatmapSaveDataItem*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) {
         return BPMChangeBeatmapEventData::New_ctor(BeatToTime(data->b),
                                                    data->m);

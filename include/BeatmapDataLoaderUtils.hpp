@@ -365,18 +365,22 @@ namespace CustomJSONData {
     }
 
 
-    template<typename T> requires(std::is_pointer_v<T>)
+    template<typename To, typename From, typename... TArgs>
+    requires(std::is_pointer_v<To> && std::is_pointer_v<From>)
     struct CppConverter {
-        std::unordered_map<Il2CppClass *, std::function<T(T)>> converters;
+        std::unordered_map<Il2CppClass *, std::function<To(From, TArgs...)>> converters;
 
-        template<typename U> requires(std::is_pointer_v<U>)
-        constexpr void AddConverter(std::function<T(U)> const& o) {
-            converters[classof(U)] = [o](T const &t) { return reinterpret_cast<T>(o(reinterpret_cast<U>(t))); };
+        template<typename U, typename F>
+        requires(std::is_pointer_v<U> &&
+        std::is_convertible_v<U, From> &&
+        std::is_convertible_v<F, std::function<To(U, TArgs...)>>)
+        constexpr void AddConverter(F&& o) {
+            converters[classof(U)] = [o](From const &t, TArgs const&... args) constexpr { return o(static_cast<U>(t), args...); };
         }
 
-        template<typename U> requires(std::is_pointer_v<U>)
-        constexpr T ProcessItem(U o) const {
-            auto uKlass = o ? o->klass : classof(U);
+
+        constexpr To ProcessItem(From o, TArgs&... args) const {
+            auto uKlass = o ? o->klass : classof(From);
             auto it = converters.find(uKlass);
             if (it == converters.end()) {
 //                for (auto const& [klass, func] : converters) {
@@ -387,35 +391,36 @@ namespace CustomJSONData {
                 return {};
             }
 
-            return (it->second)(reinterpret_cast<T>(o));
+            return (it->second)(o, args...);
         }
     };
 
-    template<typename T, typename ExtraParam> requires(std::is_pointer_v<T>)
+    template<typename To, typename From, typename ExtraParam>
+    requires(std::is_pointer_v<To> && std::is_pointer_v<From>)
     struct CppConverter2Param {
-        std::unordered_map<Il2CppClass *, std::function<T(T, ExtraParam)>> converters;
+        std::unordered_map<Il2CppClass *, std::function<To(From, ExtraParam)>> converters;
 
-        template<typename U> requires(std::is_pointer_v<U>)
-        constexpr void AddConverter(std::function<T(U, ExtraParam)> const& o) {
-            converters[classof(U)] = [o](T const &t, ExtraParam const &extraParam) {
-                return reinterpret_cast<T>(o(reinterpret_cast<U>(t), extraParam));
-            };
+        template<typename U, typename F>
+        requires(std::is_pointer_v<U> &&
+                 std::is_convertible_v<U, From> &&
+                 std::is_convertible_v<F, std::function<To(U, ExtraParam)>>)
+        constexpr void AddConverter(F&& o) {
+            converters[classof(U)] = [o](From const &t, ExtraParam const& extraParam) constexpr { return o(static_cast<U>(t), extraParam); };
         }
 
-        template<typename U> requires(std::is_pointer_v<U>)
-        constexpr T ProcessItem(U o, ExtraParam extraParam) const {
-            auto uKlass = o ? o->klass : classof(U);
+        constexpr To ProcessItem(From o, ExtraParam extraParam) const {
+            auto uKlass = o->klass;
             auto it = converters.find(uKlass);
             if (it == converters.end()) {
 //                for (auto const& [klass, func] : converters) {
 //                    if (il2cpp_functions::class_is_assignable_from(klass, uKlass)) {
-//                        return func(reinterpret_cast<T>(o), extraParam);
+//                        return func(reinterpret_cast<T>(o));
 //                    }
 //                }
                 return {};
             }
 
-            return (it->second)(reinterpret_cast<T>(o), extraParam);
+            return (it->second)(o, extraParam);
         }
     };
 
@@ -591,7 +596,7 @@ namespace CustomJSONData {
                                                       reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox *> *>(list.getInner()));
         }
 
-        CppConverter2Param<BeatmapEventDataBox *, EnvironmentLightGroups::LightGroupData *> dataConvertor;
+        CppConverter<BeatmapEventDataBox *, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *, EnvironmentLightGroups::LightGroupData *> dataConvertor;
 
         EnvironmentLightGroups *lightGroups;
     };
