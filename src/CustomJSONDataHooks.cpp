@@ -77,7 +77,10 @@ using namespace GlobalNamespace;
 using namespace CustomJSONData;
 using namespace BeatmapSaveDataVersion3;
 
-v3::CustomBeatmapSaveData* cachedSaveData;
+SafePtr<v3::CustomBeatmapSaveData> cachedSaveData;
+SafePtr<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>> eventList;
+SafePtr<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords> eventList2;
+
 
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
@@ -220,26 +223,33 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDat
 
         auto version = GetVersionFromPath(contents);
 
-        SafePtr<v3::CustomBeatmapSaveData> saveData;
+        v3::CustomBeatmapSaveData* saveData;
 
         if (semver::lte(std::string(version), "2.6.0")) {
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
-            saveData = v3::CustomBeatmapSaveData::Convert2_6_0(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
-        } else {
+            SafePtr<v2::CustomBeatmapSaveData> beatmap(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
+
+            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Got {} notes in beatmap v2", beatmap->notes->size);
+
+            saveData = v3::CustomBeatmapSaveData::Convert2_6_0((v2::CustomBeatmapSaveData*) beatmap);
+
+          } else {
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 3.0.0 beatmap");
             saveData = v3::CustomBeatmapSaveData::Deserialize(sharedDoc);
         }
 
-        cachedSaveData = saveData.operator CustomJSONData::v3::CustomBeatmapSaveData *const();
+        eventList2 = saveData->basicEventTypesWithKeywords;
+        eventList = saveData->basicEventTypesWithKeywords->d;
 
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished reading beatmap data");
+        cachedSaveData = saveData;
+
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished reading beatmap data {}", fmt::ptr(saveData));
         auto stopTime = std::chrono::high_resolution_clock::now();
         CJDLogger::Logger.fmtLog<LogLevel::DBG>("This took {}ms", (int) std::chrono::duration_cast<std::chrono::milliseconds>(
                 stopTime - startTime).count());
 
-        CRASH_UNLESS(saveData->bpmEvents);
-
-        return saveData.operator CustomJSONData::v3::CustomBeatmapSaveData *const();
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Basic event keywords {} ->d {} notes in beatmap v2 {} {}", fmt::ptr(saveData->basicEventTypesWithKeywords), fmt::ptr(saveData->basicEventTypesWithKeywords->d), saveData->basicEventTypesWithKeywords->d->get_Count(), fmt::ptr(saveData->basicEventTypesWithKeywords->d->items.convert()));
+        return saveData;
     } catch (std::exception const& e) {
         CJDLogger::Logger.fmtLog<LogLevel::DBG>("There was an error loading the beatmap through CJD. Cause of error: {}", e.what());
         return nullptr;
@@ -758,8 +768,6 @@ struct EventBoxGroupConvertor {
 };
 
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem, classof(BeatmapDataSortedListForTypes_1<BeatmapDataItem*>*), "InsertItem", void, BeatmapDataSortedListForTypes_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("InsertItem hook");
-
     auto list = self->GetList(CustomBeatmapData::GetCustomType(item));
 
     list->Insert(item);
@@ -786,7 +794,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                 ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
                 ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents) {
 
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData), fmt::ptr(cachedSaveData));
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData), fmt::ptr(cachedSaveData.operator CustomJSONData::v3::CustomBeatmapSaveData *const()));
     auto startTime = std::chrono::high_resolution_clock::now();
 
     bool flag = loadingForDesignatedEnvironment || (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->get_isEmpty());
@@ -806,8 +814,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     beatmapData->InsertBeatmapEventData(BPMChangeBeatmapEventData::New_ctor(-100.0f, startBpm));
     auto bpmEvents = beatmapSaveData->dyn_bpmEvents();
     // TODO: Fix
-    if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
-        for (auto basicEventTypesForKeyword: VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
+    CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("beatmapSaveData->basicEventTypesWithKeywords {} beatmapSaveData->basicEventTypesWithKeywords->d {} beatmapSaveData->basicEventTypesWithKeywords->d->items {}",
+                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords),
+                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d),
+                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d->items.convert()));
+    if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->get_Count() > 0 && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
+        for (auto basicEventTypesForKeyword: VList(beatmapSaveData->basicEventTypesWithKeywords->d).toSpan()) {
             if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) continue;
 
             beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
@@ -816,15 +829,6 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     CRASH_UNLESS(beatmapSaveData->dyn_bpmEvents());
     BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {}", fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d));
-
-    for (auto i = beatmapSaveData->basicEventTypesWithKeywords->d->size - 1; i >= 0; i--) {
-        auto v = beatmapSaveData->basicEventTypesWithKeywords->d->items.get(i);
-
-        if (!v) {
-            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Null! {}", i);
-            beatmapSaveData->basicEventTypesWithKeywords->d->RemoveAt(i);
-        }
-    }
 
     auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
 
@@ -1018,18 +1022,10 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         for (auto const& o : VList(eventGroup)) {
             if (!o) continue;
 
-            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Convert {}", fmt::ptr(environmentLightGroups));
             auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
             if (beatmapEventDataBoxGroup != nullptr)
             {
-                CJDLogger::Logger.fmtLog<LogLevel::DBG>("event box insert");
-                // THIS CRASHES WITH A IL2CPP NULLPTR EXCEPTION
-
-                auto method = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(beatmapEventDataBoxGroupLists, "Insert", 2));
-
-                CRASH_UNLESS(il2cpp_utils::RunMethod(beatmapEventDataBoxGroupLists, method, o->g, beatmapEventDataBoxGroup));
-//                beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
-                CJDLogger::Logger.fmtLog<LogLevel::DBG>("inserted");
+                beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
             }
         }
     };

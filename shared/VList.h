@@ -61,7 +61,7 @@ public:
 
 public:
     VList() 
-        : inner(InnerTy::New_ctor(0)) {};
+        : inner(InnerTy::New_ctor()) {};
     
     VList(int size) 
         : inner(InnerTy::New_ctor(size)) {
@@ -113,6 +113,14 @@ public:
 
     [[nodiscard]] constexpr void* convert() const noexcept {
         return inner;
+    }
+
+    operator std::span<Ty>() {
+        return std::span<Ty>(begin(), size());
+    }
+
+    std::span<Ty> toSpan() {
+        return std::span<Ty>(begin(), size());
     }
 };
 

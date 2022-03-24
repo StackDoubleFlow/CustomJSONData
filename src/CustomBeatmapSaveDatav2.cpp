@@ -85,7 +85,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
 {
     using namespace CustomJSONData::v2;
 
-    auto size = beatmapSaveData && beatmapSaveData->events ? beatmapSaveData->events->size : 0;
+    auto size = beatmapSaveData->events ? beatmapSaveData->events->size : 0;
     VList<BeatmapSaveData::EventData*> list(List<BeatmapSaveData::EventData*>::New_ctor(size));
     for (auto originalEventData : VList(beatmapSaveData->events))
     {
@@ -154,7 +154,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
                 note->customData = customDataIt->value;
             }
-            notes[i] = note;
+            notes.push_back(note);
         }
     }
 
@@ -205,7 +205,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                     sliderMidAnchorMode));
             slider->customData = GetCustomData(slider_json);
 
-            sliders[i] = slider;
+            sliders.push_back(slider);
         }
     }
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} sliders", sliders.size());
@@ -234,7 +234,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
             obstacle->customData = GetCustomData(obstacle_json);
 
-            obstacles[i] = obstacle;
+            obstacles.push_back(obstacle);
         }
     }
 
@@ -250,7 +250,6 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         rapidjson::Value const& eventsArr = eventsArrIt->value;
         events = VList<BeatmapSaveData::EventData *>(eventsArr.Size());
 
-        CJDLogger::Logger.fmtLog<LogLevel::INF>("eventsSaveData old size: {}", events.size());
         for (rapidjson::SizeType i = 0; i < eventsArr.Size(); i++) {
             rapidjson::Value const& event_json = eventsArr[i];
 
@@ -267,7 +266,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             auto event = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData *>(time, type, value, floatValue));
             event->customData = GetCustomData(event_json);
 
-            events[i] = event;
+            events.push_back(event);
         }
     }
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} events", events.size());
@@ -290,7 +289,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
             OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
             auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
-            waypoints[i] = waypoint;
+            waypoints.push_back(waypoint);
         }
     }
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsed {} waypoints", waypoints.size());
@@ -329,12 +328,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         }
     }
     auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(
-            specialEventsKeywordFiltersList);
+            *specialEventsKeywordFiltersList);
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
     auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData *>(*events, *notes, *sliders, *waypoints, *obstacles,
                                                                             specialEventsKeywordFilters));
-    CJDLogger::Logger.fmtLog<LogLevel::INF>("eventsSaveDataList pointer right after constructor: {}", fmt::ptr(saveData->events));
     saveData->doc = sharedDoc;
     saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
     auto customDataIt = doc.FindMember("_customData");
@@ -389,12 +387,12 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     if (saveData->version && !csstrtostr(saveData->version).empty())
     {
         if (semver::lt(static_cast<std::string>(saveData->version), "2.5.0")) {
-            ConvertBeatmapSaveDataPreV2_5_0(saveData);
+            ::ConvertBeatmapSaveDataPreV2_5_0(saveData);
         }
     }
     else
     {
-        ConvertBeatmapSaveDataPreV2_5_0(saveData);
+        ::ConvertBeatmapSaveDataPreV2_5_0(saveData);
     }
 
     return saveData;

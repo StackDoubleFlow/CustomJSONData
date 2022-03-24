@@ -1018,12 +1018,6 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         }
     }
 
-    for (auto const& c : colorNotes){
-        if (!c) {
-            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Color note is null!");
-        }
-    }
-
     auto beatmap = CustomBeatmapSaveData::New_ctor(
             bpmEvents.getInner(),
             rotationEvents.getInner(),
@@ -1039,7 +1033,6 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             lightRotationEventBoxGroups.getInner(),
             BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword),
             useNormalEventsAsCompatibleEvents);
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Bpm events {} and klass {}", fmt::ptr(bpmEvents.getInner()), fmt::ptr(bpmEvents.getInner()->klass));
 
     beatmap->customData = dataOpt;
 
@@ -1145,6 +1138,8 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
             colorNotes.push_back(newNote);
         }
     }
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converted {} notes and {} bombs", colorNotes.size(), bombNotes.size());
+
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting obstacles");
     for (auto const& n : VList(beatmap->obstacles)) {
@@ -1232,33 +1227,38 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         }
     }
 
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting specialEventsKeywordFilters");
-    SAFEPTR_VLIST(BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, keywords);
+    auto keywordsInnerList = System::Collections::Generic::List_1<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>::New_ctor(beatmap->specialEventsKeywordFilters->keywords->get_Count());
+    VList<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*> keywords(keywordsInnerList);
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting specialEventsKeywordFilters {} with size {}", fmt::ptr(keywordsInnerList), keywords.size());
 
     for (auto const& n : VList(beatmap->specialEventsKeywordFilters->keywords)) {
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Got special events {} with size {}", fmt::ptr(n->specialEvents), n->specialEvents->get_Count());
         keywords.push_back(BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(n->keyword, n->specialEvents));
     }
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converted specialEventsKeywordFilters {}", keywords.size());
 
     auto basicEventTypesWithKeywords =
-                 BeatmapSaveData::BasicEventTypesWithKeywords::New_ctor(keywords);
+                 BeatmapSaveData::BasicEventTypesWithKeywords::New_ctor(keywordsInnerList);
 
     colorNotes.trim();
     bombNotes.trim();
 
-    auto v3beatmap = CustomBeatmapSaveData::New_ctor(bpmChanges.getInner(),
-                                                     rotationEvents.getInner(),
-                                                     colorNotes.getInner(),
-                                                     bombNotes.getInner(),
-                                                     obstacles.getInner(),
-                                                     sliders.getInner(),
-                                                     VList<BeatmapSaveData::BurstSliderData*>().getInner(),
-                                                     waypoints.getInner(),
-                                                     basicEvents.getInner(),
-                                                     colorBoosts.getInner(),
-                                                     VList<BeatmapSaveData::LightColorEventBoxGroup*>().getInner(),
-                                                     VList<BeatmapSaveData::LightRotationEventBoxGroup*>().getInner(),
+    auto v3beatmap = CustomBeatmapSaveData::New_ctor(*bpmChanges,
+                                                     *rotationEvents,
+                                                     *colorNotes,
+                                                     *bombNotes,
+                                                     *obstacles,
+                                                     *sliders,
+                                                     *VList<BeatmapSaveData::BurstSliderData*>(),
+                                                     *waypoints,
+                                                     *basicEvents,
+                                                     *colorBoosts,
+                                                     *VList<BeatmapSaveData::LightColorEventBoxGroup*>(),
+                                                     *VList<BeatmapSaveData::LightRotationEventBoxGroup*>(),
                                                      basicEventTypesWithKeywords,
                                                      true);
+
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("beatmap eventkeywords {} vs our {} and finally items {}", fmt::ptr(v3beatmap->basicEventTypesWithKeywords->d), fmt::ptr(basicEventTypesWithKeywords->d), fmt::ptr(basicEventTypesWithKeywords->d->items.convert()));
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished converting 2.0.0 to 3.0.0 map");
     auto stopTime = std::chrono::high_resolution_clock::now();
