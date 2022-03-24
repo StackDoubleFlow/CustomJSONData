@@ -122,7 +122,7 @@ void CustomJSONData::v3::CustomBeatmapSaveData_BasicEventData::ctor(float time, 
 }
 
 inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustomData(rapidjson::Value const & doc) {
-    auto customDataIt = doc.FindMember("_customData");
+    auto customDataIt = doc.FindMember(Constants::customData);
     if (customDataIt != doc.MemberEnd() && customDataIt->value.IsObject()) {
         return customDataIt->value;
     }

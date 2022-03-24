@@ -45,21 +45,21 @@ namespace CustomJSONData::v2 {
 
 namespace CustomJSONData::v3::Constants {
     // worst naming scheme ever
-    static inline const std::string_view beat = "b";
-    static inline const std::string_view colorType = "c";
-    static inline const std::string_view line = "x";
-    static inline const std::string_view layer = "y";
-    static inline const std::string_view cutDirection = "d";
-    static inline const std::string_view tailBeat = "tb";
-    static inline const std::string_view tailLine = "tx";
-    static inline const std::string_view tailLayer = "ty";
-    static inline const std::string_view eventBoxes = "e";
-    static inline const std::string_view groupId = "g";
-    static inline const std::string_view indexFilter = "f";
-    static inline const std::string_view beatDistributionParam = "w";
-    static inline const std::string_view beatDistributionParamType = "d";
+    static inline const auto beat = "b";
+    static inline const auto colorType = "c";
+    static inline const auto line = "x";
+    static inline const auto layer = "y";
+    static inline const auto cutDirection = "d";
+    static inline const auto tailBeat = "tb";
+    static inline const auto tailLine = "tx";
+    static inline const auto tailLayer = "ty";
+    static inline const auto eventBoxes = "e";
+    static inline const auto groupId = "g";
+    static inline const auto indexFilter = "f";
+    static inline const auto beatDistributionParam = "w";
+    static inline const auto beatDistributionParamType = "d";
 
-    static inline const std::string_view customData = "customData";
+    static inline const auto customData = "customData";
 }
 
 namespace CustomJSONData::v3 {
