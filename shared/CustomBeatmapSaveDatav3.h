@@ -58,7 +58,7 @@ namespace CustomJSONData::v3::Constants {
     static inline const std::string_view beatDistributionParam = "w";
     static inline const std::string_view beatDistributionParamType = "d";
 
-    static inline const std::string_view customData = "cd";
+    static inline const std::string_view customData = "customData";
 }
 
 namespace CustomJSONData::v3 {
