@@ -13,6 +13,7 @@ extern "C" void load() {
     if (!Paper::Logger::IsInited()) {
         Paper::Logger::Init("/sdcard/Android/data/com.beatgames.beatsaber/files/logs");
     }
+    Paper::Logger::RegisterFileContextId("CustomJSONData", "CustomJSONDataPaper");
 
     CJDLogger::Logger.fmtLog<LogLevel::INF>("Installing CustomJSONData Hooks!");
 

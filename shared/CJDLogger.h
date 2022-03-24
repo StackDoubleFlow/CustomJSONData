@@ -12,6 +12,6 @@ public:
         static auto logger = new class Logger(modInfo, LoggerOptions(false, true));
         return *logger;
     }
-
-    static inline auto Logger = Paper::Logger::WithContext<"CustomJSONData">("CustomJSONDataPaper");
+    // Register file log in main.cpp
+    static inline auto Logger = Paper::Logger::WithContext<"CustomJSONData", false>();
 };
