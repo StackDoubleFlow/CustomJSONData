@@ -395,35 +395,6 @@ namespace CustomJSONData {
         }
     };
 
-    template<typename To, typename From, typename ExtraParam>
-    requires(std::is_pointer_v<To> && std::is_pointer_v<From>)
-    struct CppConverter2Param {
-        std::unordered_map<Il2CppClass *, std::function<To(From, ExtraParam)>> converters;
-
-        template<typename U, typename F>
-        requires(std::is_pointer_v<U> &&
-                 std::is_convertible_v<U, From> &&
-                 std::is_convertible_v<F, std::function<To(U, ExtraParam)>>)
-        constexpr void AddConverter(F&& o) {
-            converters[classof(U)] = [o](From const &t, ExtraParam const& extraParam) constexpr { return o(static_cast<U>(t), extraParam); };
-        }
-
-        constexpr To ProcessItem(From o, ExtraParam extraParam) const {
-            auto uKlass = o->klass;
-            auto it = converters.find(uKlass);
-            if (it == converters.end()) {
-//                for (auto const& [klass, func] : converters) {
-//                    if (il2cpp_functions::class_is_assignable_from(klass, uKlass)) {
-//                        return func(reinterpret_cast<T>(o));
-//                    }
-//                }
-                return {};
-            }
-
-            return (it->second)(o, extraParam);
-        }
-    };
-
     struct BpmChangeData {
         const float bpmChangeStartTime;
         const float bpmChangeStartBpmTime;
@@ -438,7 +409,7 @@ namespace CustomJSONData {
 
         BpmTimeProcessor(float startBpm,
                          VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData *> bpmEventsSaveData) {
-            bpmChangeDataList.reserve(bpmEventsSaveData.size());
+            bpmChangeDataList.reserve(bpmEventsSaveData.size() + 1);
             bpmChangeDataList.emplace_back(0, 0, startBpm);
 
             for (auto const &v: bpmEventsSaveData) {

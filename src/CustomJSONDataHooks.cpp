@@ -64,6 +64,8 @@
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/error/en.h"
 
 #include "cpp-semver/shared/cpp-semver.hpp"
+#include "paper/shared/Profiler.hpp"
+
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
@@ -278,6 +280,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData), fmt::ptr(cachedSaveData));
     auto startTime = std::chrono::high_resolution_clock::now();
+    Paper::Profiler profile;
+    profile.startTimer();
 
     bool flag = loadingForDesignatedEnvironment || (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->get_isEmpty());
     CustomBeatmapData* beatmapData;
@@ -307,15 +311,19 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
-    auto bpmEvents = beatmapSaveData->bpmEvents;
-    BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
+    auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {}", fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d));
 
-    auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+    profile.mark("Converted special events");
+
+    auto bpmEvents = beatmapSaveData->bpmEvents;
+    BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
 
     auto const BeatToTime = [&bpmTimeProcessor](float beat) constexpr {
         return bpmTimeProcessor.ConvertBeatToTime(beat);
     };
+
+    profile.mark("Parsed bpm events");
 
     // TODO: Remove converter
     CppConverter<BeatmapObjectData*, BeatmapSaveData::BeatmapSaveDataItem*> objectConverter;
@@ -450,7 +458,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     addAllToVector(beatmapDataObjectItems, beatmapSaveData->burstSliders);
     addAllToVector(beatmapDataObjectItems, beatmapSaveData->waypoints);
 
-
+    profile.mark("Grouped all beatmap objects");
 
     cleanAndSort(beatmapDataObjectItems);
     for (auto const& o : beatmapDataObjectItems) {
@@ -460,6 +468,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             beatmapData->AddBeatmapObjectData(beatmapObjectData);
         }
     }
+
+    profile.mark("Processed and added beatmap objects");
 
     CppConverter<BeatmapEventData*, BeatmapSaveData::BeatmapSaveDataItem*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) {
@@ -480,14 +490,14 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     if (flag) {
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) {
-            if (!specialEventsFilter->IsEventValid(data->get_eventType()))
+            if (!specialEventsFilter->IsEventValid(data->et))
             {
                 return (CustomBeatmapEventData*) nullptr;
             }
 
             auto event = CustomBeatmapEventData::New_ctor(
                     BeatToTime(data->b),
-                    (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
+                    (GlobalNamespace::BasicBeatmapEventType) data->et,
                     data->get_value(),
                     data->get_floatValue());
 
@@ -505,7 +515,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime](v3::CustomBeatmapSaveData_BasicEventData* data) {
             auto event = CustomBeatmapEventData::New_ctor(
                     BeatToTime(data->b),
-                    (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
+                    (GlobalNamespace::BasicBeatmapEventType) data->et,
                     data->get_value(),
                     data->get_floatValue());
 
@@ -537,6 +547,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events");
     addAllToVector(beatmapDataEventItems, beatmapSaveData->rotationEvents);
 
+    profile.mark("Grouped beatmap events");
+
     cleanAndSort(beatmapDataEventItems);
     for (auto const& o : beatmapDataEventItems) {
         auto* beatmapEventData = eventConverter.ProcessItem(o);
@@ -545,6 +557,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             beatmapData->InsertBeatmapEventData(beatmapEventData);
         }
     }
+
+    profile.mark("Processed and added beatmap events");
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
     auto bpmTimeProcessorIl2cpp = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
@@ -565,6 +579,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     cleanAndSort(eventBoxes);
 
+    profile.mark("Grouped beatmap event boxes");
+
     for (auto const& o : eventBoxes) {
         auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
         if (beatmapEventDataBoxGroup != nullptr)
@@ -572,6 +588,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
         }
     }
+
+    profile.mark("Processed and added beatmap events boxes");
 
     if (!flag)
     {
@@ -590,14 +608,21 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                   customEventSaveData.typeHash,
                                                   (void *) const_cast<rapidjson::Value *>(customEventSaveData.data)));
             }
+
+            profile.mark("Processed beatmap custom events");
         }
     }
 
-
+    // Figure out a way to rewrite this to not be stupid
     beatmapEventDataBoxGroupLists->SyncWithBeatmapData();
+    profile.mark("Syncing event box groups");
+
     beatmapData->ProcessRemainingData();
 
+    profile.mark("Processed processed remaining data");
 
+    profile.endTimer();
+    profile.printMarks();
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();
