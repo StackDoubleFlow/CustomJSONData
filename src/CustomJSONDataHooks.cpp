@@ -379,7 +379,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                 data->get_headControlPointLengthMultiplier(),
                 data->get_headCutDirection(),
                 BeatToTime(data->get_tailBeat()),
-                data->get_headLine(),
+                data->get_tailLine(),
                 ConvertNoteLineLayer(data->get_tailLayer()),
                 ConvertNoteLineLayer(data->get_tailLayer()),
                 data->get_tailControlPointLengthMultiplier(),
@@ -495,11 +495,14 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                 return (CustomBeatmapEventData*) nullptr;
             }
 
+
             auto event = CustomBeatmapEventData::New_ctor(
-                    BeatToTime(data->b),
-                    (GlobalNamespace::BasicBeatmapEventType) data->et,
+                    BeatToTime(data->get_beat()),
+                    (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
                     data->get_value(),
                     data->get_floatValue());
+
+            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Time {} type {} {} (og {}) Value {} (og {}) and float value {} (og {})", event->time, event->basicBeatmapEventType, event->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent,  data->et, event->value, data->i, event->floatValue, data->f);
 
             event->customData = ToJsonWrapper(data->customData);
 
@@ -508,26 +511,16 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
             return ColorBoostBeatmapEventData::New_ctor(
-                    BeatToTime(data->b),
+                    BeatToTime(data->get_beat()),
                     data->get_boost());
         });
     } else {
-        eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime](v3::CustomBeatmapSaveData_BasicEventData* data) {
-            auto event = CustomBeatmapEventData::New_ctor(
-                    BeatToTime(data->b),
-                    (GlobalNamespace::BasicBeatmapEventType) data->et,
-                    data->get_value(),
-                    data->get_floatValue());
-
-            event->customData = ToJsonWrapper(data->customData);
-
-            return event;
+        eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([](v3::CustomBeatmapSaveData_BasicEventData* data) {
+            return nullptr;
         });
 
-        eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) {
-            return ColorBoostBeatmapEventData::New_ctor(
-                    BeatToTime(data->b),
-                    data->get_boost());
+        eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([](BeatmapSaveData::ColorBoostEventData* data) {
+            return nullptr;
         });
     }
 
@@ -558,6 +551,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Beatmap events {}", beatmapData->beatmapDataItemsPerType->items->get_Item(csTypeOf(BasicBeatmapEventData*))->get_items()->get_Count());
+
     profile.mark("Processed and added beatmap events");
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
@@ -579,13 +574,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     cleanAndSort(eventBoxes);
 
-    profile.mark("Grouped beatmap event boxes");
+    profile.mark(fmt::format("Grouped beatmap event boxes {}", eventBoxes.size()));
 
     for (auto const& o : eventBoxes) {
         auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
         if (beatmapEventDataBoxGroup != nullptr)
         {
-            beatmapEventDataBoxGroupLists->Insert(o->get_groupId(), beatmapEventDataBoxGroup);
+            beatmapEventDataBoxGroupLists->Insert(o->g, beatmapEventDataBoxGroup);
         }
     }
 
