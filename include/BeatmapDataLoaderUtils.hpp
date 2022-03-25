@@ -6,8 +6,6 @@
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
-#include "GlobalNamespace/BeatmapCallbacksController.hpp"
-#include "GlobalNamespace/MultipleSortedListsEnumerator_1.hpp"
 #include "GlobalNamespace/BPMChangeBeatmapEventData.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
@@ -15,9 +13,6 @@
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
 #include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
-#include "GlobalNamespace/AudioTimeSyncController.hpp"
-#include "GlobalNamespace/IAudioTimeSource.hpp"
-#include "GlobalNamespace/DataConvertor_1.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
 #include "GlobalNamespace/EnvironmentColorType.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroup.hpp"
@@ -35,7 +30,6 @@
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
 #include "GlobalNamespace/GameSongController.hpp"
 
-#include "System/Comparison_1.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "System/Collections/Generic/KeyValuePair_2.hpp"
@@ -43,24 +37,13 @@
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Collections/Generic/IEnumerator_1.hpp"
-#include "System/Linq/Enumerable.hpp"
-#include "System/Version.hpp"
 
-#include "UnityEngine/Resources.hpp"
-
-#include "CustomBeatmapSaveDatav2.h"
 #include "CustomBeatmapSaveDatav3.h"
 #include "CustomBeatmapData.h"
 #include "CustomEventData.h"
-#include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 #include "VList.h"
 #include "BeatmapFieldUtils.hpp"
-
-
-#include <chrono>
-#include <codecvt>
-#include <locale>
 
 // this header exists purely for organizing
 
@@ -524,10 +507,11 @@ namespace CustomJSONData {
                        EnvironmentLightGroups::LightGroupData *lightGroupData) {
                         auto indexFilter = IndexFilterConvertor_Convert(saveData->f,
                                                                         lightGroupData->numberOfElements);
-                        VList<LightRotationBaseData *> list(reinterpret_cast<IReadOnlyCollection_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData *> *>(saveData->get_lightRotationBaseDataList())->get_Count());
+                        auto collection = reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData *> *>(saveData->get_lightRotationBaseDataList());
 
-                        for (auto saveData2: VList(
-                                reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData *> *>(saveData->get_lightRotationBaseDataList()))) {
+                        VList<LightRotationBaseData *> list(collection->get_Count());
+
+                        for (auto saveData2: VList(collection)) {
                             list.push_back(LightRotationBaseData_Convert(saveData2));
                         }
 
@@ -548,13 +532,13 @@ namespace CustomJSONData {
 
 
         BeatmapEventDataBoxGroup * Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup *eventBoxGroupSaveData) const {
-            auto collection = reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *> *>(eventBoxGroupSaveData->get_baseEventBoxes());
-            VList<BeatmapEventDataBox *> list(collection->get_Count());
-
             auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
             if (dataForGroup == nullptr) {
                 return nullptr;
             }
+
+            auto collection = reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *> *>(eventBoxGroupSaveData->get_baseEventBoxes());
+            VList<BeatmapEventDataBox *> list(collection->get_Count());
 
             for (auto item: VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *>(collection)) {
                 auto beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);

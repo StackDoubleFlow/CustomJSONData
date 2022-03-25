@@ -41,7 +41,7 @@ System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppObject *obj
 
 void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {
     beatmapDataItemsPerType->InsertItem(customEventData);
-    allBeatmapData->Insert((BeatmapDataItem *) customEventData);
+    allBeatmapData->Insert(customEventData);
 }
 
 CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
@@ -56,11 +56,14 @@ CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy()
     return copy;
 }
 
-void CustomJSONData::CustomBeatmapEventData::ctor(float time, GlobalNamespace::BasicBeatmapEventType type, int value, float floatValue) {
-    static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapEventData*), ".ctor", 4));
-    BeatmapEventData* instance = this;
-    il2cpp_utils::RunMethodRethrow<void, false>(instance, BeatmapEventData_Ctor, time, type, value, floatValue);
+void CustomJSONData::CustomBeatmapEventData::ctor(float time, ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType, int value, float floatValue) {
+    static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BasicBeatmapEventData*), ".ctor", 4));
+    il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, basicBeatmapEventType, value, floatValue);
     INVOKE_CTOR();
+    this->time = time;
+    this->basicBeatmapEventType = basicBeatmapEventType;
+    this->value = value;
+    this->floatValue = floatValue;
 }
 
 CustomJSONData::CustomBeatmapEventData *CustomJSONData::CustomBeatmapEventData::GetCopy() {

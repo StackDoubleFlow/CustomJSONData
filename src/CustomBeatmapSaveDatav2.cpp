@@ -50,6 +50,8 @@ void CustomJSONData::v2::CustomBeatmapSaveData_NoteData::ctor(float time, int li
 
 
 void CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData::ctor(float time, int lineIndex, BeatmapSaveData::ObstacleType type, float duration, int width) {
+    static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 5);
+    CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, lineIndex, type, duration, width));
     INVOKE_CTOR();
     this->time = time;
     this->lineIndex = lineIndex;
@@ -61,6 +63,9 @@ void CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData::ctor(float time, in
 
 
 void CustomJSONData::v2::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type, int value, float floatValue) {
+    static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::EventData*), ".ctor", 4);
+    CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, type, value, floatValue));
+
     INVOKE_CTOR();
     this->time = time;
     this->type = type;
@@ -83,10 +88,12 @@ void CustomJSONData::v2::CustomBeatmapSaveData_SliderData::ctor(
 
 static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSaveData* beatmapSaveData)
 {
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Converting pre v2.5.0");
+
     using namespace CustomJSONData::v2;
 
     auto size = beatmapSaveData->events ? beatmapSaveData->events->size : 0;
-    VList<BeatmapSaveData::EventData*> list(List<BeatmapSaveData::EventData*>::New_ctor(size));
+    VList<BeatmapSaveData::EventData*> list(size);
     for (auto originalEventData : VList(beatmapSaveData->events))
     {
         auto* eventData = reinterpret_cast<CustomBeatmapSaveData_EventData *>(originalEventData);
@@ -94,22 +101,22 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
         if (eventData->type == BeatmapSaveData::BeatmapEventType::Event10)
         {
             newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, BeatmapSaveData::BeatmapEventType::BpmChange, eventData->value, eventData->floatValue));
-            newData->customData = eventData->customData;
         }
 
         if (static_cast<int>(eventData->type) == BeatmapSaveData::BeatmapEventType::BpmChange)
         {
             if (eventData->value != 0)
             {
-                newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, eventData->floatValue));
-                newData->customData = eventData->customData;
+                newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, (float) eventData->value));
             }
         }
         else
         {
             newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, 1.0f));
-            newData->customData = eventData->customData;
         }
+
+        if (newData)
+            newData->customData = eventData->customData;
 
         list.push_back(newData ? newData : eventData);
     }
@@ -384,6 +391,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     }
 
     // Below taken straight from BeatmapSaveData.DeserializeFromJSONString
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("v2 Version {}", static_cast<std::string>(saveData->version));
     if (saveData->version && !csstrtostr(saveData->version).empty())
     {
         if (semver::lt(static_cast<std::string>(saveData->version), "2.5.0")) {

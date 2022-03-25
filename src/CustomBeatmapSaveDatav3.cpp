@@ -1262,7 +1262,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                 auto boost = ColorBoostEventData::New_ctor(n->time, n->value == 1);
                 // TODO: Custom data
                 colorBoosts.push_back(boost);
-                break;
+                continue;
             }
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event14:
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event15: {
@@ -1274,15 +1274,17 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                                                             SpawnRotationForEventValue(n->value));
                 // TODO: Custom data
                 rotationEvents.push_back(rotation);
-                break;
+                continue;
             }
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::BpmChange:
                 // TODO: Custom data!
                 bpmChanges.push_back(BpmChangeEventData::New_ctor(n->time, n->floatValue));
-                break;
+                continue;
             default:
-                break;
-
+                auto event = v3::CustomBeatmapSaveData_BasicEventData::New_ctor(n->time, n->type, n->value, n->floatValue);
+                event->customData = customN->customData;
+                basicEvents.push_back(event);
+                continue;
         }
     }
 
