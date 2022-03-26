@@ -5,10 +5,15 @@
 
 #include "CJDLogger.h"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
+#include "GlobalNamespace/BeatmapDataCallbackWrapper.hpp"
+#include "GlobalNamespace/BeatmapCallbacksController.hpp"
 
 namespace GlobalNamespace {
-class BeatmapObjectCallbackController;
+class BeatmapCallbacksController;
 }
+
+#define FindMethodGetter(methodName) \
+::il2cpp_utils::il2cpp_type_check::MetadataGetter<methodName>::get()
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem,
 public:
@@ -20,6 +25,14 @@ public:
   std::string_view type;
   size_t typeHash;
   rapidjson::Value const* data;
+)
+
+DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapDataCallbackWrapper, GlobalNamespace::BeatmapDataCallbackWrapper,
+      DECLARE_CTOR(ctor);
+
+      DECLARE_OVERRIDE_METHOD(void, CallCallback, FindMethodGetter(&GlobalNamespace::BeatmapDataCallbackWrapper::CallCallback), GlobalNamespace::BeatmapDataItem* item);
+
+      DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCallbacksController *, controller);
 )
 
 namespace CustomJSONData {
@@ -46,21 +59,20 @@ public:
 };
 
 struct CustomEventCallbackData {
-    void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
-                     CustomJSONData::CustomEventSaveData *);
-    float aheadTime;
-    bool callIfBeforeStartTime;
-    int nextEventIndex;
+    void (*callback)(GlobalNamespace::BeatmapCallbacksController *callbackController,
+                     CustomJSONData::CustomEventData *);
+
+    constexpr CustomEventCallbackData(void (*callback)(GlobalNamespace::BeatmapCallbacksController *, CustomEventData *))
+            : callback(callback) {}
 };
 
 class CustomEventCallbacks {
 public:
     static std::vector<CustomEventCallbackData> customEventCallbacks;
 
-    static void AddCustomEventCallback(
-        void (*callback)(GlobalNamespace::BeatmapObjectCallbackController *callbackController,
-                         CustomJSONData::CustomEventSaveData *),
-        float aheadTime = 0, bool callIfBeforeStartTime = true);
+    static void AddCustomEventCallback(void (*callback)(GlobalNamespace::BeatmapCallbacksController *callbackController,CustomJSONData::CustomEventData *));
+
+    static void RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController* callbackController);
 };
 
 } // end namespace CustomJSONData

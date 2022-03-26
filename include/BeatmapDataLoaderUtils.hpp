@@ -10,8 +10,6 @@
 #include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
 #include "GlobalNamespace/BeatmapEventTransitionType.hpp"
-#include "GlobalNamespace/BeatmapDataLoader.hpp"
-#include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
 #include "GlobalNamespace/EnvironmentColorType.hpp"
@@ -25,10 +23,11 @@
 #include "GlobalNamespace/LightRotationBeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightRotationBaseData.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
-#include "GlobalNamespace/GameSongController.hpp"
+#include "GlobalNamespace/DefaultEnvironmentEvents_LightGroupEvent.hpp"
+#include "GlobalNamespace/BeatmapEventDataBoxGroupFactory.hpp"
+#include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
 
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
@@ -556,4 +555,54 @@ namespace CustomJSONData {
         EnvironmentLightGroups *lightGroups;
     };
 
+    struct BeatmapEventDataBoxGroupListsCpp {
+        std::unordered_map<int, BeatmapEventDataBoxGroupList*> _beatmapEventDataBoxGroupListDict;
+
+        BeatmapData *_beatmapData;
+        GlobalNamespace::IBeatToTimeConvertor* _beatToTimeConvertor;
+        bool _updateBeatmapDataOnInsert;
+
+        BeatmapEventDataBoxGroupListsCpp(BeatmapData *beatmapData, GlobalNamespace::IBeatToTimeConvertor* const &beatToTimeConvertor,
+                                         bool updateBeatmapDataOnInsert) : _beatmapData(beatmapData),
+                                                                           _beatToTimeConvertor(beatToTimeConvertor),
+                                                                           _updateBeatmapDataOnInsert(
+                                                                                   updateBeatmapDataOnInsert) {}
+
+        auto Insert(int groupId, BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup) {
+            auto& beatmapEventDataBoxGroupList = _beatmapEventDataBoxGroupListDict[groupId];
+
+            if (!beatmapEventDataBoxGroupList) {
+                beatmapEventDataBoxGroupList = BeatmapEventDataBoxGroupList::New_ctor(groupId, this->_beatmapData,
+                                                                                this->_beatToTimeConvertor);
+                beatmapEventDataBoxGroupList->updateBeatmapDataOnInsert = _updateBeatmapDataOnInsert;
+            }
+
+            return beatmapEventDataBoxGroupList->Insert(beatmapEventDataBoxGroup);
+        }
+
+        auto SyncWithBeatmapData() const {
+            for (auto const& [groupid, list] : _beatmapEventDataBoxGroupListDict) {
+
+            }
+        }
+
+        auto BeatmapEventDataBoxGroupList_SyncWithBeatmapData() const {
+
+        }
+    };
+
+    void DefaultEnvironmentEventsFactory_InsertDefaultEnvironmentEventsLightGroups(DefaultEnvironmentEvents * defaultEnvironmentEvents, EnvironmentLightGroups* environmentLightGroups, BeatmapEventDataBoxGroupListsCpp& beatmapEventDataBoxGroupLists) {
+        if (defaultEnvironmentEvents && !defaultEnvironmentEvents->get_isEmpty() && defaultEnvironmentEvents->lightGroupEvents.convert() != nullptr)
+        {
+            for (auto lightGroupEvent : defaultEnvironmentEvents->lightGroupEvents)
+            {
+                auto dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->groupId);
+                if (dataForGroup != nullptr)
+                {
+                    BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(0.0f, dataForGroup->numberOfElements, lightGroupEvent->environmentColorType, lightGroupEvent->brightness, lightGroupEvent->rotationX, lightGroupEvent->rotationY);
+                    beatmapEventDataBoxGroupLists.Insert(dataForGroup->groupId, beatmapEventDataBoxGroup);
+                }
+            }
+        }
+    }
 }

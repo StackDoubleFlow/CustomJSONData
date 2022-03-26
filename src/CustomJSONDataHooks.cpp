@@ -90,8 +90,6 @@ std::string to_utf8(std::u16string_view view) {
     return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
 }
 
-#define FindMethodGetter(qualifiedTypeName, methodName) \
-::il2cpp_utils::il2cpp_type_check::MetadataGetter<#methodName, qualifiedTypeName, decltype(&qualifiedTypeName::methodName)>::get();
 
 static std::string GetVersionFromPath(std::string_view path)
 {
@@ -272,11 +270,21 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem, classof(
     list->Remove(node);
 }
 
+BeatmapCallbacksController* beatmapCallbacksController;
+
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacksController::ManualUpdate, void, BeatmapCallbacksController* self, float songTime) {
     if (songTime == self->prevSongTime)
     {
         return;
     }
+
+    // TRANSPILE HERE
+    if (self != beatmapCallbacksController) {
+        CustomEventCallbacks::RegisterCallbacks(self);
+        beatmapCallbacksController = self;
+    }
+    //
+
     self->songTime = songTime;
     self->processingCallbacks = true;
     if (songTime > self->prevSongTime) {
