@@ -34,6 +34,7 @@
 #include "GlobalNamespace/LightRotationBeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightRotationBaseData.hpp"
 #include "GlobalNamespace/BasicBeatmapObjectManager.hpp"
+#include "GlobalNamespace/CallbacksInTime.hpp"
 
 #include "System/Comparison_1.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
@@ -270,6 +271,74 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem, classof(
     auto node = list->NodeForItem(item);
     list->Remove(node);
 }
+
+MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacksController::ManualUpdate, void, BeatmapCallbacksController* self, float songTime) {
+    if (songTime == self->prevSongTime)
+    {
+        return;
+    }
+    self->songTime = songTime;
+    self->processingCallbacks = true;
+    if (songTime > self->prevSongTime) {
+        auto enumerator = self->callbacksInTimes->GetEnumerator();
+
+        while (enumerator.MoveNext()) {
+            auto keyValuePair = enumerator.get_Current();
+            auto value = keyValuePair.get_Value();
+            for (auto linkedListNode = (value->lastProcessedNode != nullptr)
+                                                                   ? value->lastProcessedNode->get_Next()
+                                                                   : self->beatmapData->get_allBeatmapDataItems()->get_First();
+                 linkedListNode != nullptr; linkedListNode = linkedListNode->get_Next()) {
+                auto value2 = linkedListNode->get_Value();
+                if (value2->time - value->aheadTime > songTime) {
+                    break;
+                }
+                if (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent ||
+                /// TRANSPILE HERE
+                value2->type == 2 ||
+                /// TRANSPILE HERE
+                    (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapObject &&
+                     value2->time >= self->startFilterTime)) {
+                    value->CallCallbacks(value2);
+                }
+                value->lastProcessedNode = linkedListNode;
+            }
+        }
+        enumerator.Dispose();
+    } else {
+        auto callbacksInTimesEnumerator = self->callbacksInTimes->GetEnumerator();
+
+        while (callbacksInTimesEnumerator.MoveNext()) {
+            auto keyValuePair2 = callbacksInTimesEnumerator.get_Current();
+            auto value3 = keyValuePair2.get_Value();
+            auto linkedListNode2 = value3->lastProcessedNode;
+            while (linkedListNode2 != nullptr) {
+                auto value4 = linkedListNode2->get_Value();
+                if (value4->time - value3->aheadTime <= songTime) {
+                    break;
+                }
+                if (value4->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent) {
+                    auto* beatmapEventData = static_cast<BeatmapEventData *>(value4);
+                    if (beatmapEventData->previousSameTypeEventData != nullptr) {
+                        value3->CallCallbacks(beatmapEventData->previousSameTypeEventData);
+                    } else {
+                        auto def = beatmapEventData->GetDefault(beatmapEventData);
+                        if (def != nullptr) {
+                            value3->CallCallbacks(def);
+                        }
+                    }
+                    linkedListNode2 = linkedListNode2->get_Previous();
+                    value3->lastProcessedNode = linkedListNode2;
+                }
+            }
+        }
+    }
+
+    finish:
+    self->prevSongTime = songTime;
+    self->processingCallbacks = false;
+}
+
 
 MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData, BeatmapData *,
                 BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
@@ -670,11 +739,10 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetFilteredCopy);
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetCopy);
+    INSTALL_HOOK_ORIG(logger, BeatmapCallbacksController_ManualUpdate)
 
     RuntimeSongLoader::API::AddBeatmapDataBasicInfoLoadedEvent(BeatmapDataLoadedEvent);
 
     il2cpp_functions::Class_Init(classof(BeatmapData*));
-
-    custom_types::logAll(classof(BeatmapData*));
     custom_types::Register::AutoRegister();
 }
