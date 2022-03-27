@@ -12,28 +12,55 @@
 #include "GlobalNamespace/WaypointData.hpp"
 #include "GlobalNamespace/BasicBeatmapEventData.hpp"
 #include "GlobalNamespace/SliderData.hpp"
+#include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
+#include "GlobalNamespace/ISortedList_1.hpp"
 #include "System/Object.hpp"
+#include "System/Collections/IEnumerable.hpp"
+#include "System/Collections/IEnumerator.hpp"
+#include "System/Collections/Generic/IEnumerator_1.hpp"
+#include "System/Collections/Generic/IEnumerable_1.hpp"
+#include "System/Collections/Generic/LinkedList_1.hpp"
+#include "System/Collections/Generic/LinkedListNode_1.hpp"
+
 
 #include "CustomEventData.h"
 #include "JSONWrapper.h"
 #include "CJDLogger.h"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
-    DECLARE_CTOR(ctor, int numberOfLines);
-    DECLARE_SIMPLE_DTOR();
+                      DECLARE_CTOR(ctor, int numberOfLines);
+      DECLARE_SIMPLE_DTOR();
 
 
-    DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
+      DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
 
-public:
-    static System::Type* GetCustomType(Il2CppObject* obj);
+      public:
+      static System::Type* GetCustomType(Il2CppObject* obj);
+      static System::Type* GetCustomType(Il2CppClass* obj);
 
-    void InsertCustomEventData(CustomEventData* customEventData);
+      void InsertCustomEventData(CustomEventData* customEventData);
 
-    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
+      template<class T>
+      std::vector<T> GetBeatmapItemsCpp() {
+          auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerType->GetList(GetCustomType(classof(T))));
+
+          if (!list) return {};
+
+          auto linkedItems = list->get_items();
+
+          std::vector<T> items(linkedItems->get_Count());
+
+          for (auto node = linkedItems->get_First(); node != nullptr; node = node->get_Next()) {
+              items.template emplace_back(reinterpret_cast<T>(node->get_Value()));
+          }
+
+          return items;
+    }
+
+      DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
+      DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
+      DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
+      DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BasicBeatmapEventData,
