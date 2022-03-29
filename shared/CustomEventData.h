@@ -30,9 +30,13 @@ public:
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapDataCallbackWrapper, GlobalNamespace::BeatmapDataCallbackWrapper,
       DECLARE_CTOR(ctor);
 
+        DECLARE_SIMPLE_DTOR();
+
       DECLARE_OVERRIDE_METHOD(void, CallCallback, FindMethodGetter(&GlobalNamespace::BeatmapDataCallbackWrapper::CallCallback), GlobalNamespace::BeatmapDataItem* item);
 
       DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCallbacksController *, controller);
+
+      std::function<void(GlobalNamespace::BeatmapCallbacksController * controller, GlobalNamespace::BeatmapDataItem* item)> redirectEvent;
 )
 
 namespace CustomJSONData {

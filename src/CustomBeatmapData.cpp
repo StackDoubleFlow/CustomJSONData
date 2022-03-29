@@ -2,6 +2,10 @@
 
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
+#include "GlobalNamespace/SortedList_2.hpp"
+#include "GlobalNamespace/BeatmapDataItem.hpp"
+#include "GlobalNamespace/ISortedListItemProcessor_1.hpp"
+#include "System/Collections/Generic/Dictionary_2.hpp"
 
 using namespace GlobalNamespace;
 
@@ -16,6 +20,10 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, numberOfLines));
     INVOKE_CTOR();
+
+    beatmapDataItemsPerType->items->Add(csTypeOf(CustomEventData*),
+                                        reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(SortedList_2<CustomEventData *, BeatmapDataItem *>::New_ctor(
+                                                nullptr)));
 }
 
 

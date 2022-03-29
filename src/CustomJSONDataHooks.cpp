@@ -115,64 +115,54 @@ static std::string GetVersionFromPath(std::string_view path)
 
 BeatmapData * CustomBeatmapData_GetFilteredCopy(CustomBeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
     self->isCreatingFilteredCopy = true;
-    auto beatmapData = self->BaseCopy();
-    auto enumerator = self->allBeatmapData->get_items()->GetEnumerator();
+    auto copy = self->BaseCopy();
 
-    while (true)
-    {
-        if (!enumerator.MoveNext()) {
-            break;
-        }
+    auto linkedList = self->allBeatmapData->get_items();
 
-        auto const& beatmapDataItem = enumerator.get_Current();
+    for (auto node = linkedList->get_First(); node != nullptr; node = node->get_Next()) {
+        auto beatmapDataItem = node->item;
+
+        if (!beatmapDataItem) continue;
 
         BeatmapDataItem* beatmapDataItem2 = processDataItem->Invoke(beatmapDataItem->GetCopy());
-        if (beatmapDataItem2)
-        {
-            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem2)) {
-                beatmapData->InsertBeatmapEventData(*event);
-            }
 
-            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem2)) {
-                beatmapData->AddBeatmapObjectData(*object);
-            }
+        if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
+            copy->InsertBeatmapEventData(*event);
+        }
 
-            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem2)) {
-                beatmapData->InsertCustomEventData(*customEvent);
-            }
+        if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
+            copy->AddBeatmapObjectData(*object);
+        }
+
+        if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
+            copy->InsertCustomEventData(*customEvent);
         }
     }
 
     self->isCreatingFilteredCopy = false;
-    return beatmapData;
+    return copy;
 }
 
 BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
     auto copy = self->BaseCopy();
 
-    auto enumerator = self->allBeatmapData->get_items()->GetEnumerator();
+    auto linkedList = self->allBeatmapData->get_items();
 
-    while (true)
-    {
-        if (!enumerator.MoveNext()) {
-            break;
+    for (auto node = linkedList->get_First(); node != nullptr; node = node->get_Next()) {
+        auto beatmapDataItem = node->item;
+
+        if (!beatmapDataItem) continue;
+
+        if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
+            copy->InsertBeatmapEventData(*event);
         }
 
-        auto const& beatmapDataItem = enumerator.get_Current();
+        if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
+            copy->AddBeatmapObjectData(*object);
+        }
 
-        if (beatmapDataItem)
-        {
-            if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
-                copy->InsertBeatmapEventData(*event);
-            }
-
-            if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
-                copy->AddBeatmapObjectData(*object);
-            }
-
-            if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
-                copy->InsertCustomEventData(*customEvent);
-            }
+        if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
+            copy->InsertCustomEventData(*customEvent);
         }
     }
 
@@ -414,11 +404,6 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                 data->customData);
         noteData->SetCutDirectionAngleOffset(data->get_angleOffset());
 
-        if (data->get_color() == ColorType::None) {
-            CJDLogger::Logger.fmtLog<LogLevel::DBG>("colored note as bomb {} is bomb {}", noteData->gameplayType,
-                                                    noteData->gameplayType == NoteData::GameplayType::Bomb);
-        }
-
         return noteData;
     });
 
@@ -578,8 +563,6 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                     (GlobalNamespace::BasicBeatmapEventType) data->get_eventType(),
                     data->get_value(),
                     data->get_floatValue());
-
-            CJDLogger::Logger.fmtLog<LogLevel::DBG>("Time {} type {} {} (og {}) Value {} (og {}) and float value {} (og {})", event->time, event->basicBeatmapEventType, event->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent,  data->et, event->value, data->i, event->floatValue, data->f);
 
             event->customData = ToJsonWrapper(data->customData);
 

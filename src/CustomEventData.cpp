@@ -41,11 +41,15 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
-    static auto CustomEventDataKlass = classof(CustomEventData*);
-    CRASH_UNLESS(item->klass == CustomEventDataKlass);
+    if (redirectEvent) {
+        redirectEvent(controller, item);
+    } else {
+        static auto CustomEventDataKlass = classof(CustomEventData*);
+        CRASH_UNLESS(item->klass == CustomEventDataKlass);
 
-    for (auto const& customEvents : CustomEventCallbacks::customEventCallbacks) {
-        customEvents.callback(controller, static_cast<CustomEventData *>(item));
+        for (auto const &customEvents: CustomEventCallbacks::customEventCallbacks) {
+            customEvents.callback(controller, static_cast<CustomEventData *>(item));
+        }
     }
 }
 

@@ -48,10 +48,14 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
           auto linkedItems = list->get_items();
 
-          std::vector<T> items(linkedItems->get_Count());
+          std::vector<T> items;
+          items.reserve(linkedItems->get_Count());
 
           for (auto node = linkedItems->get_First(); node != nullptr; node = node->get_Next()) {
-              items.template emplace_back(reinterpret_cast<T>(node->get_Value()));
+              auto val = node->item;
+              if (!val) continue;
+
+              items.template emplace_back(reinterpret_cast<T>(val));
           }
 
           return items;
