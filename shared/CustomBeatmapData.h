@@ -61,6 +61,24 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
           return items;
     }
 
+  std::vector<GlobalNamespace::BeatmapDataItem*> GetAllBeatmapItemsCpp() {
+      if (!allBeatmapData) return {};
+
+      auto linkedItems = allBeatmapData->get_items();
+
+      std::vector<GlobalNamespace::BeatmapDataItem*> items;
+      items.reserve(linkedItems->get_Count());
+
+      for (auto node = linkedItems->get_First(); node != nullptr; node = node->get_Next()) {
+          auto val = node->item;
+          if (!val) continue;
+
+          items.template emplace_back(val);
+     }
+
+    return items;
+  }
+
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
