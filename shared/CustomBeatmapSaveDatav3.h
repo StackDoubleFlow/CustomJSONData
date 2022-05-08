@@ -97,6 +97,8 @@ public:
     CustomDataOpt customData;
     CustomDataOptUTF16 beatmapCustomData;
     CustomDataOptUTF16 levelCustomData;
+
+    DECLARE_INSTANCE_FIELD(bool, isV2);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, BeatmapSaveDataVersion3::BeatmapSaveData::ColorNoteData,

@@ -79,6 +79,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     return items;
   }
 
+        DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);

@@ -220,7 +220,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDat
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
 
             saveData = v3::CustomBeatmapSaveData::Convert2_6_0(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
-
+            saveData->isV2 = true;
           } else {
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 3.0.0 beatmap");
             saveData = v3::CustomBeatmapSaveData::Deserialize(sharedDoc);
@@ -358,7 +358,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     if (beatmapSaveData->klass == CustomBeatmapSaveDataKlass) {
 
         auto cBeatmapSaveData = reinterpret_cast<v3::CustomBeatmapSaveData*>(beatmapSaveData);
-
+        beatmapData->v2orEarlier = cBeatmapSaveData->isV2;
         beatmapData = CustomBeatmapData::New_ctor(4);
         beatmapData->customData = ToJsonWrapper(cBeatmapSaveData->customData);
         beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData->levelCustomData);

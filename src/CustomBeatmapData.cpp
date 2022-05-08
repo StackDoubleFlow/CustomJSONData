@@ -64,6 +64,7 @@ CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy()
     copy->customData = customData;
     copy->beatmapCustomData = beatmapCustomData;
     copy->levelCustomData = levelCustomData;
+    copy->v2orEarlier = v2orEarlier;
 
     return copy;
 }
