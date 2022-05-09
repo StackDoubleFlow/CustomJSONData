@@ -357,7 +357,7 @@ namespace CustomJSONData {
         std::is_convertible_v<U, From> &&
         std::is_convertible_v<F, std::function<To(U, TArgs...)>>)
         constexpr void AddConverter(F&& o) {
-            converters[classof(U)] = [o](From const &t, TArgs const&... args) constexpr { return o(static_cast<U>(t), args...); };
+            converters[classof(U)] = *reinterpret_cast<std::function<To(From, TArgs...)>*>(&o);;
         }
 
 
