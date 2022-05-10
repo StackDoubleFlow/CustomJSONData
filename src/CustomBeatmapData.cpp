@@ -167,7 +167,7 @@ void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalN
 }
 
 CustomJSONData::CustomWaypointData *CustomJSONData::CustomWaypointData::GetCopy() {
-    auto copy = CRASH_UNLESS(il2cpp_utils::New<CustomJSONData::CustomWaypointData*>(time, lineIndex, lineLayer, offsetDirection));
+    auto copy = CRASH_UNLESS(CustomJSONData::NewFast<CustomJSONData::CustomWaypointData*>(time, lineIndex, lineLayer, offsetDirection));
     copy->bpm = this->bpm;
     return copy;
 }

@@ -100,19 +100,19 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
         CustomBeatmapSaveData_EventData* newData = nullptr;
         if (eventData->type == BeatmapSaveData::BeatmapEventType::Event10)
         {
-            newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, BeatmapSaveData::BeatmapEventType::BpmChange, eventData->value, eventData->floatValue));
+            newData = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_EventData*>(eventData->time, BeatmapSaveData::BeatmapEventType::BpmChange, eventData->value, eventData->floatValue));
         }
 
         if (static_cast<int>(eventData->type) == BeatmapSaveData::BeatmapEventType::BpmChange)
         {
             if (eventData->value != 0)
             {
-                newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, (float) eventData->value));
+                newData = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, (float) eventData->value));
             }
         }
         else
         {
-            newData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, 1.0f));
+            newData = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_EventData*>(eventData->time, eventData->type, eventData->value, 1.0f));
         }
 
         if (newData)
@@ -155,7 +155,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             auto lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
             auto type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
             auto cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
-            auto note = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_NoteData *>(time, lineIndex, lineLayer, type, cutDirection));
+            auto note = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_NoteData *>(time, lineIndex, lineLayer, type, cutDirection));
 
             auto customDataIt = note_json.FindMember("_customData");
             if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
@@ -197,7 +197,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             NoteCutDirection tailCutDirection = slider_json["_tailCutDirection"].GetInt();
             SliderMidAnchorMode sliderMidAnchorMode = slider_json["_sliderMidAnchorMode"].GetInt();
 
-            auto slider = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_SliderData *>(
+            auto slider = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_SliderData *>(
                     colorType,
                     time,
                     headLineIndex,
@@ -236,7 +236,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             float duration = obstacle_json["_duration"].GetFloat();
             int width = obstacle_json["_width"].GetInt();
             auto obstacle = CRASH_UNLESS(
-                    il2cpp_utils::New<CustomBeatmapSaveData_ObstacleData *>(time, lineIndex, type, duration,
+                    CustomJSONData::NewFast<CustomBeatmapSaveData_ObstacleData *>(time, lineIndex, type, duration,
                                                                             width));
 
             obstacle->customData = GetCustomData(obstacle_json);
@@ -270,7 +270,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                 floatValue = floatValueIt->value.GetFloat();
             }
 
-            auto event = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData_EventData *>(time, type, value, floatValue));
+            auto event = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData_EventData *>(time, type, value, floatValue));
             event->customData = GetCustomData(event_json);
 
             events.push_back(event);
@@ -316,7 +316,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
             for (auto const &keyword_json: _keywords->value.GetArray()) {
                 std::string keyword = keyword_json["_keyword"].GetString();
-                Il2CppString *keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
+                Il2CppString *keyword_il2cpp = CustomJSONData::NewFastcsstr(keyword);
 
                 auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
                 VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
@@ -338,7 +338,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             *specialEventsKeywordFiltersList);
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
-    auto saveData = CRASH_UNLESS(il2cpp_utils::New<CustomBeatmapSaveData *>(*events, *notes, *sliders, *waypoints, *obstacles,
+    auto saveData = CRASH_UNLESS(CustomJSONData::NewFast<CustomBeatmapSaveData *>(*events, *notes, *sliders, *waypoints, *obstacles,
                                                                             specialEventsKeywordFilters));
     saveData->doc = sharedDoc;
     saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();

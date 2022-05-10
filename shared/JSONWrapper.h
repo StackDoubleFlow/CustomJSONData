@@ -11,6 +11,7 @@
 #include <any>
 
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
+#include "LowLevelUtils.hpp"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject,
     DECLARE_DEFAULT_CTOR();

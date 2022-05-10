@@ -7,6 +7,7 @@
 #include "GlobalNamespace/BeatmapDataItem.hpp"
 #include "GlobalNamespace/BeatmapDataCallbackWrapper.hpp"
 #include "GlobalNamespace/BeatmapCallbacksController.hpp"
+#include "LowLevelUtils.hpp"
 
 namespace GlobalNamespace {
 class BeatmapCallbacksController;
@@ -17,7 +18,7 @@ class BeatmapCallbacksController;
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem,
 public:
-      DECLARE_CTOR(ctor, float time, /* std::string_view*/ void* type, size_t typeHash, /* rapidjson::Value */ void* data);
+      DECLARE_FASTER_CTOR(ctor, float time, /* std::string_view*/ void* type, size_t typeHash, /* rapidjson::Value */ void* data);
 
     DECLARE_OVERRIDE_METHOD(CustomEventData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
@@ -28,7 +29,7 @@ public:
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapDataCallbackWrapper, GlobalNamespace::BeatmapDataCallbackWrapper,
-      DECLARE_CTOR(ctor);
+      DECLARE_FASTER_CTOR(ctor);
 
         DECLARE_SIMPLE_DTOR();
 

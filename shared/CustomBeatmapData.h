@@ -22,13 +22,13 @@
 #include "System/Collections/Generic/LinkedList_1.hpp"
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 
-
+#include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
 #include "JSONWrapper.h"
 #include "CJDLogger.h"
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
-                      DECLARE_CTOR(ctor, int numberOfLines);
+                      DECLARE_FASTER_CTOR(ctor, int numberOfLines);
       DECLARE_SIMPLE_DTOR();
 
 
@@ -87,7 +87,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BasicBeatmapEventData,
-    DECLARE_CTOR(ctor, float time, ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType, int value, float floatValue);
+    DECLARE_FASTER_CTOR(ctor, float time, ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType, int value, float floatValue);
 
     DECLARE_OVERRIDE_METHOD(CustomBeatmapEventData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
@@ -96,7 +96,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::B
 
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::ObstacleData,
-    DECLARE_CTOR(ctor, float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width, int height);
+    DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width, int height);
 
     DECLARE_OVERRIDE_METHOD(CustomObstacleData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
@@ -106,7 +106,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
-    DECLARE_CTOR(ctor, float time, int lineIndex,
+    DECLARE_FASTER_CTOR(ctor, float time, int lineIndex,
                  ::GlobalNamespace::NoteLineLayer noteLineLayer,
                  ::GlobalNamespace::NoteLineLayer beforeJumpNoteLineLayer,
                  ::GlobalNamespace::NoteData::GameplayType gameplayType,
@@ -125,7 +125,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomSliderData, GlobalNamespace::SliderData,
-                      DECLARE_CTOR(ctor, GlobalNamespace::SliderData::Type sliderType, ::GlobalNamespace::ColorType colorType,
+                      DECLARE_FASTER_CTOR(ctor, GlobalNamespace::SliderData::Type sliderType, ::GlobalNamespace::ColorType colorType,
                                    bool hasHeadNote, float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
                                    ::GlobalNamespace::NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier,
                                    ::GlobalNamespace::NoteCutDirection headCutDirection, float headCutDirectionAngleOffset,
@@ -142,7 +142,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomSliderData, GlobalNamespace::SliderD
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::WaypointData,
-    DECLARE_CTOR(ctor, float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, ::GlobalNamespace::OffsetDirection offsetDirection);
+    DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, ::GlobalNamespace::OffsetDirection offsetDirection);
 
     DECLARE_OVERRIDE_METHOD(CustomWaypointData *, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
