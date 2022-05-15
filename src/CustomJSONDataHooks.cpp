@@ -380,7 +380,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
 
 
-    beatmapData->InsertBeatmapEventData(BPMChangeBeatmapEventData::New_ctor(-100.0f, startBpm));
+    beatmapData->InsertBeatmapEventData(CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(-100.0f, startBpm));
 
     CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
     if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
@@ -391,7 +391,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
-    auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+    auto specialEventsFilter = CustomJSONData::NewFast<BeatmapDataLoader::SpecialEventsFilter*>(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {}", fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d));
 
     profile.mark("Converted special events");
@@ -484,7 +484,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     objectConverter.AddConverter<BeatmapSaveData::WaypointData*>([&BeatToTime](BeatmapSaveData::WaypointData* data) constexpr {
-        return WaypointData::New_ctor(BeatToTime(data->b),
+        return CustomJSONData::NewFast<WaypointData*>(BeatToTime(data->b),
                                       data->get_line(),
                                       ConvertNoteLineLayer(data->get_layer()),
                                       data->get_offsetDirection());
@@ -570,7 +570,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CppConverter<BeatmapEventData*, BeatmapSaveData::BeatmapSaveDataItem*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) constexpr {
-        return BPMChangeBeatmapEventData::New_ctor(BeatToTime(data->b),
+        return CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(BeatToTime(data->b),
                                                    data->m);
     });
 
@@ -580,7 +580,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                                      ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
                                                                      : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
 
-        return SpawnRotationBeatmapEventData::New_ctor(BeatToTime(data->b),
+        return CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(data->b),
                                                         executionTime,
                                                         data->get_rotation());
     });
@@ -605,7 +605,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         });
 
         eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) constexpr {
-            return ColorBoostBeatmapEventData::New_ctor(
+            return CustomJSONData::NewFast<ColorBoostBeatmapEventData*>(
                     BeatToTime(data->get_beat()),
                     data->get_boost());
         });
@@ -652,9 +652,9 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     profile.mark("Processed and added beatmap events");
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
-    auto bpmTimeProcessorIl2cpp = BeatmapDataLoader::BpmTimeProcessor::New_ctor(startBpm, bpmEvents);
-    auto beatmapEventDataBoxGroupLists = BeatmapEventDataBoxGroupLists::New_ctor(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
-    auto eventBoxGroupConvertor = BeatmapDataLoader::EventBoxGroupConvertor::New_ctor(environmentLightGroups);
+    auto bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<BeatmapDataLoader::BpmTimeProcessor*>(startBpm, bpmEvents);
+    auto beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
+    auto eventBoxGroupConvertor = CustomJSONData::NewFast<BeatmapDataLoader::EventBoxGroupConvertor*>(environmentLightGroups);
 
     EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 

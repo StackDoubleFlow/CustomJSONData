@@ -172,7 +172,7 @@ static auto DeserializeBpmChangeEventData(rapidjson::Value const &val) {
     }
 
 
-    return BeatmapSaveData::BpmChangeEventData::New_ctor(beat, bpm);
+    return CustomJSONData::NewFast<BeatmapSaveData::BpmChangeEventData*>(beat, bpm);
 }
 
 static auto DeserializeRotation(rapidjson::Value const &val)
@@ -197,7 +197,7 @@ static auto DeserializeRotation(rapidjson::Value const &val)
         }
     }
 
-    return BeatmapSaveData::RotationEventData::New_ctor(beat, executionTime, rotation);
+    return CustomJSONData::NewFast<BeatmapSaveData::RotationEventData*>(beat, executionTime, rotation);
 }
 
 static auto DeserializeColorNote(rapidjson::Value const &val) {
@@ -521,7 +521,7 @@ static auto DeserializeWaypoint(rapidjson::Value const &val) {
         }
     }
 
-    return BeatmapSaveData::WaypointData::New_ctor(beat, line, layer, offsetDirection);
+    return CustomJSONData::NewFast<BeatmapSaveData::WaypointData*>(beat, line, layer, offsetDirection);
 }
 
 static auto DeserializeBasicEvent(rapidjson::Value const &val) {
@@ -581,7 +581,7 @@ static auto DeserializeColorBoostEventData(rapidjson::Value const &val) {
         }
     }
 
-    auto event = BeatmapSaveData::ColorBoostEventData::New_ctor(beat, boost);
+    auto event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
 //    event->customData = data;
     return event;
 }
@@ -612,7 +612,7 @@ static auto DeserializeIndexFilter(rapidjson::Value const &val) {
         }
     }
 
-    return BeatmapSaveData::IndexFilter::New_ctor(type, param0, param1, reversed);
+    return CustomJSONData::NewFast<BeatmapSaveData::IndexFilter*>(type, param0, param1, reversed);
 }
 
 static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const &val) {
@@ -702,7 +702,7 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const &val) {
                                 }
                             }
 
-                            lightColorBaseDataList.push_back(BeatmapSaveData::LightColorBaseData::New_ctor(lightBeat,
+                            lightColorBaseDataList.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(lightBeat,
                                                                                           transitionType,
                                                                                           colorType,
                                                                                           brightness,
@@ -713,7 +713,7 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const &val) {
 
                 CRASH_UNLESS(indexFilter);
 
-                eventBoxes.push_back(BeatmapSaveData::LightColorEventBox::New_ctor(
+                eventBoxes.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBox*>(
                         indexFilter,
                         beatDistributionParam,
                         beatDistributionParamType,
@@ -725,7 +725,7 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const &val) {
         }
     }
 
-    return BeatmapSaveData::LightColorEventBoxGroup::New_ctor(beat, groupId, eventBoxes.getInner());
+    return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
 static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
@@ -837,7 +837,7 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
                                 }
                             }
 
-                            lightRotationBaseDataList.push_back(BeatmapSaveData::LightRotationBaseData::New_ctor(
+                            lightRotationBaseDataList.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightRotationBaseData*>(
                                     lightBeat,
                                     usePreviousEventRotationValue,
                                     easeType,
@@ -848,7 +848,7 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
                     }
                 }
 
-                eventBoxes.push_back(BeatmapSaveData::LightRotationEventBox::New_ctor(
+                eventBoxes.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBox*>(
                         indexFilter,
                         beatDistributionParam,
                         beatDistributionParamType,
@@ -862,7 +862,7 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
         }
     }
 
-    return BeatmapSaveData::LightRotationEventBoxGroup::New_ctor(beat, groupId, eventBoxes);
+    return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes);
 }
 
 static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const &val) {
@@ -887,7 +887,7 @@ static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const &val) {
         }
     }
 
-    return BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(keyword, eventTypes.getInner());
+    return CustomJSONData::NewFast<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(keyword, eventTypes.getInner());
 }
 
 static auto DeserializeCustomEvent(rapidjson::Value const &val) {
@@ -1090,7 +1090,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             colorBoostBeatmapEvents.getInner(),
             lightColorEventBoxGroups.getInner(),
             lightRotationEventBoxGroups.getInner(),
-            BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword),
+            CustomJSONData::NewFast<BasicEventTypesWithKeywords*>(basicEventTypesForKeyword),
             useNormalEventsAsCompatibleEvents);
 
     beatmap->customData = dataOpt;
@@ -1244,7 +1244,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
     for (auto const& n : VList(beatmap->waypoints)) {
         auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
 
-        auto waypoint = WaypointData::New_ctor(
+        auto waypoint = CustomJSONData::NewFast<WaypointData*>(
                 n->time,
                 n->lineIndex,
                 (int)n->lineLayer,
@@ -1259,14 +1259,14 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
         switch (customN->type) {
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event5: {
-                auto boost = ColorBoostEventData::New_ctor(n->time, n->value == 1);
+                auto boost = CustomJSONData::NewFast<ColorBoostEventData*>(n->time, n->value == 1);
                 // TODO: Custom data
                 colorBoosts.push_back(boost);
                 continue;
             }
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event14:
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event15: {
-                auto rotation = RotationEventData::New_ctor(n->time,
+                auto rotation = CustomJSONData::NewFast<RotationEventData*>(n->time,
                                                             n->type ==
                                                             BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event14
                                                             ? BeatmapSaveData::ExecutionTime::Early
@@ -1278,7 +1278,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
             }
             case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::BpmChange:
                 // TODO: Custom data!
-                bpmChanges.push_back(BpmChangeEventData::New_ctor(n->time, n->floatValue));
+                bpmChanges.push_back(CustomJSONData::NewFast<BpmChangeEventData*>(n->time, n->floatValue));
                 continue;
             default:
                 auto event = v3::CustomBeatmapSaveData_BasicEventData::New_ctor(n->time, n->type, n->value, n->floatValue);
@@ -1293,11 +1293,11 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting specialEventsKeywordFilters {} with size {}", fmt::ptr(keywordsInnerList), keywords.size());
 
     for (auto const& n : VList(beatmap->specialEventsKeywordFilters->keywords)) {
-        keywords.push_back(BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(n->keyword, n->specialEvents));
+        keywords.push_back(CustomJSONData::NewFast<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(n->keyword, n->specialEvents));
     }
 
     auto basicEventTypesWithKeywords =
-                 BeatmapSaveData::BasicEventTypesWithKeywords::New_ctor(keywordsInnerList);
+                 CustomJSONData::NewFast<BeatmapSaveData::BasicEventTypesWithKeywords*>(keywordsInnerList);
 
     colorNotes.trim();
     bombNotes.trim();

@@ -22,7 +22,7 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
     INVOKE_CTOR();
 
     beatmapDataItemsPerType->items->Add(csTypeOf(CustomEventData*),
-                                        reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(SortedList_2<CustomEventData *, BeatmapDataItem *>::New_ctor(
+                                        reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(CustomJSONData::NewFast<SortedList_2<CustomEventData *, BeatmapDataItem *>*>(
                                                 nullptr)));
 }
 

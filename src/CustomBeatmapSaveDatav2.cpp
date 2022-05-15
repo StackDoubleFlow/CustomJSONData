@@ -295,7 +295,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             int lineIndex = waypoint_json["_lineIndex"].GetInt();
             NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
             OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
-            auto waypoint = BeatmapSaveData::WaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection);
+            auto waypoint = CustomJSONData::NewFast<BeatmapSaveData::WaypointData*>(time, lineIndex, lineLayer, offsetDirection);
             waypoints.push_back(waypoint);
         }
     }
@@ -316,7 +316,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
             for (auto const &keyword_json: _keywords->value.GetArray()) {
                 std::string keyword = keyword_json["_keyword"].GetString();
-                Il2CppString *keyword_il2cpp = CustomJSONData::NewFastcsstr(keyword);
+                Il2CppString *keyword_il2cpp = il2cpp_utils::newcsstr(keyword);
 
                 auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
                 VList<BeatmapSaveData::BeatmapEventType> specialEvents(specialEventsArray.Size());
@@ -330,11 +330,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                 }
 
                 specialEventsKeywordFiltersList.push_back(
-                        BeatmapSaveData::SpecialEventsForKeyword::New_ctor(keyword_il2cpp, *specialEvents));
+                        CustomJSONData::NewFast<BeatmapSaveData::SpecialEventsForKeyword*>(keyword_il2cpp, *specialEvents));
             }
         }
     }
-    auto specialEventsKeywordFilters = BeatmapSaveData::SpecialEventKeywordFiltersData::New_ctor(
+    auto specialEventsKeywordFilters = CustomJSONData::NewFast<BeatmapSaveData::SpecialEventKeywordFiltersData*>(
             *specialEventsKeywordFiltersList);
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
