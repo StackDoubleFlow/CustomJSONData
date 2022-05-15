@@ -585,8 +585,9 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                         data->get_rotation());
     });
 
+    // only for v3 maps
     if (flag) {
-        auto specialEventsFilter = CustomJSONData::NewFast<BeatmapDataLoader::SpecialEventsFilter*>(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+        auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
 
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
             if (!specialEventsFilter->IsEventValid(data->et))
