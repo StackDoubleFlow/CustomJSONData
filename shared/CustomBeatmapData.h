@@ -40,6 +40,15 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
       void InsertCustomEventData(CustomEventData* customEventData);
 
+      template<typename T>
+      static constexpr System::Collections::Generic::LinkedListNode_1<T>* LinkedListNode_1_get_Next(System::Collections::Generic::LinkedListNode_1<T>* self) {
+          if (self->next != nullptr && self->next != self->list->head)
+          {
+                  return self->next;
+          }
+          return nullptr;
+      }
+
       template<class T>
       std::vector<T> GetBeatmapItemsCpp() {
           auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerType->GetList(GetCustomType(classof(T))));
@@ -51,7 +60,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
           std::vector<T> items;
           items.reserve(linkedItems->get_Count());
 
-          for (auto node = linkedItems->get_First(); node != nullptr; node = node->get_Next()) {
+          for (auto node = linkedItems->get_First(); node != nullptr; node = LinkedListNode_1_get_Next(node)) {
               auto val = node->item;
               if (!val) continue;
 
@@ -69,7 +78,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
       std::vector<GlobalNamespace::BeatmapDataItem*> items;
       items.reserve(linkedItems->get_Count());
 
-      for (auto node = linkedItems->get_First(); node != nullptr; node = node->get_Next()) {
+      for (auto node = linkedItems->get_First(); node != nullptr; node = LinkedListNode_1_get_Next(node)) {
           auto val = node->item;
           if (!val) continue;
 

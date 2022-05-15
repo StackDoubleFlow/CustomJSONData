@@ -119,7 +119,7 @@ BeatmapData * CustomBeatmapData_GetFilteredCopy(CustomBeatmapData* self, System:
 
     auto linkedList = self->allBeatmapData->get_items();
 
-    for (auto node = linkedList->get_First(); node != nullptr; node = node->get_Next()) {
+    for (auto node = linkedList->get_First(); node != nullptr; node = CustomBeatmapData::LinkedListNode_1_get_Next(node)) {
         auto beatmapDataItem = node->item;
 
         if (!beatmapDataItem) continue;
@@ -148,7 +148,7 @@ BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
 
     auto linkedList = self->allBeatmapData->get_items();
 
-    for (auto node = linkedList->get_First(); node != nullptr; node = node->get_Next()) {
+    for (auto node = linkedList->get_First(); node != nullptr; node = CustomBeatmapData::LinkedListNode_1_get_Next(node)) {
         auto beatmapDataItem = node->item;
 
         if (!beatmapDataItem) continue;
@@ -299,9 +299,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
             auto keyValuePair = enumerator.get_Current();
             auto value = keyValuePair.get_Value();
             for (auto linkedListNode = (value->lastProcessedNode != nullptr)
-                                                                   ? value->lastProcessedNode->get_Next()
+                                                                   ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
                                                                    : self->beatmapData->get_allBeatmapDataItems()->get_First();
-                 linkedListNode != nullptr; linkedListNode = linkedListNode->get_Next()) {
+                 linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
                 auto value2 = linkedListNode->get_Value();
                 if (value2->time - value->aheadTime > songTime) {
                     break;
@@ -545,25 +545,10 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Cleaning and sorting beatmap objects");
     cleanAndSort(beatmapDataObjectItems);
     for (auto const& o : beatmapDataObjectItems) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Processing object {} ({})", fmt::ptr(o), il2cpp_utils::ClassStandardName(o->klass));
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
-
-        SafePtr<BeatmapObjectData> beatmapObjectDataS = objectConverter.ProcessItem(o);
-        auto* beatmapObjectData = (BeatmapObjectData *) beatmapObjectDataS;
-
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Adding object {} ({}) {} to beatmap {}", fmt::ptr(beatmapObjectData), beatmapObjectData->time, il2cpp_utils::ClassStandardName(beatmapObjectData->klass), fmt::ptr(beatmapData));
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
+        auto* beatmapObjectData = objectConverter.ProcessItem(o);
         if (beatmapObjectData != nullptr) {
             beatmapData->AddBeatmapObjectData(beatmapObjectData);
         }
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Processed");
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
-        Paper::Logger::WaitForFlush();
     }
 
     profile.mark("Processed and added beatmap objects");

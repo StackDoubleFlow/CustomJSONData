@@ -34,7 +34,7 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
 //    VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 
 #define SAFEPTR_VLIST_ARG(type, name, ...) \
-    VList<type> name(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__));
+    VList<type> name(CustomJSONData::NewFast<System::Collections::Generic::List_1<type>*>(__VA_ARGS__));
 
 #define SAFEPTR_VLIST(type, name) SAFEPTR_VLIST_ARG(type, name)
 
