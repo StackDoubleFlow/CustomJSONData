@@ -384,6 +384,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
     if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("Klass {}", il2cpp_utils::ClassStandardName(beatmapSaveData->basicEventTypesWithKeywords->d->items->klass));
         for (auto basicEventTypesForKeyword: VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
             if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) continue;
 
@@ -391,7 +392,6 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
-    auto specialEventsFilter = CustomJSONData::NewFast<BeatmapDataLoader::SpecialEventsFilter*>(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {}", fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d));
 
     profile.mark("Converted special events");
@@ -586,6 +586,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     if (flag) {
+        auto specialEventsFilter = CustomJSONData::NewFast<BeatmapDataLoader::SpecialEventsFilter*>(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
             if (!specialEventsFilter->IsEventValid(data->et))
             {

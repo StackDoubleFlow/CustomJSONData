@@ -14,9 +14,9 @@ namespace CustomJSONData {
     T NewFast(TArgs &&...args)
     {
         static auto klass = classof(T);
-        static auto ctor = il2cpp_utils::FindMethod(klass, ".ctor", il2cpp_utils::ExtractType(args)...);
-        auto *obj = il2cpp_functions::object_new(klass);
-        il2cpp_utils::RunMethodUnsafe(obj, ctor, std::forward<TArgs>(args)...);
+        static auto ctor = CRASH_UNLESS(il2cpp_utils::FindMethod(klass, ".ctor", il2cpp_utils::ExtractIndependentType<TArgs>()...));
+        auto *obj = CRASH_UNLESS(il2cpp_functions::object_new(klass));
+        CRASH_UNLESS(il2cpp_utils::RunMethodUnsafe(obj, ctor, std::forward<TArgs>(args)...));
         return reinterpret_cast<T>(obj);
     }
 

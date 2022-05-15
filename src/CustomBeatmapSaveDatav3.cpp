@@ -53,6 +53,7 @@ void CustomBeatmapSaveData::ctor(
         ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationEventBoxGroup *> *lightRotationEventBoxGroups,
         ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords *basicEventTypesWithKeywords,
         bool useNormalEventsAsCompatibleEvents) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 14);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, bpmEvents,
                                          rotationEvents,
@@ -68,21 +69,20 @@ void CustomBeatmapSaveData::ctor(
                                          lightRotationEventBoxGroups,
                                          basicEventTypesWithKeywords,
                                          useNormalEventsAsCompatibleEvents));
-    INVOKE_CTOR();
 }
 
 void CustomBeatmapSaveData_ColorNoteData::ctor(float beat, int line, int layer,
                                                ::BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType color,
                                                ::GlobalNamespace::NoteCutDirection cutDirection, int angleOffset) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ColorNoteData*), ".ctor", 6);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, beat, line, layer, color, cutDirection, angleOffset));
-    INVOKE_CTOR();
 }
 
 void CustomBeatmapSaveData_BombNoteData::ctor(float beat, int line, int layer) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BombNoteData*), ".ctor", 3);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, beat, line, layer));
-    INVOKE_CTOR();
 }
 
 void CustomBeatmapSaveData_SliderData::ctor(BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
@@ -92,33 +92,33 @@ void CustomBeatmapSaveData_SliderData::ctor(BeatmapSaveDataVersion3::BeatmapSave
                                             int tailLine, int tailLayer, float tailControlPointLengthMultiplier,
                                             ::GlobalNamespace::NoteCutDirection tailCutDirection,
                                             ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::SliderData*), ".ctor", 12);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, colorType, headBeat, headLine, headLayer, headControlPointLengthMultiplier, headCutDirection, tailBeat, tailLine, tailLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode));
-    INVOKE_CTOR();
 }
 
 void CustomBeatmapSaveData_BurstSliderData::ctor(BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
                                                  float headBeat, int headLine, int headLayer,
                                                  ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat,
                                                  int tailLine, int tailLayer, int sliceCount, float squishAmount) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BurstSliderData*), ".ctor", 10);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, colorType, headBeat, headLine, headLayer, headCutDirection, tailBeat, tailLine, tailLayer, sliceCount, squishAmount));
-    INVOKE_CTOR();
 }
 
 void CustomBeatmapSaveData_ObstacleData::ctor(float beat, int line, int layer, float duration, int width, int height) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 6);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, beat, line, layer, duration, width, height));
-    INVOKE_CTOR();
 }
 
 
 
 
 void CustomJSONData::v3::CustomBeatmapSaveData_BasicEventData::ctor(float time, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType type, int value, float floatValue) {
+    INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BasicEventData*), ".ctor", 4);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, type, value, floatValue));
-    INVOKE_CTOR();
 }
 
 inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustomData(rapidjson::Value const & doc) {
@@ -857,12 +857,12 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const &val) {
                         rotationDistributionShouldAffectFirstBaseEvent,
                         axis,
                         flipRotation,
-                        lightRotationBaseDataList));
+                        lightRotationBaseDataList.getInner()));
             }
         }
     }
 
-    return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes);
+    return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
 static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const &val) {
@@ -887,7 +887,7 @@ static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const &val) {
         }
     }
 
-    return CustomJSONData::NewFast<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(keyword, eventTypes.getInner());
+    return BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(keyword, eventTypes.getInner());
 }
 
 static auto DeserializeCustomEvent(rapidjson::Value const &val) {
@@ -1090,7 +1090,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             colorBoostBeatmapEvents.getInner(),
             lightColorEventBoxGroups.getInner(),
             lightRotationEventBoxGroups.getInner(),
-            CustomJSONData::NewFast<BasicEventTypesWithKeywords*>(basicEventTypesForKeyword),
+            BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword.getInner()),
             useNormalEventsAsCompatibleEvents);
 
     beatmap->customData = dataOpt;

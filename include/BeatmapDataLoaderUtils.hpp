@@ -424,10 +424,10 @@ namespace CustomJSONData {
             auto num = (int) std::ceil((float) groupSize / (float) param);
             if (IndexFilter_GetReversed(indexFilter)) {
                 int num2 = groupSize - num * param2 - 1;
-                return reinterpret_cast<IIndexFilter *>(RangeIndexFilter::New_ctor(num2, std::max(0, num2 - num + 1)));
+                return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<RangeIndexFilter*>(num2, std::max(0, num2 - num + 1)));
             }
             int num3 = num * param2;
-            return reinterpret_cast<IIndexFilter *>(RangeIndexFilter::New_ctor(num3,
+            return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<RangeIndexFilter*>(num3,
                                                                                std::min(groupSize - 1,
                                                                                         num3 + num - 1)));
         } else {
@@ -442,10 +442,10 @@ namespace CustomJSONData {
             }
             int count = (param4 == 0) ? 1 : (int) std::ceil((float) num4 / (float) param4);
             if (IndexFilter_GetReversed(indexFilter)) {
-                return reinterpret_cast<IIndexFilter *>(BaseIndexFilter::New_ctor(groupSize - 1 - param3, -param4,
+                return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<BaseIndexFilter*>(groupSize - 1 - param3, -param4,
                                                                                   count));
             }
-            return reinterpret_cast<IIndexFilter *>(BaseIndexFilter::New_ctor(param3, param4, count));
+            return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<BaseIndexFilter*>(param3, param4, count));
         }
     }
 
@@ -461,7 +461,7 @@ namespace CustomJSONData {
     }
 
     constexpr LightColorBaseData *LightColorBaseData_Convert(BeatmapSaveData::LightColorBaseData *saveData) {
-        return LightColorBaseData::New_ctor(BeatmapSaveDataItem_GetBeat(saveData),
+        return CustomJSONData::NewFast<LightColorBaseData*>(BeatmapSaveDataItem_GetBeat(saveData),
                                             ConvertBeatmapEventTransitionType(LightColorBaseData_GetTransitionType(saveData)),
                                             ConvertColorType(LightColorBaseData_GetColorType(saveData)),
                                             LightColorBaseData_GetBrightness(saveData),
@@ -469,7 +469,7 @@ namespace CustomJSONData {
     }
 
     constexpr LightRotationBaseData *LightRotationBaseData_Convert(BeatmapSaveData::LightRotationBaseData *saveData) {
-        return LightRotationBaseData::New_ctor(saveData->b, saveData->get_usePreviousEventRotationValue(),
+        return CustomJSONData::NewFast<LightRotationBaseData*>(saveData->b, saveData->get_usePreviousEventRotationValue(),
                                                ConvertEaseType(saveData->e), LightRotationBaseData_GetRotation(saveData),
                                                LightRotationBaseData_GetLoopsCount(saveData),
                                                ConvertRotationOrientation(saveData->o));
@@ -492,7 +492,7 @@ namespace CustomJSONData {
                         auto beatDistributionParamType = DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
                         auto brightnessDistributionParamType = DistributionParamType_Convert(
                                 saveData->get_brightnessDistributionParamType());
-                        return LightColorBeatmapEventDataBox::New_ctor(indexFilter,
+                        return CustomJSONData::NewFast<LightColorBeatmapEventDataBox*>(indexFilter,
                                                                        EventBox_GetBeatDistributionParam(saveData),
                                                                        beatDistributionParamType,
                                                                        saveData->get_brightnessDistributionParam(),
@@ -517,7 +517,7 @@ namespace CustomJSONData {
                         auto beatDistributionParamType = DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
                         auto rotationDistributionParamType = DistributionParamType_Convert(
                                 saveData->get_rotationDistributionParamType());
-                        return LightRotationBeatmapEventDataBox::New_ctor(indexFilter,
+                        return CustomJSONData::NewFast<LightRotationBeatmapEventDataBox*>(indexFilter,
                                                                           EventBox_GetBeatDistributionParam(saveData),
                                                                           beatDistributionParamType,
                                                                           ConvertAxis(saveData->a),
@@ -546,7 +546,7 @@ namespace CustomJSONData {
                 }
             }
 
-            return BeatmapEventDataBoxGroup::New_ctor(eventBoxGroupSaveData->b,
+            return CustomJSONData::NewFast<BeatmapEventDataBoxGroup*>(eventBoxGroupSaveData->b,
                                                       reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox *> *>(list.getInner()));
         }
 
@@ -572,7 +572,7 @@ namespace CustomJSONData {
             auto& beatmapEventDataBoxGroupList = _beatmapEventDataBoxGroupListDict[groupId];
 
             if (!beatmapEventDataBoxGroupList) {
-                beatmapEventDataBoxGroupList = BeatmapEventDataBoxGroupList::New_ctor(groupId, this->_beatmapData,
+                beatmapEventDataBoxGroupList = CustomJSONData::NewFast<BeatmapEventDataBoxGroupList*>(groupId, this->_beatmapData,
                                                                                 this->_beatToTimeConvertor);
                 beatmapEventDataBoxGroupList->updateBeatmapDataOnInsert = _updateBeatmapDataOnInsert;
             }

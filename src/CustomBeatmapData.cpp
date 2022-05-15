@@ -6,6 +6,7 @@
 #include "GlobalNamespace/BeatmapDataItem.hpp"
 #include "GlobalNamespace/ISortedListItemProcessor_1.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
+#include "CustomJSONDataHooks.h"
 
 using namespace GlobalNamespace;
 
@@ -17,12 +18,15 @@ DEFINE_TYPE(CustomJSONData, CustomWaypointData);
 DEFINE_TYPE(CustomJSONData, CustomSliderData);
 
 void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
-    static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
-    CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, numberOfLines));
     INVOKE_CTOR();
+    static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
+
+    PAPER_IL2CPP_CATCH_HANDLER(
+        il2cpp_utils::RunMethodRethrow(this, ctor, numberOfLines);
+    )
 
     beatmapDataItemsPerType->items->Add(csTypeOf(CustomEventData*),
-                                        reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(CustomJSONData::NewFast<SortedList_2<CustomEventData *, BeatmapDataItem *>*>(
+                                        reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(SortedList_2<CustomEventData *, BeatmapDataItem *>::New_ctor(
                                                 nullptr)));
 }
 
@@ -70,9 +74,9 @@ CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy()
 }
 
 void CustomJSONData::CustomBeatmapEventData::ctor(float time, ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType, int value, float floatValue) {
+    INVOKE_CTOR();
     static auto BeatmapEventData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BasicBeatmapEventData*), ".ctor", 4));
     il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, basicBeatmapEventType, value, floatValue);
-    INVOKE_CTOR();
     this->time = time;
     this->basicBeatmapEventType = basicBeatmapEventType;
     this->value = value;
@@ -87,10 +91,10 @@ CustomJSONData::CustomBeatmapEventData *CustomJSONData::CustomBeatmapEventData::
 
 
 void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width, int height) {
+    INVOKE_CTOR();
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 6));
     ObstacleData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width, height);
-    INVOKE_CTOR();
 }
 
 CustomJSONData::CustomObstacleData *CustomJSONData::CustomObstacleData::GetCopy() {
@@ -115,12 +119,12 @@ void CustomJSONData::CustomSliderData::ctor(GlobalNamespace::SliderData::Type sl
                                             float tailCutDirectionAngleOffset,
                                             ::GlobalNamespace::SliderMidAnchorMode midAnchorMode, int sliceCount,
                                             float squishAmount) {
+    INVOKE_CTOR();
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(SliderData*), ".ctor", 21));
     CustomSliderData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, sliderType, colorType, hasHeadNote, headTime, headLineIndex, headLineLayer, headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection,
                                               headCutDirectionAngleOffset, hasTailNote, tailTime, tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier,
                                               tailCutDirection, tailCutDirectionAngleOffset, midAnchorMode, sliceCount, squishAmount);
-    INVOKE_CTOR();
 }
 
 
@@ -140,12 +144,12 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, ::GlobalNam
                                           ::GlobalNamespace::NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote,
                                           int flipLineIndex, float flipYSide, float cutDirectionAngleOffset, float cutSfxVolumeMultiplier
                                           ) {
+    INVOKE_CTOR();
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 14));
     NoteData* instance = this;
     il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer, gameplayType,
                                                 scoringType, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex,
                                                 flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
-    INVOKE_CTOR();
 }
 
 CustomJSONData::CustomNoteData *CustomJSONData::CustomNoteData::GetCopy() {
@@ -160,14 +164,14 @@ CustomJSONData::CustomNoteData *CustomJSONData::CustomNoteData::GetCopy() {
 
 
 void CustomJSONData::CustomWaypointData::ctor(float time, int lineIndex, GlobalNamespace::NoteLineLayer noteLineLayer, GlobalNamespace::OffsetDirection offsetDirection) {
+    INVOKE_CTOR();
     static auto NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(WaypointData*), ".ctor", 4));
     WaypointData* instance = this;
     il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, noteLineLayer, offsetDirection);
-    INVOKE_CTOR();
 }
 
 CustomJSONData::CustomWaypointData *CustomJSONData::CustomWaypointData::GetCopy() {
-    auto copy = CRASH_UNLESS(CustomJSONData::NewFast<CustomJSONData::CustomWaypointData*>(time, lineIndex, lineLayer, offsetDirection));
+    auto copy = CRASH_UNLESS(CustomJSONData::CustomWaypointData::New_ctor(time, lineIndex, lineLayer, offsetDirection));
     copy->bpm = this->bpm;
     return copy;
 }
