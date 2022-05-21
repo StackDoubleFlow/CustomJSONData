@@ -45,8 +45,6 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
-    CJDLogger::Logger.fmtLog<LogLevel::INF>("LOG CUSTOM CALLBACK!");
-
     if (redirectEvent) {
         redirectEvent(controller, item);
     } else {
