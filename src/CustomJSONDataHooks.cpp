@@ -278,17 +278,18 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacks
 }
 
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &BeatmapCallbacksController::ManualUpdate, void, BeatmapCallbacksController* self, float songTime) {
-    if (songTime == self->prevSongTime)
-    {
-        return;
-    }
-
     // TRANSPILE HERE
     if (self != beatmapCallbacksController) {
         CustomEventCallbacks::RegisterCallbacks(self);
         beatmapCallbacksController = self;
     }
     //
+
+    if (songTime == self->prevSongTime)
+    {
+        return;
+    }
+
 
     self->songTime = songTime;
     self->processingCallbacks = true;
@@ -298,9 +299,12 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
         while (enumerator.MoveNext()) {
             auto keyValuePair = enumerator.get_Current();
             auto value = keyValuePair.get_Value();
+
+            using NodePtr = System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>*;
+
             for (auto linkedListNode = (value->lastProcessedNode != nullptr)
                                                                    ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
-                                                                   : self->beatmapData->get_allBeatmapDataItems()->get_First();
+                                                                   : (CustomEventCallbacks::firstNode ? (NodePtr) CustomEventCallbacks::firstNode : self->beatmapData->get_allBeatmapDataItems()->get_First());
                  linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
                 auto value2 = linkedListNode->get_Value();
                 if (value2->time - value->aheadTime > songTime) {
@@ -308,7 +312,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
                 }
                 if (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent ||
                 /// TRANSPILE HERE
-                value2->type == 2 ||
+                value2->type.value == 2 ||
                 /// TRANSPILE HERE
                     (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapObject &&
                      value2->time >= self->startFilterTime)) {
@@ -345,9 +349,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
                 }
             }
         }
+        callbacksInTimesEnumerator.Dispose();
     }
 
-    finish:
     self->prevSongTime = songTime;
     self->processingCallbacks = false;
 }
@@ -688,6 +692,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                   (void *) const_cast<rapidjson::Value *>(customEventSaveData.data)));
             }
 
+            CJDLogger::Logger.fmtLog<LogLevel::INF>("Added {} custom events", customBeatmapSaveData.value()->customEventsData->size());
             profile.mark("Processed beatmap custom events");
         }
     }
@@ -701,7 +706,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     profile.mark("Processed processed remaining data");
 
     profile.endTimer();
-    profile.printMarks();
+    profile.printMarks(CJDLogger::Logger.tag);
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished processing beatmap data");
     auto stopTime = std::chrono::high_resolution_clock::now();

@@ -17,14 +17,18 @@ DEFINE_TYPE(CustomJSONData, CustomEventData)
 DEFINE_TYPE(CustomJSONData, CustomBeatmapDataCallbackWrapper)
 
 std::vector<CustomEventCallbackData> CustomEventCallbacks::customEventCallbacks;
+SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>> CustomEventCallbacks::firstNode;
 
 void CustomEventData::ctor(float time, void *type, size_t typeHash, void *data) {
     INVOKE_CTOR();
     static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataItem*), ".ctor", 4);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, 0, 0, (BeatmapDataItemType)2));
+    BeatmapDataItem::time = time;
+    BeatmapDataItem::type = 2;
     this->typeHash = typeHash;
     this->type = *static_cast<decltype(this->type)*>(type);
     this->data = static_cast<decltype(this->data)>(data);
+    CRASH_UNLESS(data);
 }
 
 CustomEventData *CustomEventData::GetCopy() {
@@ -41,6 +45,8 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("LOG CUSTOM CALLBACK!");
+
     if (redirectEvent) {
         redirectEvent(controller, item);
     } else {
@@ -59,6 +65,7 @@ void CustomEventCallbacks::AddCustomEventCallback(
 }
 
 void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController *callbackController) {
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTER CUSTOM CALLBACK!");
     auto wrapper = CustomBeatmapDataCallbackWrapper::New_ctor();
     wrapper->controller = callbackController;
     callbackController->callbacksInTimes->get_Item(0)->AddCallback(wrapper);

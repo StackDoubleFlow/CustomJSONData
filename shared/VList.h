@@ -94,6 +94,11 @@ public:
         return inner->TrimExcess();
     }
 
+    constexpr void insert_at(int index, const Ty& val) {
+        // TODO: C++ impl
+        return inner->Insert(index, val);
+    }
+
     constexpr void push_back(const Ty& val) {
         // TODO: C++ impl
         return inner->Add(val);

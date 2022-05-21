@@ -74,6 +74,8 @@ struct CustomEventCallbackData {
 class CustomEventCallbacks {
 public:
     static std::vector<CustomEventCallbackData> customEventCallbacks;
+    // For Noodle
+    static SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>> firstNode;
 
     static void AddCustomEventCallback(void (*callback)(GlobalNamespace::BeatmapCallbacksController *callbackController,CustomJSONData::CustomEventData *));
 
