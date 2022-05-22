@@ -360,9 +360,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
                             value3->CallCallbacks(def);
                         }
                     }
-                    linkedListNode2 = linkedListNode2->get_Previous();
-                    value3->lastProcessedNode = linkedListNode2;
                 }
+
+                /// TRANSPILE HERE
+                /// STOPS INFINITE LOOP BY RUNNING THIS REGARDLESS IF THE CONDITION ABOVE IS MET
+                /// WHILE THIS SHOULD BE FIXED IN PINKCORE, WE KEEP IT AS A SAFEGUARD
+                value3->lastProcessedNode = linkedListNode2 = linkedListNode2->get_Previous();
+                ///
             }
         }
         callbacksInTimesEnumerator.Dispose();
