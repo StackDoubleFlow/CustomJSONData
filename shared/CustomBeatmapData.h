@@ -112,6 +112,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
+    DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
@@ -131,6 +132,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper *, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);
+    DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomSliderData, GlobalNamespace::SliderData,

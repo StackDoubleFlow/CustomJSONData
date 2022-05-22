@@ -277,6 +277,22 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacks
     return BeatmapCallbacksController_ManualUpdate(self, songTime);
 }
 
+inline float GetAheadTime(Il2CppObject* obj) {
+
+    static auto CustomNoteKlass = classof(CustomJSONData::CustomNoteData*);
+    static auto CustomObstacleKlass = classof(CustomJSONData::CustomObstacleData*);
+
+    if (obj->klass == CustomNoteKlass) {
+        return static_cast<CustomJSONData::CustomNoteData*>(obj)->aheadTimeNoodle;
+    }
+
+    if (obj->klass == CustomObstacleKlass) {
+        return static_cast<CustomJSONData::CustomObstacleData*>(obj)->aheadTimeNoodle;
+    }
+
+    return 0;
+}
+
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &BeatmapCallbacksController::ManualUpdate, void, BeatmapCallbacksController* self, float songTime) {
     // TRANSPILE HERE
     if (self != beatmapCallbacksController) {
@@ -307,7 +323,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
                                                                    : (CustomEventCallbacks::firstNode ? (NodePtr) CustomEventCallbacks::firstNode : self->beatmapData->get_allBeatmapDataItems()->get_First());
                  linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
                 auto value2 = linkedListNode->get_Value();
-                if (value2->time - value->aheadTime > songTime) {
+                if (value2->time - value->aheadTime - GetAheadTime(value2) > songTime) {
                     break;
                 }
                 if (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent ||
@@ -556,6 +572,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
 
     profile.mark("Processed and added beatmap objects");
+    bpmTimeProcessor.Reset();
 
     CppConverter<BeatmapEventData*, BeatmapSaveData::BeatmapSaveDataItem*> eventConverter;
     eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) constexpr {
@@ -679,6 +696,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents(beatmapData, beatmapEventDataBoxGroupLists, defaultEnvironmentEvents, environmentLightGroups);
     }
 
+    bpmTimeProcessor.Reset();
     if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData))
     {
         if (customBeatmapSaveData.value()->customEventsData) {

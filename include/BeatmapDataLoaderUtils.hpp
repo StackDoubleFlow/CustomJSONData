@@ -388,14 +388,23 @@ namespace CustomJSONData {
 
     struct BpmTimeProcessor {
         std::vector<BpmChangeData> bpmChangeDataList;
+        int currentBpmChangesDataIdx;
 
         BpmTimeProcessor(float startBpm,
                          VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData *> bpmEventsSaveData) {
+            bool hasBpm = bpmEventsSaveData.size() > 0 && bpmEventsSaveData[0]->b == 0;
+            if (hasBpm) {
+                startBpm = bpmEventsSaveData[0]->m;
+            }
+
             bpmChangeDataList.reserve(bpmEventsSaveData.size() + 1);
             bpmChangeDataList.emplace_back(0, 0, startBpm);
 
             for (auto const &v: bpmEventsSaveData) {
-                if (!v) continue;
+                if (!v || hasBpm) {
+                    hasBpm = false; // skip first
+                    continue;
+                }
 
                 auto const &bpmChangeData = bpmChangeDataList.back();
                 float beat = BeatmapSaveDataItem_GetBeat(v);
@@ -406,7 +415,27 @@ namespace CustomJSONData {
             }
         }
 
+        void Reset()
+        {
+            currentBpmChangesDataIdx = 0;
+        }
+
         constexpr float ConvertBeatToTime(float beat) {
+//            while (currentBpmChangesDataIdx > 0)
+//            {
+//                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
+//                {
+//                    break;
+//                }
+//                currentBpmChangesDataIdx--;
+//            }
+//            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 && bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
+//            {
+//                currentBpmChangesDataIdx++;
+//            }
+//            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
+//            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+//
             int num = 0;
             while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
                 num++;
