@@ -350,23 +350,27 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
                 if (value4->time - value3->aheadTime <= songTime) {
                     break;
                 }
-                if (value4->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent) {
-                    auto* beatmapEventData = static_cast<BeatmapEventData *>(value4);
-                    if (beatmapEventData->previousSameTypeEventData != nullptr) {
-                        value3->CallCallbacks(beatmapEventData->previousSameTypeEventData);
-                    } else {
-                        auto def = beatmapEventData->GetDefault(beatmapEventData);
-                        if (def != nullptr) {
-                            value3->CallCallbacks(def);
-                        }
-                    }
-                }
 
                 /// TRANSPILE HERE
                 /// STOPS INFINITE LOOP BY RUNNING THIS REGARDLESS IF THE CONDITION ABOVE IS MET
                 /// WHILE THIS SHOULD BE FIXED IN PINKCORE, WE KEEP IT AS A SAFEGUARD
-                value3->lastProcessedNode = linkedListNode2 = linkedListNode2->get_Previous();
+                if (value4->type != BeatmapDataItem::BeatmapDataItemType::BeatmapEvent) {
+                    break;
+                }
                 ///
+
+                auto *beatmapEventData = static_cast<BeatmapEventData *>(value4);
+                if (beatmapEventData->previousSameTypeEventData != nullptr) {
+                    value3->CallCallbacks(beatmapEventData->previousSameTypeEventData);
+                } else {
+                    auto def = beatmapEventData->GetDefault(beatmapEventData);
+                    if (def != nullptr) {
+                        value3->CallCallbacks(def);
+                    }
+                }
+
+
+                value3->lastProcessedNode = linkedListNode2 = linkedListNode2->get_Previous();
             }
         }
         callbacksInTimesEnumerator.Dispose();
