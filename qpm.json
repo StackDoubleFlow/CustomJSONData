@@ -52,7 +52,7 @@
     },
     {
       "id": "paper",
-      "versionRange": "^1.0.5",
+      "versionRange": "<1.2.0",
       "additionalData": {}
     },
     {
