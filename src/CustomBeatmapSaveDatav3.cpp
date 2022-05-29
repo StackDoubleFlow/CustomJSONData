@@ -1,5 +1,6 @@
 #include "CustomBeatmapSaveDatav3.h"
 #include "CustomBeatmapSaveDatav2.h"
+#include "BeatmapFieldUtils.hpp"
 
 #include "VList.h"
 
@@ -243,7 +244,7 @@ static auto DeserializeColorNote(rapidjson::Value const &val) {
     }
 
     auto note = CustomBeatmapSaveData_ColorNoteData::New_ctor(beat, line, layer, color, cutDirection, angleOffset);
-    note->customData = customData;
+    note->customData = CustomJSONData::JSONObjectOrNull(customData);
 
     return note;
 }
@@ -275,7 +276,7 @@ static auto DeserializeBombNote(rapidjson::Value const &val) {
     }
 
     auto bomb = CustomBeatmapSaveData_BombNoteData::New_ctor(beat, line, layer);
-    bomb->customData = data;
+    bomb->customData = CustomJSONData::JSONObjectOrNull(data);
 
     return bomb;
 }
@@ -322,7 +323,7 @@ static auto DeserializeObstacle(rapidjson::Value const &val) {
     }
 
     auto obstacle = CustomBeatmapSaveData_ObstacleData::New_ctor(beat, line, layer, duration, width, height);
-    obstacle->customData = data;
+    obstacle->customData = CustomJSONData::JSONObjectOrNull(data);
     return obstacle;
 }
 
@@ -411,7 +412,7 @@ static auto DeserializeSlider(rapidjson::Value const &val) {
             tailCutDirection,
             sliderMidAnchorMode);
 
-    slider->customData = data;
+    slider->customData = CustomJSONData::JSONObjectOrNull(data);
 
     return slider;
 }
@@ -490,7 +491,7 @@ static auto DeserializeBurstSlider(rapidjson::Value const &val) {
             sliceCount,
             squishAmount);
 
-    slider->customData = data;
+    slider->customData = CustomJSONData::JSONObjectOrNull(data);
 
     return slider;
 }
@@ -556,7 +557,7 @@ static auto DeserializeBasicEvent(rapidjson::Value const &val) {
     }
 
     auto event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
-    event->customData = data;
+    event->customData = CustomJSONData::JSONObjectOrNull(data);
     return event;
 }
 
@@ -582,7 +583,7 @@ static auto DeserializeColorBoostEventData(rapidjson::Value const &val) {
     }
 
     auto event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
-//    event->customData = data;
+//    event->customData = CustomJSONData::JSONObjectOrNull(data);
     return event;
 }
 
@@ -1093,8 +1094,8 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword.getInner()),
             useNormalEventsAsCompatibleEvents);
 
-    beatmap->customData = dataOpt;
-
+    beatmap->customData = CustomJSONData::JSONObjectOrNull(dataOpt);
+    beatmap->doc = sharedDoc;
     beatmap->customEventsData = customEvents;
 
     return beatmap;

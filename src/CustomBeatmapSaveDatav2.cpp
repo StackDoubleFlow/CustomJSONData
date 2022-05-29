@@ -1,4 +1,5 @@
 #include "CustomBeatmapSaveDatav2.h"
+#include "BeatmapFieldUtils.hpp"
 
 #include "VList.h"
 
@@ -116,7 +117,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
         }
 
         if (newData)
-            newData->customData = eventData->customData;
+            newData->customData = CustomJSONData::JSONObjectOrNull(eventData->customData);
 
         list.push_back(newData ? newData : eventData);
     }
@@ -159,7 +160,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
             auto customDataIt = note_json.FindMember("_customData");
             if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
-                note->customData = customDataIt->value;
+                note->customData = CustomJSONData::JSONObjectOrNull(customDataIt->value);
             }
             notes.push_back(note);
         }
@@ -344,7 +345,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
     auto customDataIt = doc.FindMember("_customData");
     if (customDataIt->value.IsObject()) {
-        saveData->customData = customDataIt->value;
+        saveData->customData = CustomJSONData::JSONObjectOrNull(customDataIt->value);
         rapidjson::Value const& customData = *saveData->customData;
 
         auto customEventsIt = customData.FindMember("_customEvents");
