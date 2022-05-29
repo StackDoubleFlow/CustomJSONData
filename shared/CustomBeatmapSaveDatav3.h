@@ -39,6 +39,9 @@
 #include "CustomEventData.h"
 #include "CJDLogger.h"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
+#include "GlobalNamespace/IDifficultyBeatmap.hpp"
+#include "GlobalNamespace/CustomDifficultyBeatmap.hpp"
+
 
 namespace CustomJSONData::v2 {
     class CustomBeatmapSaveData;
@@ -149,3 +152,13 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, 
     public:
     CustomDataOpt customData;
 )
+
+namespace CustomJSONData {
+    inline static std::optional<v3::CustomBeatmapSaveData*> GetBeatmapSaveData(GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap)
+    {
+        auto customDifficultyBeatmap = il2cpp_utils::try_cast<GlobalNamespace::CustomDifficultyBeatmap>(difficultyBeatmap);
+        if (!customDifficultyBeatmap) return std::nullopt;
+
+        return il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(customDifficultyBeatmap.value()->beatmapSaveData);
+    }
+}

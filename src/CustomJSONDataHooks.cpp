@@ -763,7 +763,7 @@ void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customSaveD
             if (!beatmap || !beatmap->beatmapFilename)
                 continue;
 
-            auto *customBeatmap = reinterpret_cast<CustomDifficultyBeatmap *>(beatmap);
+            auto *customBeatmap = reinterpret_cast<CustomJSONData::CustomDifficultyBeatmap *>(beatmap);
 
             std::string beatmapFilename = to_utf8(csstrtostr(customBeatmap->beatmapFilename));
             if (beatmapFilename == filename && customBeatmap->customData) {
