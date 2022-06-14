@@ -392,7 +392,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     }
 
     // Below taken straight from BeatmapSaveData.DeserializeFromJSONString
-    CJDLogger::Logger.fmtLog<LogLevel::INF>("v2 Version {}", static_cast<std::string>(saveData->version));
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("v2 Version {}", static_cast<std::string>(saveData->version ?: "null"));
     if (saveData->version && !csstrtostr(saveData->version).empty())
     {
         if (semver::lt(static_cast<std::string>(saveData->version), "2.5.0")) {
