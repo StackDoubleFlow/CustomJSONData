@@ -49,6 +49,7 @@
 
 #include "GlobalNamespace/GameSongController.hpp"
 #include "UnityEngine/Resources.hpp"
+#include "UnityEngine/GameObject.hpp"
 
 #include "CustomBeatmapSaveDatav2.h"
 #include "CustomBeatmapSaveDatav3.h"
@@ -71,6 +72,7 @@
 #include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
+#include "GlobalNamespace/BeatmapCallbacksUpdater.hpp"
 
 #include <chrono>
 #include <codecvt>

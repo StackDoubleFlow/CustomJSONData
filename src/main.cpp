@@ -10,9 +10,6 @@ extern "C" void setup(ModInfo &info) {
 
 extern "C" void load() {
     Modloader::requireMod("paper");
-    if (!Paper::Logger::IsInited()) {
-        Paper::Logger::Init("/sdcard/Android/data/com.beatgames.beatsaber/files/logs");
-    }
     Paper::Logger::RegisterFileContextId("CustomJSONData", "CustomJSONDataPaper");
 
     CJDLogger::Logger.fmtLog<LogLevel::INF>("Installing CustomJSONData Hooks!");

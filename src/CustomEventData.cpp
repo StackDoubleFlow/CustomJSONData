@@ -45,6 +45,7 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
+    PAPER_IL2CPP_CATCH_HANDLER(
     if (redirectEvent) {
         redirectEvent(controller, item);
     } else {
@@ -55,6 +56,7 @@ void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
             customEvents.callback(controller, static_cast<CustomEventData *>(item));
         }
     }
+    )
 }
 
 void CustomEventCallbacks::AddCustomEventCallback(
@@ -67,4 +69,5 @@ void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksCo
     auto wrapper = CustomBeatmapDataCallbackWrapper::New_ctor();
     wrapper->controller = callbackController;
     callbackController->callbacksInTimes->get_Item(0)->AddCallback(wrapper);
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTERED CUSTOM CALLBACK!");
 }
