@@ -73,6 +73,8 @@
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
 #include "GlobalNamespace/BeatmapCallbacksUpdater.hpp"
+#include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
+#include "GlobalNamespace/PlayerSpecificSettings.hpp"
 
 #include <chrono>
 #include <codecvt>
@@ -391,11 +393,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
 
 
 MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData, BeatmapData *,
-                BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
-                float startBpm, bool loadingForDesignatedEnvironment,
-                ::GlobalNamespace::EnvironmentKeywords* environmentKeywords,
-                ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
-                ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents) {
+                      ::BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
+                      ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty,
+                      float startBpm, bool loadingForDesignatedEnvironment,
+                      ::GlobalNamespace::EnvironmentKeywords* environmentKeywords,
+                      ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
+                      ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents,
+                      ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings
+                      ) {
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData), fmt::ptr(cachedSaveData));
     auto startTime = std::chrono::high_resolution_clock::now();
@@ -403,6 +408,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     profile.startTimer();
 
     bool flag = loadingForDesignatedEnvironment || (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->get_isEmpty());
+    bool flag2 = playerSpecificSettings == nullptr || playerSpecificSettings->GetEnvironmentEffectsFilterPreset(beatmapDifficulty) != EnvironmentEffectsFilterPreset::NoEffects;
+    bool flag3 = flag && flag2;
     CustomBeatmapData* beatmapData = CustomBeatmapData::New_ctor(4);
 
     static auto CustomBeatmapSaveDataKlass = classof(v3::CustomBeatmapSaveData*);
@@ -577,7 +584,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Waypoints {}", fmt::ptr(beatmapSaveData->waypoints));
     addAllToVector(beatmapDataObjectItems, beatmapSaveData->waypoints);
 
-    profile.mark("Grouped all beatmap objects");
+    profile.mark("Grouped all beatmap objects size {}", beatmapDataObjectItems.size());
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Cleaning and sorting beatmap objects");
     cleanAndSort(beatmapDataObjectItems);
@@ -646,7 +653,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Doing event items");
-    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataEventItems(
+    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataEventItems;
+    beatmapDataEventItems.reserve(
             bpmEvents->get_Count() +
             beatmapSaveData->basicBeatmapEvents->get_Count() +
             beatmapSaveData->colorBoostBeatmapEvents->get_Count() +
@@ -684,7 +692,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
-    std::vector<BeatmapSaveData::EventBoxGroup*> eventBoxes(
+    std::vector<BeatmapSaveData::EventBoxGroup*> eventBoxes;
+    eventBoxes.reserve(
             beatmapSaveData->lightColorEventBoxGroups->get_Count() +
             beatmapSaveData->lightRotationEventBoxGroups->get_Count()
     );
@@ -708,7 +717,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     profile.mark("Processed and added beatmap events boxes");
 
-    if (!flag)
+    if (!flag3)
     {
         DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents(beatmapData, beatmapEventDataBoxGroupLists, defaultEnvironmentEvents, environmentLightGroups);
     }
