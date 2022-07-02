@@ -102,6 +102,7 @@ CustomJSONData::CustomObstacleData *CustomJSONData::CustomObstacleData::GetCopy(
     auto copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->lineIndex, this->lineLayer, this->duration, this->width, height);
     copy->customData = this->customData;
     copy->bpm = this->bpm;
+    copy->aheadTimeNoodle = this->aheadTimeNoodle;
     return copy;
 }
 
@@ -159,6 +160,7 @@ CustomJSONData::CustomNoteData *CustomJSONData::CustomNoteData::GetCopy() {
                                                          timeToPrevColorNote, flipLineIndex, flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
     copy->customData = this->customData;
     copy->bpm = this->bpm;
+    copy->aheadTimeNoodle = this->aheadTimeNoodle;
     return copy;
 }
 

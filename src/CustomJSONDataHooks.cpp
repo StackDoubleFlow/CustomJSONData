@@ -329,9 +329,11 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
 
             auto firstNode = CustomEventCallbacks::firstNode ? (NodePtr) CustomEventCallbacks::firstNode : nullptr;
 
-            for (auto linkedListNode = (value->lastProcessedNode != nullptr)
+            bool isProperNode = value->lastProcessedNode != nullptr && firstNode && value->lastProcessedNode->list == firstNode->list;
+
+            for (auto linkedListNode = (isProperNode)
                                                                    ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
-                                                                   : (firstNode ? firstNode : self->beatmapData->get_allBeatmapDataItems()->get_First());
+                                                                   : (firstNode ?: self->beatmapData->get_allBeatmapDataItems()->get_First());
                  linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
                 auto value2 = linkedListNode->get_Value();
                 if (value2->time - value->aheadTime - GetAheadTime(value2) > songTime) {
