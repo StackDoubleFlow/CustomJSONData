@@ -96,6 +96,7 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
     ObstacleData* instance = this;
     il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width, height);
     INVOKE_CTOR();
+    this->aheadTimeNoodle = 0;
 }
 
 CustomJSONData::CustomObstacleData *CustomJSONData::CustomObstacleData::GetCopy() {
@@ -152,6 +153,7 @@ void CustomJSONData::CustomNoteData::ctor(float time, int lineIndex, ::GlobalNam
                                                 scoringType, colorType, cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex,
                                                 flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
     INVOKE_CTOR();
+    this->aheadTimeNoodle = 0;
 }
 
 CustomJSONData::CustomNoteData *CustomJSONData::CustomNoteData::GetCopy() {
