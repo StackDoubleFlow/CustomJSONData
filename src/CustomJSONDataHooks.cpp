@@ -616,7 +616,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     });
 
     // only for v3 maps
-    if (flag) {
+    if (flag3) {
         auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
 
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>([&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
@@ -688,34 +688,37 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
     auto bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<BeatmapDataLoader::BpmTimeProcessor*>(startBpm, bpmEvents);
     auto beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
-    auto eventBoxGroupConvertor = CustomJSONData::NewFast<BeatmapDataLoader::EventBoxGroupConvertor*>(environmentLightGroups);
+    if (flag3) {
+        auto eventBoxGroupConvertor = CustomJSONData::NewFast<BeatmapDataLoader::EventBoxGroupConvertor *>(
+                environmentLightGroups);
 
-    EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
+        EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
-    std::vector<BeatmapSaveData::EventBoxGroup*> eventBoxes;
-    eventBoxes.reserve(
-            beatmapSaveData->lightColorEventBoxGroups->get_Count() +
-            beatmapSaveData->lightRotationEventBoxGroups->get_Count()
-    );
+        std::vector<BeatmapSaveData::EventBoxGroup *> eventBoxes;
+        eventBoxes.reserve(
+                beatmapSaveData->lightColorEventBoxGroups->get_Count() +
+                beatmapSaveData->lightRotationEventBoxGroups->get_Count()
+        );
 
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightColorEventBoxGroups handling events");
-    addAllToVector2(eventBoxes, beatmapSaveData->lightColorEventBoxGroups);
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightRotationEventBoxGroups handling events");
-    addAllToVector2(eventBoxes, beatmapSaveData->lightRotationEventBoxGroups);
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightColorEventBoxGroups handling events");
+        addAllToVector2(eventBoxes, beatmapSaveData->lightColorEventBoxGroups);
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightRotationEventBoxGroups handling events");
+        addAllToVector2(eventBoxes, beatmapSaveData->lightRotationEventBoxGroups);
 
-    cleanAndSort(eventBoxes);
+        cleanAndSort(eventBoxes);
 
-    profile.mark(fmt::format("Grouped beatmap event boxes {}", eventBoxes.size()));
+        profile.mark(fmt::format("Grouped beatmap event boxes {}", eventBoxes.size()));
 
-    for (auto const& o : eventBoxes) {
-        auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
-        if (beatmapEventDataBoxGroup != nullptr)
-        {
-            beatmapEventDataBoxGroupLists->Insert(o->g, beatmapEventDataBoxGroup);
+
+        for (auto const &o: eventBoxes) {
+            auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
+            if (beatmapEventDataBoxGroup != nullptr) {
+                beatmapEventDataBoxGroupLists->Insert(o->g, beatmapEventDataBoxGroup);
+            }
         }
-    }
 
-    profile.mark("Processed and added beatmap events boxes");
+        profile.mark("Processed and added beatmap events boxes");
+    }
 
     if (!flag3)
     {
