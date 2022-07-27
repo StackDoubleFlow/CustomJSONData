@@ -28,7 +28,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.24.0",
+      "versionRange": "^0.25.0",
       "additionalData": {}
     },
     {
@@ -42,7 +42,8 @@
       "id": "songloader",
       "versionRange": "^0.10.0",
       "additionalData": {
-        "includeQmod": false
+        "includeQmod": false,
+        "private": true
       }
     },
     {

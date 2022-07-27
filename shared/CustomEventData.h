@@ -7,6 +7,11 @@
 #include "GlobalNamespace/BeatmapDataItem.hpp"
 #include "GlobalNamespace/BeatmapDataCallbackWrapper.hpp"
 #include "GlobalNamespace/BeatmapCallbacksController.hpp"
+
+#include "System/Collections/Generic/LinkedListNode_1.hpp"
+
+#include "UnityEngine/Object.hpp"
+
 #include "LowLevelUtils.hpp"
 
 namespace GlobalNamespace {
