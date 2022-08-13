@@ -4,11 +4,16 @@
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
-    "version": "0.15.0",
+    "version": "0.17.0",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
-      "branchName": "main"
+      "branchName": "main",
+      "compileOptions": {
+        "cppFlags": [
+          "-DRAPIDJSON_NEON"
+        ]
+      }
     }
   },
   "dependencies": [
@@ -23,7 +28,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.20.0",
+      "versionRange": "^0.25.0",
       "additionalData": {}
     },
     {
@@ -35,7 +40,7 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.8.0",
+      "versionRange": "^0.10.0",
       "additionalData": {
         "includeQmod": false,
         "private": true
@@ -45,6 +50,18 @@
       "id": "modloader",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "paper",
+      "versionRange": "^1.2.2",
+      "additionalData": {}
+    },
+    {
+      "id": "cpp-semver",
+      "versionRange": "^0.1.1",
+      "additionalData": {
+        "private": true
+      }
     }
   ],
   "additionalData": {}

@@ -2,23 +2,24 @@
   "_QPVersion": "0.1.1",
   "name": "CustomJSONData",
   "id": "custom-json-data",
-  "author": "StackDoubleFlow",
-  "version": "0.15.0",
+  "author": "StackDoubleFlow, Fernthedev",
+  "version": "0.17.0",
   "packageId": "com.beatgames.beatsaber",
-  "packageVersion": "1.19.1",
+  "packageVersion": "1.23.0",
   "description": "Funny maps go brrr",
   "dependencies": [
     {
-      "version": "^0.19.0",
+      "version": "^0.24.0",
       "id": "codegen",
-      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.19.0/Codegen.qmod"
+      "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.24.1/Codegen.qmod"
     }
   ],
   "modFiles": [
     "libcustom-json-data.so"
   ],
   "libraryFiles": [
-    "libbeatsaber-hook_3_6_2.so"
+    "libpaperlog.so",
+    "libbeatsaber-hook_3_9_0.so"
   ],
   "fileCopies": [],
   "copyExtensions": []

@@ -47,7 +47,6 @@ template<typename Ty>
 class VList {
 private:
     using InnerTy = System::Collections::Generic::List_1<Ty>;
-
     InnerTy *inner;
 
 public:
@@ -61,44 +60,72 @@ public:
     using const_iterator = const_pointer;
 
 public:
-    VList() 
+    constexpr VList()
         : inner(InnerTy::New_ctor()) {};
-    
-    VList(int size) 
+
+    constexpr VList(int size)
         : inner(InnerTy::New_ctor(size)) {
-        inner->size = size;
     };
 
-    VList(InnerTy *list)
+    constexpr VList(InnerTy *list)
         : inner(list) {};
 
-    InnerTy* operator*() const {
+    constexpr InnerTy* operator*() const {
         return inner;
     }
 
-    operator InnerTy*() const {
+    constexpr operator InnerTy*() const {
         return inner;
     }
 
-    Ty& operator[](const size_t pos) const {
+    constexpr Ty& operator[](const size_t pos) const {
         return inner->items.get(pos);
     }
 
-    int size() const {
+    [[nodiscard]] constexpr int size() const {
         return inner->size;
     }
 
-    void push_back(const Ty& val) {
+    constexpr auto resize(const size_t cap) {
+        return inner->EnsureCapacity(cap);
+    }
+
+    constexpr void trim() const {
+        return inner->TrimExcess();
+    }
+
+    constexpr void insert_at(int index, const Ty& val) {
+        // TODO: C++ impl
+        return inner->Insert(index, val);
+    }
+
+    constexpr void push_back(const Ty& val) {
         // TODO: C++ impl
         return inner->Add(val);
     }
 
-    iterator begin() {
+    iterator constexpr begin() {
         return inner->items.begin();
     }
 
-    iterator end() {
+    iterator constexpr end() {
         return inner->items.begin() + size();
+    }
+
+    [[nodiscard]] constexpr InnerTy * getInner() const {
+        return inner;
+    }
+
+    [[nodiscard]] constexpr void* convert() const noexcept {
+        return inner;
+    }
+
+    constexpr operator std::span<Ty>() {
+        return std::span<Ty>(begin(), size());
+    }
+
+    constexpr std::span<Ty> toSpan() {
+        return std::span<Ty>(begin(), size());
     }
 };
 
@@ -110,4 +137,11 @@ struct il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<VList<Ty>> {
     static inline Il2CppClass* get() {
         return classof(System::Collections::Generic::List_1<Ty>*);
     }
+};
+
+static_assert(il2cpp_utils::has_il2cpp_conversion<VList<int>>);
+
+template<class T>
+struct ::il2cpp_utils::il2cpp_type_check::need_box<VList<T>> {
+    constexpr static bool value = false;
 };

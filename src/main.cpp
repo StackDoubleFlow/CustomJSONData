@@ -9,9 +9,12 @@ extern "C" void setup(ModInfo &info) {
 }
 
 extern "C" void load() {
-    CJDLogger::GetLogger().info("Installing CustomJSONData Hooks!");
+    Modloader::requireMod("paper");
+    Paper::Logger::RegisterFileContextId("CustomJSONData", "CustomJSONDataPaper");
+
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Installing CustomJSONData Hooks!");
 
     CustomJSONData::InstallHooks();
 
-    CJDLogger::GetLogger().info("Installed CustomJSONData Hooks!");
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Installed CustomJSONData Hooks!");
 }
