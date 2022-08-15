@@ -75,6 +75,11 @@
 #include "GlobalNamespace/BeatmapCallbacksUpdater.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
+#include "GlobalNamespace/BeatmapDataStrobeFilterTransform.hpp"
+#include "GlobalNamespace/BeatmapDataStrobeFilterTransform_StrobeStreakData.hpp"
+#include "GlobalNamespace/LightColorBeatmapEventData.hpp"
+#include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
+#include "GlobalNamespace/EnvironmentIntensityReductionOptions.hpp"
 
 #include <chrono>
 #include <codecvt>
@@ -117,18 +122,28 @@ static std::string GetVersionFromPath(std::string_view path)
 }
 
 
-BeatmapData * CustomBeatmapData_GetFilteredCopy(CustomBeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
-    self->isCreatingFilteredCopy = true;
-    auto copy = self->BaseCopy();
+template <typename F>
+BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, F&& processDataItem) {
+    auto beatmapCast = il2cpp_utils::try_cast<BeatmapData>(self);
+    if (beatmapCast) {
+        beatmapCast.value()->isCreatingFilteredCopy = true;
+    }
+    CustomBeatmapData* copy;
 
-    auto linkedList = self->allBeatmapData->get_items();
+    if (auto custom = il2cpp_utils::try_cast<CustomBeatmapData>(self)) {
+        copy = custom.value()->BaseCopy();
+    } else {
+        copy = CustomBeatmapData::New_ctor(self->i_IBeatmapDataBasicInfo()->get_numberOfLines());
+    }
+
+    auto linkedList = beatmapCast ? beatmapCast.value()->allBeatmapData->get_items() : self->get_allBeatmapDataItems();
 
     for (auto node = linkedList->get_First(); node != nullptr; node = CustomBeatmapData::LinkedListNode_1_get_Next(node)) {
         auto beatmapDataItem = node->item;
 
         if (!beatmapDataItem) continue;
 
-        BeatmapDataItem* beatmapDataItem2 = processDataItem->Invoke(beatmapDataItem->GetCopy());
+        BeatmapDataItem* beatmapDataItem2 = processDataItem(beatmapDataItem->GetCopy());
 
         if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
             copy->InsertBeatmapEventData(*event);
@@ -143,8 +158,14 @@ BeatmapData * CustomBeatmapData_GetFilteredCopy(CustomBeatmapData* self, System:
         }
     }
 
-    self->isCreatingFilteredCopy = false;
+    if (beatmapCast) {
+        beatmapCast.value()->isCreatingFilteredCopy = false;
+    }
     return copy;
+}
+
+inline BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
+    return CustomBeatmapData_GetFilteredCopy(self, [&processDataItem](BeatmapDataItem* i) constexpr {return processDataItem->Invoke(i);});
 }
 
 BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
@@ -187,10 +208,129 @@ MAKE_PAPER_HOOK_MATCH(BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilter
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
     if (self->klass == CustomBeatmapDataKlass) {
-        return CustomBeatmapData_GetFilteredCopy(reinterpret_cast<CustomBeatmapData*>(self), processDataItem);
+        return CustomBeatmapData_GetFilteredCopy(self->i_IReadonlyBeatmapData(), processDataItem);
     }
 
     return BeatmapData_GetFilteredCopy(self, processDataItem);
+}
+
+static bool Approximately(float a, float b)
+{
+    return std::abs(b - a) < std::max((float) 1E-06f * std::max(std::abs(a), std::abs(b)), (float) 1E-45f * 8.0f);
+}
+
+MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData, &BeatmapDataStrobeFilterTransform::CreateTransformedData, IReadonlyBeatmapData*, IReadonlyBeatmapData* beatmapData, EnvironmentIntensityReductionOptions* environmentIntensityReductionOptions) {
+    auto* beatmapData2 = CustomBeatmapData::New_ctor(beatmapData->i_IBeatmapDataBasicInfo()->get_numberOfLines());
+    bool flag = environmentIntensityReductionOptions->compressExpand == EnvironmentIntensityReductionOptions::CompressExpandReductionType::RemoveWithStrobeFilter;
+    bool flag2 = environmentIntensityReductionOptions->rotateRings == EnvironmentIntensityReductionOptions::RotateRingsReductionType::RemoveWithStrobeFilter;
+    std::unordered_map<int, BeatmapDataStrobeFilterTransform::StrobeStreakData*> dictionary(
+                                                                                                                                            {
+                                                                                                                                                    {
+                                                                                                                                                            BasicBeatmapEventType::Event0,
+                                                                                                                                                            BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor()
+                                                                                                                                                    },
+                                                                                                                                                    {
+                                                                                                                                                            BasicBeatmapEventType::Event1,
+                                                                                                                                                            BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor()
+                                                                                                                                                    },
+                                                                                                                                                    {
+                                                                                                                                                            BasicBeatmapEventType::Event2,
+                                                                                                                                                            BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor()
+                                                                                                                                                    },
+                                                                                                                                                    {
+                                                                                                                                                            BasicBeatmapEventType::Event3,
+                                                                                                                                                            BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor()
+                                                                                                                                                    },
+                                                                                                                                                    {
+                                                                                                                                                            BasicBeatmapEventType::Event4,
+                                                                                                                                                            BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor()
+                                                                                                                                                    }
+                                                                                                                                            });
+
+    std::vector<BasicBeatmapEventData*> additionalItems;
+
+    auto newBeatmap = CustomBeatmapData_GetFilteredCopy(beatmapData, [&](BeatmapDataItem* beatmapDataItem) -> BeatmapDataItem* {
+        LightColorBeatmapEventData* lightColorBeatmapEventData;
+        BasicBeatmapEventData* basicBeatmapEventData;
+        if ((lightColorBeatmapEventData = il2cpp_utils::try_cast<LightColorBeatmapEventData>(beatmapDataItem).value_or(nullptr)))
+        {
+            lightColorBeatmapEventData->DisableStrobe();
+            return lightColorBeatmapEventData;
+        }
+
+        if ((basicBeatmapEventData = (il2cpp_utils::try_cast<BasicBeatmapEventData>(beatmapDataItem).value_or(nullptr))) == nullptr)
+        {
+            BeatmapEventData* beatmapEventData;
+            BeatmapObjectData* beatmapObjectData;
+            if ((beatmapEventData = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem).value_or(nullptr)) != nullptr)
+            {
+                return beatmapEventData;
+            }
+
+            if ((beatmapObjectData = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem).value_or(nullptr)) != nullptr)
+            {
+                return beatmapObjectData;
+            }
+        }
+        else if ((!flag || basicBeatmapEventData->basicBeatmapEventType != BasicBeatmapEventType::Event9) && (!flag2 || basicBeatmapEventData->basicBeatmapEventType != BasicBeatmapEventType::Event8)) {
+            if (!BeatmapEventTypeExtensions::IsCoreLightIntensityChangeEvent(
+                    basicBeatmapEventData->basicBeatmapEventType)) {
+                return basicBeatmapEventData;
+            }
+
+            if (BeatmapEventDataLightsExtensions::HasLightFadeEventDataValue(basicBeatmapEventData)) {
+                return basicBeatmapEventData;
+            }
+
+
+            BeatmapDataStrobeFilterTransform::StrobeStreakData* strobeStreakData = dictionary[basicBeatmapEventData->basicBeatmapEventType];
+            if (strobeStreakData->isActive) {
+                if (basicBeatmapEventData->time - strobeStreakData->lastSwitchTime < 0.1f) {
+                    strobeStreakData->AddStrobeData(basicBeatmapEventData);
+                } else {
+                    if (!Approximately(strobeStreakData->strobeStartTime, strobeStreakData->lastSwitchTime)) {
+                        int onEventDataValue = BeatmapDataStrobeFilterTransform::GetOnEventDataValue(
+                                strobeStreakData->startColorType);
+                        BasicBeatmapEventData* beatmapEventData2 = static_cast<BasicBeatmapEventData *>(basicBeatmapEventData->GetCopy());
+                        beatmapEventData2->time = strobeStreakData->strobeStartTime;
+                        beatmapEventData2->value = onEventDataValue;
+                        beatmapData2->InsertBeatmapEventData(beatmapEventData2);
+                        int value;
+                        if (strobeStreakData->lastIsOn) {
+                            value = BeatmapDataStrobeFilterTransform::GetOnEventDataValue(
+                                    strobeStreakData->lastColorType);
+                        } else {
+                            value = BeatmapDataStrobeFilterTransform::GetFlashAndFadeToBlackEventDataValue(
+                                    strobeStreakData->lastColorType);
+                        }
+                        BasicBeatmapEventData* beatmapEventData3 = static_cast<BasicBeatmapEventData *>(basicBeatmapEventData->GetCopy());
+                        beatmapEventData3->time = strobeStreakData->lastSwitchTime;
+                        beatmapEventData3->value = value;
+                        additionalItems.emplace_back(beatmapEventData3);
+                    } else {
+                        return strobeStreakData->originalBasicBeatmapEventData;
+                    }
+                    strobeStreakData->StartPotentialStrobe(basicBeatmapEventData);
+                }
+            } else {
+                strobeStreakData->StartPotentialStrobe(basicBeatmapEventData);
+            }
+        }
+        return nullptr;
+    });
+
+    for (auto const& i : additionalItems) {
+        newBeatmap->InsertBeatmapEventData(i);
+    }
+
+    for (auto const& keyValuePair : dictionary)
+    {
+        if (keyValuePair.second->isActive)
+        {
+            newBeatmap->InsertBeatmapEventData(keyValuePair.second->originalBasicBeatmapEventData);
+        }
+    }
+    return newBeatmap->i_IReadonlyBeatmapData();
 }
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
@@ -808,6 +948,7 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetFilteredCopy);
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetCopy);
+    INSTALL_HOOK_ORIG(logger, BeatmapDataStrobeFilterTransform_CreateTransformedData);
     INSTALL_HOOK(logger, BeatmapCallbacksController_Dispose);
 
 
