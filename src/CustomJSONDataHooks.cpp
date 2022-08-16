@@ -143,7 +143,9 @@ BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, F&& 
 
         if (!beatmapDataItem) continue;
 
-        BeatmapDataItem* beatmapDataItem2 = processDataItem(beatmapDataItem->GetCopy());
+        beatmapDataItem = processDataItem(beatmapDataItem->GetCopy());
+
+        if (!beatmapDataItem) continue;
 
         if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
             copy->InsertBeatmapEventData(*event);
@@ -168,38 +170,16 @@ inline BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* sel
     return CustomBeatmapData_GetFilteredCopy(self, [processDataItem](BeatmapDataItem* i) {return processDataItem->Invoke(i);});
 }
 
-BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
-    auto copy = self->BaseCopy();
-
-    auto linkedList = self->allBeatmapData->get_items();
-
-    for (auto node = linkedList->get_First(); node != nullptr; node = CustomBeatmapData::LinkedListNode_1_get_Next(node)) {
-        auto beatmapDataItem = node->item;
-
-        if (!beatmapDataItem) continue;
-
-        if (auto event = il2cpp_utils::try_cast<BeatmapEventData>(beatmapDataItem)) {
-            copy->InsertBeatmapEventData(*event);
-        }
-
-        if (auto object = il2cpp_utils::try_cast<BeatmapObjectData>(beatmapDataItem)) {
-            copy->AddBeatmapObjectData(*object);
-        }
-
-        if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
-            copy->InsertCustomEventData(*customEvent);
-        }
-    }
-
-    return copy;
+inline BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
+    return CustomBeatmapData_GetFilteredCopy(self->i_IReadonlyBeatmapData(), [](auto&& i) constexpr {return i;});
 }
 
 MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapData *, BeatmapData* self) {
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
-    if (self->klass == CustomBeatmapDataKlass) {
+//    if (self->klass == CustomBeatmapDataKlass) {
         return CustomBeatmapData_GetCopy(reinterpret_cast<CustomBeatmapData*>(self));
-    }
+//    }
 
     return BeatmapData_GetCopy(self);
 }
@@ -207,9 +187,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapD
 MAKE_PAPER_HOOK_MATCH(BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilteredCopy, BeatmapData *, BeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
-    if (self->klass == CustomBeatmapDataKlass) {
+//    if (self->klass == CustomBeatmapDataKlass) {
         return CustomBeatmapData_GetFilteredCopy(self->i_IReadonlyBeatmapData(), processDataItem);
-    }
+//    }
 
     return BeatmapData_GetFilteredCopy(self, processDataItem);
 }
