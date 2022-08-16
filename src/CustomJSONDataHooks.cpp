@@ -250,6 +250,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData, &B
     std::vector<BasicBeatmapEventData*> additionalItems;
 
     auto newBeatmap = CustomBeatmapData_GetFilteredCopy(beatmapData, [&](BeatmapDataItem* beatmapDataItem) -> BeatmapDataItem* {
+
+        if (il2cpp_utils::AssignableFrom<CustomEventData*>(beatmapDataItem->klass)) return beatmapDataItem;
+
         LightColorBeatmapEventData* lightColorBeatmapEventData;
         BasicBeatmapEventData* basicBeatmapEventData;
         if ((lightColorBeatmapEventData = il2cpp_utils::try_cast<LightColorBeatmapEventData>(beatmapDataItem).value_or(nullptr)))
