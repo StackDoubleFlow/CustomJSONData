@@ -165,7 +165,7 @@ BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, F&& 
 }
 
 inline BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
-    return CustomBeatmapData_GetFilteredCopy(self, [&processDataItem](BeatmapDataItem* i) constexpr {return processDataItem->Invoke(i);});
+    return CustomBeatmapData_GetFilteredCopy(self, [processDataItem](BeatmapDataItem* i) {return processDataItem->Invoke(i);});
 }
 
 BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
