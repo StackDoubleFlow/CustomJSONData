@@ -91,6 +91,7 @@ CustomJSONData::CustomBeatmapEventData *CustomJSONData::CustomBeatmapEventData::
     copy->type = type;
     copy->basicBeatmapEventType = basicBeatmapEventType;
     copy->subtypeIdentifier = subtypeIdentifier;
+    copy->sameTypeIndex = sameTypeIndex;
     // For some reason this is needed
     copy->customData = this->customData;
     return copy;
