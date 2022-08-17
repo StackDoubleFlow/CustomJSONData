@@ -123,7 +123,7 @@ static std::string GetVersionFromPath(std::string_view path)
 
 
 template <typename F>
-BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, F&& processDataItem) {
+CustomBeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* self, F&& processDataItem) {
     auto beatmapCast = il2cpp_utils::try_cast<BeatmapData>(self);
     if (beatmapCast) {
         beatmapCast.value()->isCreatingFilteredCopy = true;
@@ -170,16 +170,16 @@ inline BeatmapData * CustomBeatmapData_GetFilteredCopy(IReadonlyBeatmapData* sel
     return CustomBeatmapData_GetFilteredCopy(self, [processDataItem](BeatmapDataItem* i) {return processDataItem->Invoke(i);});
 }
 
-inline BeatmapData * CustomBeatmapData_GetCopy(CustomBeatmapData* self) {
-    return CustomBeatmapData_GetFilteredCopy(self->i_IReadonlyBeatmapData(), [](auto&& i) constexpr {return i;});
+inline BeatmapData * CustomBeatmapData_GetCopy(IReadonlyBeatmapData* self) {
+    return CustomBeatmapData_GetFilteredCopy(self, [](auto i) constexpr {return i;});
 }
 
 MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapData *, BeatmapData* self) {
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
-//    if (self->klass == CustomBeatmapDataKlass) {
-        return CustomBeatmapData_GetCopy(reinterpret_cast<CustomBeatmapData*>(self));
-//    }
+    if (self->klass == CustomBeatmapDataKlass) {
+        return CustomBeatmapData_GetCopy(self->i_IReadonlyBeatmapData());
+    }
 
     return BeatmapData_GetCopy(self);
 }
@@ -187,9 +187,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapD
 MAKE_PAPER_HOOK_MATCH(BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilteredCopy, BeatmapData *, BeatmapData* self, System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
-//    if (self->klass == CustomBeatmapDataKlass) {
+    if (self->klass == CustomBeatmapDataKlass) {
         return CustomBeatmapData_GetFilteredCopy(self->i_IReadonlyBeatmapData(), processDataItem);
-//    }
+    }
 
     return BeatmapData_GetFilteredCopy(self, processDataItem);
 }
