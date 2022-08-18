@@ -22,7 +22,7 @@ public:
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject,
-    DECLARE_DEFAULT_CTOR();
+    DECLARE_FASTER_CTOR(ctor);
     DECLARE_SIMPLE_DTOR();
 
     DECLARE_INSTANCE_METHOD(JSONWrapper*, GetCopy);
@@ -33,7 +33,7 @@ public:
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject,
-                      DECLARE_DEFAULT_CTOR();
+                      DECLARE_FASTER_CTOR(ctor);
                               DECLARE_SIMPLE_DTOR();
 
                               public:
