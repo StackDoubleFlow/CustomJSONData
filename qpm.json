@@ -7,8 +7,11 @@
     "version": "0.17.5",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
+      "soLink": "https://github.com/StackDoubleFlow/CustomJSONData/releases/download/v0.17.5/libcustom-json-data.so",
+      "debugSoLink": "https://github.com/StackDoubleFlow/CustomJSONData/releases/download/v0.17.5/debug_libcustom-json-data.so",
       "overrideSoName": "libcustom-json-data.so",
-      "branchName": "main",
+      "modLink": "https://github.com/StackDoubleFlow/CustomJSONData/releases/download/v0.17.5/custom-json-data.qmod",
+      "branchName": "version-v0.17.5",
       "compileOptions": {
         "cppFlags": [
           "-DRAPIDJSON_NEON"
