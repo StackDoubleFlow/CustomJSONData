@@ -42,26 +42,40 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
     PAPER_IL2CPP_CATCH_HANDLER(
         il2cpp_utils::RunMethodRethrow(this, ctor, 0.0f, csTypeOf(CustomEventData*), ArrayW<int>((il2cpp_array_size_t) 0));
     )
+    redirectEvent = nullptr;
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem * item) {
     PAPER_IL2CPP_CATCH_HANDLER(
-    if (redirectEvent) {
-        redirectEvent(controller, item);
-    } else {
-        static auto CustomEventDataKlass = classof(CustomEventData*);
-        CRASH_UNLESS(item->klass == CustomEventDataKlass);
+                if (redirectEvent) {
+                    redirectEvent(controller, item);
+                } else {
+                    static auto CustomEventDataKlass = classof(CustomEventData * );
+                    CRASH_UNLESS(item->klass == CustomEventDataKlass);
 
-        for (auto const &customEvents: CustomEventCallbacks::customEventCallbacks) {
-            customEvents.callback(controller, static_cast<CustomEventData *>(item));
-        }
-    }
+                    for (auto const &customEvents: CustomEventCallbacks::customEventCallbacks) {
+                        try {
+                            customEvents.callback(controller, static_cast<CustomEventData *>(item));
+                        }
+                        catch (std::exception const &e) {
+                            CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}",
+                                                                    fmt::ptr(customEvents.callback));
+                            throw e;
+                        } catch (...) {
+                            CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}",
+                                                                    fmt::ptr(customEvents.callback));
+                            throw;
+                        }
+                    }
+                }
     )
 }
 
 void CustomEventCallbacks::AddCustomEventCallback(
         void (*callback)(GlobalNamespace::BeatmapCallbacksController *, CustomJSONData::CustomEventData *)) {
     customEventCallbacks.emplace_back(callback);
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Added custom event callback {}", fmt::ptr(callback));
+    CJDLogger::Logger.Backtrace(4);
 }
 
 void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController *callbackController) {
