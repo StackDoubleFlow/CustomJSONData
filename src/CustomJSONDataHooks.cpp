@@ -316,6 +316,11 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData, &B
     return newBeatmap->i_IReadonlyBeatmapData();
 }
 
+// MappingExtensions depends on this method getting called
+MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveData, &BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData, BeatmapSaveData*, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData* beatmapSaveData) {
+    return v3::CustomBeatmapSaveData::Convert2_6_0(reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData*>(beatmapSaveData));
+}
+
 // This hook loads the json data (with custom data) into a BeatmapSaveData 
 MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDataVersion3::BeatmapSaveData::DeserializeFromJSONString, BeatmapSaveData*, StringW stringData) {
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing json");
@@ -346,7 +351,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString, &BeatmapSaveDat
         if (semver::lte(std::string(version), "2.6.0")) {
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
 
-            saveData = v3::CustomBeatmapSaveData::Convert2_6_0(v2::CustomBeatmapSaveData::Deserialize(sharedDoc));
+            saveData = reinterpret_cast<v3::CustomBeatmapSaveData*>(BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData(v2::CustomBeatmapSaveData::Deserialize(sharedDoc)));
             saveData->isV2 = true;
           } else {
             CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 3.0.0 beatmap");
@@ -925,6 +930,7 @@ void CustomJSONData::InstallHooks() {
     // Install hooks
     // Stupid workaround because stupid NE
     INSTALL_HOOK_ORIG(logger, BeatmapCallbacksController_ManualUpdateTranspile)
+    INSTALL_HOOK_ORIG(logger, BeatmapSaveData_ConvertBeatmapSaveData)
     INSTALL_HOOK_ORIG(logger, BeatmapSaveData_DeserializeFromJSONString)
     INSTALL_HOOK_ORIG(logger, GetBeatmapDataFromBeatmapSaveData)
     INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_InsertItem);
