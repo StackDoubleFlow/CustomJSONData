@@ -67,6 +67,7 @@
 
 #include "cpp-semver/shared/cpp-semver.hpp"
 #include "paper/shared/Profiler.hpp"
+#include "sombrero/shared/linq_functional.hpp"
 
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
@@ -893,35 +894,44 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
 // CustomJSONData::CustomLevelInfoSaveData*, std::string const&, BeatmapSaveDataVersion3::BeatmapSaveData*, GlobalNamespace::BeatmapDataBasicInfo*
 void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customInfoData, const std::string &filename, BeatmapSaveDataVersion3::BeatmapSaveData *beatmapData, GlobalNamespace::BeatmapDataBasicInfo*) {
+    PAPER_IL2CPP_CATCH_HANDLER(
+    using namespace Sombrero::Linq::Functional;
     if (!beatmapData) {
         CJDLogger::Logger.fmtLog<LogLevel::WRN>("Beatmap is null, no custom level data");
         return;
     }
     CJDLogger::Logger.fmtLog<Paper::LogLevel::INF>("Setting info.dat customData to beatmap");
 
-    auto *customBeatmapData = reinterpret_cast<v3::CustomBeatmapSaveData *>(beatmapData);
+    auto *customBeatmapData = il2cpp_utils::cast<v3::CustomBeatmapSaveData>(beatmapData);
 
 
     if (customInfoData->customData) {
         customBeatmapData->beatmapCustomData = customInfoData->customData->get();
     }
 
-    v3::CustomDataOptUTF16 levelCustomData;
-    for (auto* beatmapSet : customInfoData->difficultyBeatmapSets) {
+//TODO: SelectMany
+    StandardLevelInfoSaveData::DifficultyBeatmap* diff = customInfoData->difficultyBeatmapSets |
+                                                         Select([&](StandardLevelInfoSaveData::DifficultyBeatmapSet* beatmapSet) {
+                       return beatmapSet->difficultyBeatmaps |
+                               FirstOrDefault([&](StandardLevelInfoSaveData::DifficultyBeatmap* diff) {
+                           if (!diff || !diff->beatmapFilename) return false;
 
-        for (auto* beatmap : beatmapSet->difficultyBeatmaps) {
-            if (!beatmap || !beatmap->beatmapFilename)
-                continue;
+                           auto *customDiff = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(diff);
 
-            auto *customBeatmap = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(beatmap);
 
-            std::string beatmapFilename = customBeatmap->beatmapFilename;
-            if (beatmapFilename == filename && customBeatmap->customData) {
-                levelCustomData = customBeatmap->customData->get();
-            }
-        }
+                           return customDiff->beatmapFilename == filename;
+                       });
+                   }) |
+            FirstOrDefault([](auto x){return x;});
+
+    if (!diff) {
+        CJDLogger::Logger.fmtLog<LogLevel::INF>("No custom diff found");
     }
+
+    v3::CustomDataOptUTF16 levelCustomData = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(diff)->customData->get();
     customBeatmapData->levelCustomData = levelCustomData;
+    CJDLogger::Logger.fmtLog<LogLevel::INF>("Done with beatmap info.dat");
+    )
 }
 
 void CustomJSONData::InstallHooks() {
