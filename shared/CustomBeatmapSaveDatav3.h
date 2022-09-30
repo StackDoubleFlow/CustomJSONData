@@ -38,6 +38,7 @@
 #include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
 #include "CJDLogger.h"
+#include "JSONWrapper.h"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 #include "GlobalNamespace/IDifficultyBeatmap.hpp"
 #include "GlobalNamespace/CustomDifficultyBeatmap.hpp"
@@ -46,6 +47,7 @@
 namespace CustomJSONData::v2 {
     class CustomBeatmapSaveData;
 }
+
 
 namespace CustomJSONData::v3::Constants {
     // worst naming scheme ever
@@ -109,8 +111,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, B
                       DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer, ::BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType color, ::GlobalNamespace::NoteCutDirection cutDirection, int angleOffset);
                       DECLARE_SIMPLE_DTOR();
 
-          public:
-          CustomDataOpt customData;
+      public:
+      DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, BeatmapSaveDataVersion3::BeatmapSaveData::BombNoteData,
@@ -118,21 +120,21 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, Be
       DECLARE_SIMPLE_DTOR();
 
       public:
-      std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+      DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion3::BeatmapSaveData::SliderData,
                       DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType, float headBeat, int headLine, int headLayer, float headControlPointLengthMultiplier, ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat, int tailLine, int tailLayer, float tailControlPointLengthMultiplier, ::GlobalNamespace::NoteCutDirection tailCutDirection, ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode);
                       DECLARE_SIMPLE_DTOR();
       public:
-      CustomDataOpt customData;
+      DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData, BeatmapSaveDataVersion3::BeatmapSaveData::BurstSliderData,
                       DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType, float headBeat, int headLine, int headLayer, ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat, int tailLine, int tailLayer, int sliceCount, float squishAmount);
                       DECLARE_SIMPLE_DTOR();
       public:
-      CustomDataOpt customData;
+      DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion3::BeatmapSaveData::ObstacleData,
@@ -141,7 +143,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ObstacleData, Be
 
 DECLARE_SIMPLE_DTOR();
       public:
-      CustomDataOpt customData;
+      DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventData,
@@ -152,6 +154,18 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, 
     public:
     CustomDataOpt customData;
 )
+
+namespace CustomJSONData::v3::Parser {
+    CustomBeatmapSaveData_BurstSliderData *DeserializeBurstSlider(rapidjson::Value const &val);
+    CustomBeatmapSaveData_SliderData *DeserializeSlider(rapidjson::Value const &val);
+
+    CustomBeatmapSaveData_ObstacleData *DeserializeObstacle(rapidjson::Value const &val);
+
+    CustomBeatmapSaveData_BombNoteData *DeserializeBombNote(rapidjson::Value const &val);
+    CustomBeatmapSaveData_ColorNoteData *DeserializeColorNote(rapidjson::Value const &val);
+
+    UnorderedEventCallback<v3::CustomBeatmapSaveData*> ParsedEvent;
+}
 
 namespace CustomJSONData {
     inline static std::optional<v3::CustomBeatmapSaveData*> GetBeatmapSaveData(GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap)

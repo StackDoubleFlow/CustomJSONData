@@ -201,7 +201,7 @@ static auto DeserializeRotation(rapidjson::Value const &val)
     return CustomJSONData::NewFast<BeatmapSaveData::RotationEventData*>(beat, executionTime, rotation);
 }
 
-static auto DeserializeColorNote(rapidjson::Value const &val) {
+CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColorNote(rapidjson::Value const &val) {
 
     float beat;
     int line;
@@ -244,12 +244,12 @@ static auto DeserializeColorNote(rapidjson::Value const &val) {
     }
 
     auto note = CustomBeatmapSaveData_ColorNoteData::New_ctor(beat, line, layer, color, cutDirection, angleOffset);
-    note->customData = CustomJSONData::JSONObjectOrNull(customData);
+    note->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
     return note;
 }
 
-static auto DeserializeBombNote(rapidjson::Value const &val) {
+CustomBeatmapSaveData_BombNoteData* CustomJSONData::v3::Parser::DeserializeBombNote(rapidjson::Value const &val) {
     float beat;
     int line;
     int layer;
@@ -276,12 +276,12 @@ static auto DeserializeBombNote(rapidjson::Value const &val) {
     }
 
     auto bomb = CustomBeatmapSaveData_BombNoteData::New_ctor(beat, line, layer);
-    bomb->customData = CustomJSONData::JSONObjectOrNull(data);
+    bomb->customData = CustomJSONData::JSONWrapperOrNull(data);
 
     return bomb;
 }
 
-static auto DeserializeObstacle(rapidjson::Value const &val) {
+CustomBeatmapSaveData_ObstacleData * CustomJSONData::v3::Parser::DeserializeObstacle(rapidjson::Value const &val) {
     float beat;
     int line;
     int layer;
@@ -323,11 +323,11 @@ static auto DeserializeObstacle(rapidjson::Value const &val) {
     }
 
     auto obstacle = CustomBeatmapSaveData_ObstacleData::New_ctor(beat, line, layer, duration, width, height);
-    obstacle->customData = CustomJSONData::JSONObjectOrNull(data);
+    obstacle->customData = CustomJSONData::JSONWrapperOrNull(data);
     return obstacle;
 }
 
-static auto DeserializeSlider(rapidjson::Value const &val) {
+CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(rapidjson::Value const &val) {
     BeatmapSaveData::NoteColorType color;
     float headBeat;
     int headLine;
@@ -412,13 +412,14 @@ static auto DeserializeSlider(rapidjson::Value const &val) {
             tailCutDirection,
             sliderMidAnchorMode);
 
-    slider->customData = CustomJSONData::JSONObjectOrNull(data);
+    slider->customData = CustomJSONData::JSONWrapperOrNull(data);
 
     return slider;
 }
 
 
-static auto DeserializeBurstSlider(rapidjson::Value const &val) {
+CustomJSONData::v3::CustomBeatmapSaveData_BurstSliderData*
+CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const &val) {
     BeatmapSaveData::NoteColorType color;
     float headBeat;
     int headLine;
@@ -491,7 +492,7 @@ static auto DeserializeBurstSlider(rapidjson::Value const &val) {
             sliceCount,
             squishAmount);
 
-    slider->customData = CustomJSONData::JSONObjectOrNull(data);
+    slider->customData = CustomJSONData::JSONWrapperOrNull(data);
 
     return slider;
 }
@@ -921,6 +922,8 @@ static auto DeserializeCustomEvent(rapidjson::Value const &val) {
 
 CustomJSONData::v3::CustomBeatmapSaveData *
 CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc) {
+    using namespace Parser;
+
     auto const& doc = *sharedDoc;
 
     SAFEPTR_VLIST(BeatmapSaveData::BpmChangeEventData*, bpmEvents);
@@ -1098,6 +1101,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     beatmap->doc = sharedDoc;
     beatmap->customEventsData = customEvents;
 
+    Parser::ParsedEvent.invoke(beatmap);
     return beatmap;
 }
 
@@ -1184,7 +1188,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
             auto newNote = CustomBeatmapSaveData_BombNoteData::New_ctor(n->time,
                                                                         n->lineIndex,
                                                                         (int)n->lineLayer);
-            newNote->customData = customN->customData;
+            newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
 
             bombNotes.push_back(newNote);
         } else {
@@ -1194,7 +1198,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                                                           GetNoteColorType(n->type),
                                                           n->cutDirection,
                                                           0);
-            newNote->customData = customN->customData;
+            newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
             colorNotes.push_back(newNote);
         }
     }
@@ -1213,7 +1217,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                 n->width,
                 GetHeightForObstacleType(n->type));
 
-        obstacle->customData = customN->customData;
+        obstacle->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
 
         obstacles.push_back(obstacle);
     }
@@ -1236,7 +1240,7 @@ CustomBeatmapSaveData *CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
                 n->tailCutDirection,
                 n->sliderMidAnchorMode);
 
-        slider->customData = customN->customData;
+        slider->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
 
         sliders.push_back(slider);
     }

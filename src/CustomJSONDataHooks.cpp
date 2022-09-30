@@ -612,7 +612,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                 data->get_width(),
                 data->get_height());
 
-        obstacle->customData = ToJsonWrapper(data->customData);
+        obstacle->customData = data->customData->GetCopy();
 
         return obstacle;
     });
@@ -691,7 +691,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Creating object list");
 
-    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataObjectItems(
+    std::vector<BeatmapSaveData::BeatmapSaveDataItem*> beatmapDataObjectItems;
+    beatmapDataObjectItems.reserve(
             beatmapSaveData->colorNotes->get_Count() +
             beatmapSaveData->bombNotes->get_Count() +
             beatmapSaveData->obstacles->get_Count() +

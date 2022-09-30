@@ -8,7 +8,16 @@ namespace CustomJSONData {
     inline v3::CustomDataOpt JSONObjectOrNull(v3::CustomDataOpt const& val) {
         if (!val || !val->get().IsObject()) return std::nullopt;
 
-        return std::cref(val);
+        return val;
+    }
+    inline JSONWrapper* JSONWrapperOrNull(v3::CustomDataOpt const& val) {
+        auto wrapper = JSONWrapper::New_ctor();
+
+        if (!val || !val->get().IsObject()) return wrapper;
+
+        wrapper->value = val;
+
+        return wrapper;
     }
 
     constexpr auto& BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion3::BeatmapSaveData::BeatmapSaveDataItem const* item) {

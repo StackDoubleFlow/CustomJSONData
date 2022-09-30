@@ -69,7 +69,7 @@ namespace CustomJSONData {
 
     constexpr CustomNoteData *
     CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer, ColorType colorType,
-                              NoteCutDirection cutDirection, v3::CustomDataOpt const &customData) {
+                              NoteCutDirection cutDirection, JSONWrapper* customData) {
         auto b = CustomNoteData::New_ctor(time,
                                           lineIndex,
                                           (NoteLineLayer) noteLineLayer,
@@ -85,13 +85,13 @@ namespace CustomJSONData {
                                           0.0f,
                                           1.0f);
 
-        b->customData = ToJsonWrapper(customData);
+        b->customData = customData->GetCopy();
 
         return b;
     }
 
     constexpr CustomNoteData *CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
-                                             v3::CustomDataOpt const &customData) {
+                                                       JSONWrapper* customData) {
         auto b = CustomNoteData::New_ctor(time,
                                           lineIndex,
                                           noteLineLayer,
@@ -107,7 +107,7 @@ namespace CustomJSONData {
                                           0.0f,
                                           1.0f);
 
-        b->customData = ToJsonWrapper(customData);
+        b->customData = customData->GetCopy();
 
         return b;
     }
@@ -118,7 +118,7 @@ namespace CustomJSONData {
                                               NoteLineLayer beforeJumpNoteLineLayer,
                                               ColorType colorType,
                                               NoteCutDirection cutDirection,
-                                              float cutSfxVolumeMultiplier, v3::CustomDataOpt const &customData) {
+                                              float cutSfxVolumeMultiplier, JSONWrapper* customData) {
         auto b = CustomNoteData::New_ctor(time,
                                           lineIndex,
                                           noteLineLayer,
@@ -134,7 +134,7 @@ namespace CustomJSONData {
                                           0,
                                           cutSfxVolumeMultiplier);
 
-        b->customData = ToJsonWrapper(customData);
+        b->customData = customData->GetCopy();
 
         return b;
     }
@@ -153,7 +153,7 @@ namespace CustomJSONData {
             NoteCutDirection tailCutDirection,
             int sliceCount,
             float squishAmount,
-            v3::CustomDataOpt const &customData) {
+            JSONWrapper* customData) {
         auto slider = CustomSliderData::New_ctor(
                 (SliderData::Type) SliderData::Type::Burst,
                 colorType,
@@ -176,7 +176,7 @@ namespace CustomJSONData {
                 (SliderMidAnchorMode) SliderMidAnchorMode::Straight,
                 sliceCount,
                 squishAmount);
-        slider->customData = ToJsonWrapper(customData);
+        slider->customData = customData->GetCopy();
 
         return slider;
     }
@@ -196,7 +196,7 @@ namespace CustomJSONData {
             float tailControlPointLengthMultiplier,
             NoteCutDirection tailCutDirection,
             SliderMidAnchorMode midAnchorMode,
-            v3::CustomDataOpt const &customData) {
+            JSONWrapper* customData) {
         auto slider = CustomSliderData::New_ctor(
                 (SliderData::Type) SliderData::Type::Normal,
                 colorType,
@@ -219,7 +219,7 @@ namespace CustomJSONData {
                 midAnchorMode,
                 0,
                 1.0f);
-        slider->customData = ToJsonWrapper(customData);
+        slider->customData = customData->GetCopy();
 
         return slider;
     }
