@@ -18,6 +18,8 @@ using namespace GlobalNamespace;
 using namespace BeatmapSaveDataVersion3;
 using namespace CustomJSONData::v3;
 
+UnorderedEventCallback<CustomJSONData::v3::CustomBeatmapSaveData*> CustomJSONData::v3::Parser::ParsedEvent;
+
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData);

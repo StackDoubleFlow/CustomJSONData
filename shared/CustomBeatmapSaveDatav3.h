@@ -164,7 +164,7 @@ namespace CustomJSONData::v3::Parser {
     CustomBeatmapSaveData_BombNoteData *DeserializeBombNote(rapidjson::Value const &val);
     CustomBeatmapSaveData_ColorNoteData *DeserializeColorNote(rapidjson::Value const &val);
 
-    UnorderedEventCallback<v3::CustomBeatmapSaveData*> ParsedEvent;
+    extern UnorderedEventCallback<v3::CustomBeatmapSaveData*> ParsedEvent;
 }
 
 namespace CustomJSONData {
