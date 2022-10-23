@@ -32,24 +32,28 @@ public:
     Paper::Logger::WaitForFlush();                                    \
     ::Logger::get().error("Uncaught RunMethodException! what(): %s", exc.what()); \
     exc.log_backtrace(); \
+    CJDLogger::Logger.Backtrace(100); \
     if (exc.ex) { \
         exc.rethrow(); \
-    } \
+    }                                         \
     SAFE_ABORT(); \
 } catch (::il2cpp_utils::exceptions::StackTraceException const& exc) { \
     ::Logger::get().error("Uncaught StackTraceException! what(): %s", exc.what());                  \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught StackTraceException! what(): {}", exc.what()); \
-    exc.log_backtrace(); \
+    exc.log_backtrace();                      \
+    CJDLogger::Logger.Backtrace(100); \
     SAFE_ABORT(); \
 } catch (::std::exception const& exc) { \
     ::Logger::get().error("Uncaught C++ exception! type name: %s, what(): %s", typeid(exc).name(), exc.what()); \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught C++ exception! type name: {}, what(): {}", typeid(exc).name(), exc.what()); \
-    Paper::Logger::WaitForFlush();                                    \
+    Paper::Logger::WaitForFlush();            \
+    CJDLogger::Logger.Backtrace(100); \
     ::il2cpp_utils::raise(exc); \
 } catch (...) {                         \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught, unknown C++ exception (not std::exception) with no known what() method!"); \
     Paper::Logger::WaitForFlush();                                    \
     ::Logger::get().error("Uncaught, unknown C++ exception (not std::exception) with no known what() method!"); \
+    CJDLogger::Logger.Backtrace(100);                                          \
     SAFE_ABORT(); \
 }
 

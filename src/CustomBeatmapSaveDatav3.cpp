@@ -5,6 +5,7 @@
 #include "VList.h"
 
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
+#include "GlobalNamespace/IndexFilter.hpp"
 #include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
 
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_SpecialEventsForKeyword.hpp"
@@ -595,6 +596,11 @@ static auto DeserializeIndexFilter(rapidjson::Value const &val) {
     int param0;
     int param1;
     bool reversed;
+    BeatmapSaveData::IndexFilterRandomType random;
+    int seed;
+    int chunks;
+    float limit;
+    BeatmapSaveData::IndexFilterLimitAlsoAffectsType limitAlsoAffectsType;
 
     for (auto const & it : val.GetObject()) {
         IT_HASH
@@ -614,9 +620,29 @@ static auto DeserializeIndexFilter(rapidjson::Value const &val) {
         IF_CHECK_HASH(r) {
             reversed = ParseBool(it.value);
         }
+
+        IF_CHECK_HASH(c) {
+            chunks = it.value.GetInt();
+        }
+
+        IF_CHECK_HASH(l) {
+            limit = it.value.GetFloat();
+        }
+
+        IF_CHECK_HASH(d) {
+            limitAlsoAffectsType = it.value.GetInt();
+        }
+
+        IF_CHECK_HASH(n) {
+            random = it.value.GetInt();
+        }
+
+        IF_CHECK_HASH(s) {
+            seed = it.value.GetInt();
+        }
     }
 
-    return CustomJSONData::NewFast<BeatmapSaveData::IndexFilter*>(type, param0, param1, reversed);
+    return CustomJSONData::NewFast<BeatmapSaveData::IndexFilter*>(type, param0, param1, reversed, random, seed, chunks, limit, limitAlsoAffectsType);
 }
 
 static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const &val) {

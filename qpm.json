@@ -4,7 +4,7 @@
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
-    "version": "0.17.0",
+    "version": "0.18.0",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
@@ -19,7 +19,7 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^3.12.0",
+      "versionRange": "=3.14.0",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -28,7 +28,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.25.0",
+      "versionRange": "^0.28.0",
       "additionalData": {}
     },
     {
@@ -59,6 +59,13 @@
     {
       "id": "cpp-semver",
       "versionRange": "^0.1.1",
+      "additionalData": {
+        "private": true
+      }
+    },
+    {
+      "id": "sombrero",
+      "versionRange": "^0.1.35",
       "additionalData": {
         "private": true
       }

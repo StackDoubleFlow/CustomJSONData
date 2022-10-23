@@ -14,9 +14,6 @@
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
 #include "GlobalNamespace/EnvironmentColorType.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroup.hpp"
-#include "GlobalNamespace/IIndexFilter.hpp"
-#include "GlobalNamespace/RangeIndexFilter.hpp"
-#include "GlobalNamespace/EnvironmentLightGroups_LightGroupData.hpp"
 #include "GlobalNamespace/LightColorBaseData.hpp"
 #include "GlobalNamespace/BeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightColorBeatmapEventDataBox.hpp"
@@ -28,6 +25,10 @@
 #include "GlobalNamespace/DefaultEnvironmentEvents_LightGroupEvent.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupFactory.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
+#include "GlobalNamespace/IndexFilter.hpp"
+#include "GlobalNamespace/LightGroupSO.hpp"
+#include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilter.hpp"
+#include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilterRandomType.hpp"
 
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
@@ -446,35 +447,42 @@ namespace CustomJSONData {
         }
     };
 
-    constexpr IIndexFilter *IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter *indexFilter, int groupSize) {
-        if (IndexFilter_GetFilterType(indexFilter) == BeatmapSaveData::IndexFilter::IndexFilterType::Division) {
-            int param = IndexFilter_GetParam0(indexFilter);
-            int param2 = IndexFilter_GetParam1(indexFilter);
-            auto num = (int) std::ceil((float) groupSize / (float) param);
-            if (IndexFilter_GetReversed(indexFilter)) {
-                int num2 = groupSize - num * param2 - 1;
-                return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<RangeIndexFilter*>(num2, std::max(0, num2 - num + 1)));
-            }
-            int num3 = num * param2;
-            return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<RangeIndexFilter*>(num3,
-                                                                               std::min(groupSize - 1,
-                                                                                        num3 + num - 1)));
-        } else {
-            if (IndexFilter_GetFilterType(indexFilter) != BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset) {
+    constexpr IndexFilter *IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter *indexFilter, int groupSize) {
+        int num = (indexFilter->c == 0) ? 1 : std::ceil((float)groupSize / (float)indexFilter->c);
+        int num2 = std::ceil((float)groupSize / (float)num);
+        auto type = indexFilter->f;
+        if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::Division)
+        {
+            if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset)
+            {
                 return nullptr;
             }
-            int param3 = IndexFilter_GetParam0(indexFilter);
-            int param4 = IndexFilter_GetParam1(indexFilter);
-            int num4 = groupSize - param3;
-            if (num4 <= 0) {
-                throw std::runtime_error("Argument out of range for index converter!");
+            int param = indexFilter->p;
+            int param2 = indexFilter->t;
+            int num3 = num2 - param;
+            if (num3 <= 0)
+            {
+                throw il2cpp_utils::exceptions::StackTraceException("ArgumentOutOfRangeException");
             }
-            int count = (param4 == 0) ? 1 : (int) std::ceil((float) num4 / (float) param4);
-            if (IndexFilter_GetReversed(indexFilter)) {
-                return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<BaseIndexFilter*>(groupSize - 1 - param3, -param4,
-                                                                                  count));
+            int count = (param2 == 0) ? 1 : std::ceil((float)num3 / (float)param2);
+            if (indexFilter->r)
+            {
+                return CustomJSONData::NewFast<IndexFilter*>(num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
             }
-            return reinterpret_cast<IIndexFilter *>(CustomJSONData::NewFast<BaseIndexFilter*>(param3, param4, count));
+            return CustomJSONData::NewFast<IndexFilter*>(param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+        }
+        else
+        {
+            int param3 = indexFilter->p;
+            int param4 = indexFilter->t;
+            int num4 = std::ceil((float)num2 / (float)param3);
+            if (indexFilter->r)
+            {
+                int num5 = num2 - num4 * param4 - 1;
+                return CustomJSONData::NewFast<IndexFilter*>(num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+            }
+            int num6 = num4 * param4;
+            return CustomJSONData::NewFast<IndexFilter*>(num6, std::min(num2 - 1, num6 + num4 - 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
         }
     }
 
@@ -509,7 +517,7 @@ namespace CustomJSONData {
             this->lightGroups = lightGroups;
             dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox *>(
                     [](BeatmapSaveData::LightColorEventBox *saveData,
-                       EnvironmentLightGroups::LightGroupData *lightGroupData) {
+                       LightGroupSO *lightGroupData) {
                         auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
                         auto saveDataList = reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData *> *>(saveData->e);
                         VList<LightColorBaseData *> list(saveDataList->get_Count());
@@ -532,7 +540,7 @@ namespace CustomJSONData {
 
             dataConvertor.AddConverter<BeatmapSaveData::LightRotationEventBox *>(
                     [](BeatmapSaveData::LightRotationEventBox *saveData,
-                       EnvironmentLightGroups::LightGroupData *lightGroupData) {
+                       LightGroupSO *lightGroupData) {
                         auto indexFilter = IndexFilterConvertor_Convert(saveData->f,
                                                                         lightGroupData->numberOfElements);
                         auto collection = reinterpret_cast<System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData *> *>(saveData->get_lightRotationBaseDataList());
@@ -579,59 +587,8 @@ namespace CustomJSONData {
                                                       reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox *> *>(list.getInner()));
         }
 
-        CppConverter<BeatmapEventDataBox *, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *, EnvironmentLightGroups::LightGroupData *> dataConvertor;
+        CppConverter<BeatmapEventDataBox *, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox *, LightGroupSO *> dataConvertor;
 
         EnvironmentLightGroups *lightGroups;
     };
-
-    struct BeatmapEventDataBoxGroupListsCpp {
-        std::unordered_map<int, BeatmapEventDataBoxGroupList*> _beatmapEventDataBoxGroupListDict;
-
-        BeatmapData *_beatmapData;
-        GlobalNamespace::IBeatToTimeConvertor* _beatToTimeConvertor;
-        bool _updateBeatmapDataOnInsert;
-
-        BeatmapEventDataBoxGroupListsCpp(BeatmapData *beatmapData, GlobalNamespace::IBeatToTimeConvertor* const &beatToTimeConvertor,
-                                         bool updateBeatmapDataOnInsert) : _beatmapData(beatmapData),
-                                                                           _beatToTimeConvertor(beatToTimeConvertor),
-                                                                           _updateBeatmapDataOnInsert(
-                                                                                   updateBeatmapDataOnInsert) {}
-
-        auto Insert(int groupId, BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup) {
-            auto& beatmapEventDataBoxGroupList = _beatmapEventDataBoxGroupListDict[groupId];
-
-            if (!beatmapEventDataBoxGroupList) {
-                beatmapEventDataBoxGroupList = CustomJSONData::NewFast<BeatmapEventDataBoxGroupList*>(groupId, this->_beatmapData,
-                                                                                this->_beatToTimeConvertor);
-                beatmapEventDataBoxGroupList->updateBeatmapDataOnInsert = _updateBeatmapDataOnInsert;
-            }
-
-            return beatmapEventDataBoxGroupList->Insert(beatmapEventDataBoxGroup);
-        }
-
-        auto SyncWithBeatmapData() const {
-            for (auto const& [groupid, list] : _beatmapEventDataBoxGroupListDict) {
-
-            }
-        }
-
-        auto BeatmapEventDataBoxGroupList_SyncWithBeatmapData() const {
-
-        }
-    };
-
-    void DefaultEnvironmentEventsFactory_InsertDefaultEnvironmentEventsLightGroups(DefaultEnvironmentEvents * defaultEnvironmentEvents, EnvironmentLightGroups* environmentLightGroups, BeatmapEventDataBoxGroupListsCpp& beatmapEventDataBoxGroupLists) {
-        if (defaultEnvironmentEvents && !defaultEnvironmentEvents->get_isEmpty() && defaultEnvironmentEvents->lightGroupEvents.convert() != nullptr)
-        {
-            for (auto lightGroupEvent : defaultEnvironmentEvents->lightGroupEvents)
-            {
-                auto dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->groupId);
-                if (dataForGroup != nullptr)
-                {
-                    BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(0.0f, dataForGroup->numberOfElements, lightGroupEvent->environmentColorType, lightGroupEvent->brightness, lightGroupEvent->rotationX, lightGroupEvent->rotationY);
-                    beatmapEventDataBoxGroupLists.Insert(dataForGroup->groupId, beatmapEventDataBoxGroup);
-                }
-            }
-        }
-    }
 }
