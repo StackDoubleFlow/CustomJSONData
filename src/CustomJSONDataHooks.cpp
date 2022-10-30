@@ -815,11 +815,10 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
     auto bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<BeatmapDataLoader::BpmTimeProcessor*>(startBpm, bpmEvents);
+    bpmTimeProcessorIl2cpp->currentBpmChangesDataIdx = bpmTimeProcessor.currentBpmChangesDataIdx;
+
     auto beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(beatmapData, reinterpret_cast<IBeatToTimeConvertor *>(bpmTimeProcessorIl2cpp), false);
     if (flag3) {
-        auto eventBoxGroupConvertor = CustomJSONData::NewFast<BeatmapDataLoader::EventBoxGroupConvertor *>(
-                environmentLightGroups);
-
         EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
         std::vector<BeatmapSaveData::EventBoxGroup *> eventBoxes;

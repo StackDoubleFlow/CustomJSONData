@@ -592,15 +592,15 @@ static auto DeserializeColorBoostEventData(rapidjson::Value const &val) {
 }
 
 static auto DeserializeIndexFilter(rapidjson::Value const &val) {
-    BeatmapSaveData::IndexFilter::IndexFilterType type;
-    int param0;
-    int param1;
-    bool reversed;
-    BeatmapSaveData::IndexFilterRandomType random;
-    int seed;
-    int chunks;
-    float limit;
-    BeatmapSaveData::IndexFilterLimitAlsoAffectsType limitAlsoAffectsType;
+    BeatmapSaveData::IndexFilter::IndexFilterType type = 0;
+    int param0 = 0;
+    int param1 = 0;
+    bool reversed = false;
+    BeatmapSaveData::IndexFilterRandomType random = 0;
+    int seed = 0;
+    int chunks = 0;
+    float limit = 0;
+    BeatmapSaveData::IndexFilterLimitAlsoAffectsType limitAlsoAffectsType = 0;
 
     for (auto const & it : val.GetObject()) {
         IT_HASH

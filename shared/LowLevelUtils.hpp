@@ -24,7 +24,8 @@ namespace CustomJSONData {
     template <class T, class... TArgs>
     // Bonus points for a requires clause here for classof(T)
     T NewFast(TArgs &&...args) {
-        return NewFastKlass<T, TArgs...>(classof(T), std::forward<TArgs>(args)...);
+        static auto klass = classof(T);
+        return NewFastKlass<T, TArgs...>(klass, std::forward<TArgs>(args)...);
     }
 
     // Declare a method with name that will be called on construction.

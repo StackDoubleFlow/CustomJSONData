@@ -260,13 +260,17 @@ namespace CustomJSONData {
 
     constexpr EnvironmentColorType
     ConvertColorType(BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType environmentColorType) {
-        if (environmentColorType == BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color0) {
-            return EnvironmentColorType::Color0;
+        switch (environmentColorType)
+        {
+            case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color0:
+                return EnvironmentColorType::Color0;
+            case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color1:
+                return EnvironmentColorType::Color1;
+            case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::ColorWhite:
+                return EnvironmentColorType::ColorW;
+            default:
+                return EnvironmentColorType::Color0;
         }
-        if (environmentColorType != BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color1) {
-            return EnvironmentColorType::Color0;
-        }
-        return EnvironmentColorType::Color1;
     }
 
     constexpr BeatmapEventTransitionType
@@ -422,67 +426,68 @@ namespace CustomJSONData {
         }
 
         constexpr float ConvertBeatToTime(float beat) {
-//            while (currentBpmChangesDataIdx > 0)
-//            {
-//                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
-//                {
-//                    break;
-//                }
-//                currentBpmChangesDataIdx--;
-//            }
-//            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 && bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
-//            {
-//                currentBpmChangesDataIdx++;
-//            }
-//            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
-//            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
-//
-            int num = 0;
-            while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
-                num++;
+            while (currentBpmChangesDataIdx > 0)
+            {
+                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
+                {
+                    break;
+                }
+                currentBpmChangesDataIdx--;
             }
-            auto const &bpmChangeData = bpmChangeDataList[num];
-            return bpmChangeData.bpmChangeStartTime +
-                   (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 && bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
+            {
+                currentBpmChangesDataIdx++;
+            }
+            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
+            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+
+//            int num = 0;
+//            while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
+//                num++;
+//            }
+//            auto const &bpmChangeData = bpmChangeDataList[num];
+//            return bpmChangeData.bpmChangeStartTime +
+//                   (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
         }
     };
 
     constexpr IndexFilter *IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter *indexFilter, int groupSize) {
-        int num = (indexFilter->c == 0) ? 1 : std::ceil((float)groupSize / (float)indexFilter->c);
+        int num = (indexFilter->get_chunks() == 0) ? 1 : (int) std::ceil((float)groupSize / (float)indexFilter->get_chunks());
         int num2 = std::ceil((float)groupSize / (float)num);
-        auto type = indexFilter->f;
+        auto type = indexFilter->get_type();
         if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::Division)
         {
             if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset)
             {
                 return nullptr;
             }
-            int param = indexFilter->p;
-            int param2 = indexFilter->t;
+            int param = indexFilter->get_param0();
+            int param2 = indexFilter->get_param1();
             int num3 = num2 - param;
             if (num3 <= 0)
             {
+                CJDLogger::Logger.fmtLog<LogLevel::ERR>("Error {}!", num3);
                 throw il2cpp_utils::exceptions::StackTraceException("ArgumentOutOfRangeException");
             }
-            int count = (param2 == 0) ? 1 : std::ceil((float)num3 / (float)param2);
-            if (indexFilter->r)
+            int count = (param2 == 0) ? 1 : (int) std::ceil((float)num3 / (float)param2);
+            if (indexFilter->get_reversed())
             {
-                return CustomJSONData::NewFast<IndexFilter*>(num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+                return CustomJSONData::NewFast<IndexFilter*>(num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(), indexFilter->get_seed(), num, indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
             }
-            return CustomJSONData::NewFast<IndexFilter*>(param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+            return CustomJSONData::NewFast<IndexFilter*>(param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(), indexFilter->get_seed(), num, indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
         }
         else
         {
-            int param3 = indexFilter->p;
-            int param4 = indexFilter->t;
+            int param3 = indexFilter->get_param0();
+            int param4 = indexFilter->get_param1();
             int num4 = std::ceil((float)num2 / (float)param3);
-            if (indexFilter->r)
+            if (indexFilter->get_reversed())
             {
                 int num5 = num2 - num4 * param4 - 1;
-                return CustomJSONData::NewFast<IndexFilter*>(num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+                return CustomJSONData::NewFast<IndexFilter*>(num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(), indexFilter->get_seed(), num, indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
             }
             int num6 = num4 * param4;
-            return CustomJSONData::NewFast<IndexFilter*>(num6, std::min(num2 - 1, num6 + num4 - 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->n, indexFilter->s, num, indexFilter->l, (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->d);
+            return CustomJSONData::NewFast<IndexFilter*>(num6, std::min(num2 - 1, num6 + num4 - 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(), indexFilter->get_seed(), num, indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
         }
     }
 
@@ -569,7 +574,7 @@ namespace CustomJSONData {
 
         BeatmapEventDataBoxGroup * Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup *eventBoxGroupSaveData) const {
             auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
-            if (dataForGroup == nullptr) {
+            if (dataForGroup == nullptr || dataForGroup->m_CachedPtr.m_value == nullptr) {
                 return nullptr;
             }
 
