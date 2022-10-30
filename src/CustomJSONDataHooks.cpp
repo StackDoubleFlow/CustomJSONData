@@ -926,7 +926,7 @@ void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customInfoD
         CJDLogger::Logger.fmtLog<LogLevel::INF>("No custom diff found");
     }
 
-    v3::CustomDataOptUTF16 levelCustomData = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(diff)->customData->get();
+    v3::CustomDataOptUTF16 levelCustomData = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(diff)->customData;
     if (levelCustomData && !levelCustomData->get().IsNull()) {
         customBeatmapData->levelCustomData = levelCustomData;
     }
