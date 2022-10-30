@@ -903,7 +903,7 @@ void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customInfoD
     auto *customBeatmapData = il2cpp_utils::cast<v3::CustomBeatmapSaveData>(beatmapData);
 
 
-    if (customInfoData->customData) {
+    if (customInfoData->customData && !customInfoData->customData->get().IsNull()) {
         customBeatmapData->beatmapCustomData = customInfoData->customData->get();
     }
 
@@ -927,7 +927,9 @@ void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customInfoD
     }
 
     v3::CustomDataOptUTF16 levelCustomData = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(diff)->customData->get();
-    customBeatmapData->levelCustomData = levelCustomData;
+    if (levelCustomData && !levelCustomData->get().IsNull()) {
+        customBeatmapData->levelCustomData = levelCustomData;
+    }
     CJDLogger::Logger.fmtLog<LogLevel::INF>("Done with beatmap info.dat");
     )
 }
