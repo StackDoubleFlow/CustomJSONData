@@ -426,28 +426,30 @@ namespace CustomJSONData {
         }
 
         constexpr float ConvertBeatToTime(float beat) {
-            while (currentBpmChangesDataIdx > 0)
-            {
-                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
-                {
-                    break;
-                }
-                currentBpmChangesDataIdx--;
-            }
-            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 && bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
-            {
-                currentBpmChangesDataIdx++;
-            }
-            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
-            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
-
-//            int num = 0;
-//            while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
-//                num++;
+//            while (currentBpmChangesDataIdx > 0)
+//            {
+//                if (currentBpmChangesDataIdx == 0) break;
+//                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
+//                {
+//                    break;
+//                }
+//                currentBpmChangesDataIdx--;
 //            }
-//            auto const &bpmChangeData = bpmChangeDataList[num];
-//            return bpmChangeData.bpmChangeStartTime +
-//                   (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+//            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 && bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
+//            {
+//                currentBpmChangesDataIdx++;
+//            }
+//            currentBpmChangesDataIdx = std::min((int) bpmChangeDataList.size() - 1, currentBpmChangesDataIdx);
+//            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
+//            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+
+            int num = 0;
+            while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
+                num++;
+            }
+            auto const &bpmChangeData = bpmChangeDataList[num];
+            return bpmChangeData.bpmChangeStartTime +
+                   (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
         }
     };
 
