@@ -61,7 +61,7 @@ void CustomBeatmapSaveData::ctor(
         ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords *basicEventTypesWithKeywords,
         bool useNormalEventsAsCompatibleEvents) {
     INVOKE_CTOR();
-    static auto *ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 14);
+    static auto *ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 15);
     CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, bpmEvents,
                                          rotationEvents,
                                          colorNotes,
