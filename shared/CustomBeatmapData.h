@@ -96,8 +96,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
       }
 
       template<class T>
-      std::vector<T> GetBeatmapItemsCpp() {
-          auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T))));
+      std::vector<T> GetBeatmapItemsCpp(GlobalNamespace::BeatmapDataItem::BeatmapDataItemType type) {
+          auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
 
           if (!list) return {};
 
