@@ -12,7 +12,7 @@
 #include "GlobalNamespace/WaypointData.hpp"
 #include "GlobalNamespace/BasicBeatmapEventData.hpp"
 #include "GlobalNamespace/SliderData.hpp"
-#include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
+#include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "System/Object.hpp"
 #include "System/Collections/IEnumerable.hpp"
@@ -30,15 +30,61 @@
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData,
                       DECLARE_FASTER_CTOR(ctor, int numberOfLines);
       DECLARE_SIMPLE_DTOR();
-
-
       DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
 
       public:
+      void AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
+      void AddBeatmapObjectDataInOrderOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
+      void InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData * beatmapObjectData);
+      void InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData * beatmapObjectData);
+
+      inline CustomBeatmapData* GetCopyOverride(GlobalNamespace::BeatmapData* orig) {
+          return GetFilteredCopyOverride([](auto i) constexpr {return i;});
+      }
+
+      template<typename F>
+      CustomBeatmapData* GetFilteredCopyOverride(F filter) {
+
+          isCreatingFilteredCopy = true;
+
+          CustomBeatmapData *copy = BaseCopy();
+
+
+          auto linkedList = allBeatmapData->get_items();
+
+          for (auto node = linkedList->get_First(); node != nullptr; node = LinkedListNode_1_get_Next(node)) {
+              auto beatmapDataItem = node->item;
+
+              if (!beatmapDataItem) continue;
+
+              beatmapDataItem = filter(beatmapDataItem->GetCopy());
+
+              if (!beatmapDataItem) continue;
+
+              if (auto event = il2cpp_utils::try_cast<GlobalNamespace::BeatmapEventData>(beatmapDataItem)) {
+              copy->InsertBeatmapEventDataInOrder(*event);
+             }
+
+              if (auto object = il2cpp_utils::try_cast<GlobalNamespace::BeatmapObjectData>(beatmapDataItem)) {
+                copy->AddBeatmapObjectDataInOrder(*object);
+              }
+
+              if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
+                copy->InsertCustomEventDataInOrder(*customEvent);
+              }
+          }
+
+
+          isCreatingFilteredCopy = false;
+
+          return copy;
+      }
+
       static System::Type* GetCustomType(Il2CppObject* obj);
       static System::Type* GetCustomType(Il2CppClass* obj);
 
       void InsertCustomEventData(CustomEventData* customEventData);
+      void InsertCustomEventDataInOrder(CustomEventData* customEventData);
 
       template<typename T>
       static constexpr System::Collections::Generic::LinkedListNode_1<T>* LinkedListNode_1_get_Next(System::Collections::Generic::LinkedListNode_1<T>* self) {
@@ -51,7 +97,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
 
       template<class T>
       std::vector<T> GetBeatmapItemsCpp() {
-          auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerType->GetList(GetCustomType(classof(T))));
+          auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T))));
 
           if (!list) return {};
 
@@ -88,7 +134,12 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
     return items;
   }
 
-        DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
+
+  std::vector<GlobalNamespace::BeatmapObjectData*> beatmapObjectDatas;
+  std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas ;
+  std::vector<CustomEventData*> customEventDatas;
+
+    DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);

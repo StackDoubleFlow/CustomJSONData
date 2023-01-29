@@ -1,6 +1,6 @@
 #include "CustomBeatmapData.h"
 
-#include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
+#include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "GlobalNamespace/SortedList_2.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
@@ -26,11 +26,63 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 
     INVOKE_CTOR();
 
-    beatmapDataItemsPerType->items->Add(csTypeOf(CustomEventData*),
+    beatmapDataItemsPerTypeAndId->items->Add(csTypeOf(CustomEventData*),
                                         reinterpret_cast<ISortedList_1<BeatmapDataItem *> *>(SortedList_2<CustomEventData *, BeatmapDataItem *>::New_ctor(
                                                 nullptr)));
 }
 
+void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData *beatmapObjectData) {
+    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1);
+
+    beatmapObjectDatas.emplace_back(beatmapObjectData);
+    PAPER_IL2CPP_CATCH_HANDLER(
+            il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
+    )
+}
+
+void
+CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataInOrderOverride(GlobalNamespace::BeatmapObjectData *beatmapObjectData) {
+    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectDataInOrder", 1);
+
+    beatmapObjectDatas.emplace_back(beatmapObjectData);
+    PAPER_IL2CPP_CATCH_HANDLER(
+            il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
+    )
+}
+
+
+void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData *beatmapObjectData) {
+    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
+
+    beatmapEventDatas.emplace_back(beatmapObjectData);
+    PAPER_IL2CPP_CATCH_HANDLER(
+            il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
+    )
+}
+
+void
+CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData *beatmapEventData) {
+    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
+
+    beatmapEventDatas.emplace_back(beatmapEventData);
+    PAPER_IL2CPP_CATCH_HANDLER(
+            il2cpp_utils::RunMethodRethrow(this, base, beatmapEventData);
+    )
+}
+
+
+void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {
+    customEventDatas.emplace_back(customEventData);
+    auto node = beatmapDataItemsPerTypeAndId->InsertItem(customEventData);
+    if (updateAllBeatmapDataOnInsert) {
+        InsertToAllBeatmapData(customEventData, node);
+    }
+}
+
+void CustomJSONData::CustomBeatmapData::InsertCustomEventDataInOrder(CustomEventData *customEventData) {
+    InsertCustomEventData(customEventData);
+    InsertToAllBeatmapData(customEventData, nullptr); // default is null
+}
 
 System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppObject *obj) {
     return GetCustomType(obj->klass);
@@ -56,10 +108,6 @@ System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass *obj)
     return typePtr;
 }
 
-void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {
-    beatmapDataItemsPerType->InsertItem(customEventData);
-    allBeatmapData->Insert(customEventData);
-}
 
 CustomJSONData::CustomBeatmapData *CustomJSONData::CustomBeatmapData::BaseCopy() {
     auto copy = CustomJSONData::CustomBeatmapData::New_ctor(numberOfLines);

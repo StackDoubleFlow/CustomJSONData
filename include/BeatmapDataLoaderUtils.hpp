@@ -3,9 +3,8 @@
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
-#include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
+#include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
-#include "GlobalNamespace/BeatmapDataSortedListForTypes_1.hpp"
 #include "GlobalNamespace/BPMChangeBeatmapEventData.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
 #include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
@@ -287,14 +286,14 @@ namespace CustomJSONData {
         }
     }
 
-    constexpr LightRotationBeatmapEventData::Axis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis axis) {
+    constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis axis) {
         if (axis == BeatmapSaveDataVersion3::BeatmapSaveData::Axis::X) {
-            return LightRotationBeatmapEventData::Axis::X;
+            return LightAxis::X;
         }
         if (axis != BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Y) {
-            return LightRotationBeatmapEventData::Axis::X;
+            return LightAxis::X;
         }
-        return LightRotationBeatmapEventData::Axis::Y;
+        return LightAxis::Y;
     }
 
     constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::EaseType easeType) {
