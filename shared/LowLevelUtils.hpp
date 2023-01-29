@@ -8,20 +8,35 @@
 /// Might PR to bs-hooks sometime later
 namespace CustomJSONData {
 
+
+    template<class T, class... TArgs>
+    concept CtorArgs = requires(T t, TArgs&&... args) {
+        { T::New_ctor(std::forward<TArgs>(args)...) };
+    };
+
     // Faster allocation with method cache
-    template <class T, class... TArgs>
+    template<class T, class... TArgs>
     // Bonus points for a requires clause here for classof(T)
-    T NewFastKlass(Il2CppClass* klass, TArgs &&...args)
-    {
+    T NewFastKlass(Il2CppClass *klass, TArgs &&...args) {
 //        return CRASH_UNLESS(il2cpp_utils::New<T, il2cpp_utils::CreationType::Temporary, TArgs...>(klass, std::forward<TArgs>(args)...));
-        static auto ctor = CRASH_UNLESS(il2cpp_utils::FindMethod(klass, ".ctor", il2cpp_utils::ExtractIndependentType<TArgs>()...));
+        static auto ctor = CRASH_UNLESS(
+                il2cpp_utils::FindMethod(klass, ".ctor", il2cpp_utils::ExtractIndependentType<TArgs>()...));
         auto *obj = CRASH_UNLESS(il2cpp_functions::object_new(klass));
         CRASH_UNLESS(il2cpp_utils::RunMethodUnsafe(obj, ctor, std::forward<TArgs>(args)...));
         return reinterpret_cast<T>(obj);
     }
 
     // Faster allocation with method cache
-    template <class T, class... TArgs>
+    template<class T, class... TArgs>
+    // Bonus points for a requires clause here for classof(T)
+    T NewFastUnsafe(TArgs &&...args) {
+        static auto klass = classof(T);
+        return NewFastKlass<T, TArgs...>(klass, std::forward<TArgs>(args)...);
+    }
+
+    // Faster allocation with method cache
+    template<class T, class... TArgs>
+    requires(CtorArgs<std::remove_pointer_t<T>, TArgs...>)
     // Bonus points for a requires clause here for classof(T)
     T NewFast(TArgs &&...args) {
         static auto klass = classof(T);

@@ -296,7 +296,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
             int lineIndex = waypoint_json["_lineIndex"].GetInt();
             NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
             OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
-            auto waypoint = CustomJSONData::NewFast<BeatmapSaveData::WaypointData*>(time, lineIndex, lineLayer, offsetDirection);
+            auto waypoint = CustomJSONData::NewFastUnsafe<BeatmapSaveData::WaypointData*>(time, lineIndex, lineLayer, offsetDirection);
             waypoints.push_back(waypoint);
         }
     }
@@ -331,11 +331,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                 }
 
                 specialEventsKeywordFiltersList.push_back(
-                        CustomJSONData::NewFast<BeatmapSaveData::SpecialEventsForKeyword*>(keyword_il2cpp, *specialEvents));
+                        CustomJSONData::NewFastUnsafe<BeatmapSaveData::SpecialEventsForKeyword*>(keyword_il2cpp, *specialEvents));
             }
         }
     }
-    auto specialEventsKeywordFilters = CustomJSONData::NewFast<BeatmapSaveData::SpecialEventKeywordFiltersData*>(
+    auto specialEventsKeywordFilters = CustomJSONData::NewFastUnsafe<BeatmapSaveData::SpecialEventKeywordFiltersData*>(
             *specialEventsKeywordFiltersList);
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
