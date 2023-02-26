@@ -871,13 +871,16 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         std::vector<BeatmapSaveData::EventBoxGroup *> eventBoxes;
         eventBoxes.reserve(
                 beatmapSaveData->lightColorEventBoxGroups->get_Count() +
-                beatmapSaveData->lightRotationEventBoxGroups->get_Count()
+                beatmapSaveData->lightRotationEventBoxGroups->get_Count() + 
+                beatmapSaveData->lightTranslationEventBoxGroups->get_Count()
         );
 
         CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightColorEventBoxGroups handling events");
         addAllToVector2(eventBoxes, beatmapSaveData->lightColorEventBoxGroups);
         CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightRotationEventBoxGroups handling events");
         addAllToVector2(eventBoxes, beatmapSaveData->lightRotationEventBoxGroups);
+        CJDLogger::Logger.fmtLog<LogLevel::DBG>("box group lightTranslationEventBoxGroups handling events");
+        addAllToVector2(eventBoxes, beatmapSaveData->lightTranslationEventBoxGroups);
 
         cleanAndSort(eventBoxes);
 
@@ -928,6 +931,10 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     beatmapData->ProcessRemainingData();
 
     profile.mark("Processed processed remaining data");
+
+    beatmapData->ProcessAndSortBeatmapData();
+
+    profile.mark("Processed and sorted beatmap data");
 
     profile.endTimer();
     profile.printMarks(CJDLogger::Logger.tag);
