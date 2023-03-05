@@ -1,6 +1,11 @@
 {
   "sharedDir": "shared",
   "dependenciesDir": "extern",
+  "workspace": {
+    "scripts": {
+      "build": ["pwsh ./build.ps1"]
+    }
+  },
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
