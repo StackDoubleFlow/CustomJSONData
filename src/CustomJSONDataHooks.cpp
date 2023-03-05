@@ -398,8 +398,7 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
 
     auto node = list->Insert(item);
     // Remove to avoid exception
-    self->itemToNodeMap->Remove(item);
-    self->itemToNodeMap->Add(item, node);
+    self->itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
 
     return node;
 }
