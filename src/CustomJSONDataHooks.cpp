@@ -91,17 +91,22 @@ using namespace BeatmapSaveDataVersion3;
 
 v3::CustomBeatmapSaveData *cachedSaveData;
 
-#define MAKE_HOOK_OVERRIDE_1PARAM(name, method, Base, Child, ret, ParamT1, param1) \
-ret name##__override(Child* self, ParamT1 param1);                                                                                     \
-MAKE_HOOK_MATCH(name, method, ret, Base* self, ParamT1 param1) \
+#define MAKE_HOOK_OVERRIDE_1PARAM(name, method, Base, Child, ParamT1, param1) \
+void name##__override(Child* self, ParamT1 param1);                                 \
+thread_local bool name##_short_circuit = false; /* This is done to ensure that the overriden method does not recursively call itself */  \
+MAKE_HOOK_MATCH(name, method, void, Base* self, ParamT1 param1) \
 { \
-  if (auto cast = il2cpp_utils::try_cast<Child>(self)) {                                                            \
-     return name##__override(*cast, param1);                                                                                                               \
+  auto cast = il2cpp_utils::try_cast<Child>(self);                                                                            \
+  if (cast && !name##_short_circuit) {  \
+     name##_short_circuit = true;\
+     name##__override(*cast, param1);   \
+     name##_short_circuit = false;  \
+     return; \
   } else {                                                                                                                                       \
     return name(self, param1);                                                                                                                                               \
   }\
 } \
-ret name##__override(Child* self, ParamT1 param1)
+void name##__override(Child* self, ParamT1 param1)
 
 // This is to prevent issues with string limits
 std::string to_utf8(std::u16string_view view) {
@@ -133,7 +138,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapD
     static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
     if (self->klass == CustomBeatmapDataKlass) {
-        return reinterpret_cast<CustomBeatmapData *>(self)->GetCopy();
+        return reinterpret_cast<CustomBeatmapData *>(self)->GetCopyOverride();
     }
 
     return BeatmapData_GetCopy(self);
@@ -365,22 +370,22 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, BeatmapData,
-                          CustomBeatmapData, void, BeatmapObjectData*, item) {
+                          CustomBeatmapData, BeatmapObjectData*, item) {
     self->AddBeatmapObjectDataOverride(item);
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectDataInOrder, &BeatmapData::AddBeatmapObjectDataInOrder, BeatmapData,
-                          CustomBeatmapData, void, BeatmapObjectData*, item) {
+                          CustomBeatmapData, BeatmapObjectData*, item) {
     self->AddBeatmapObjectDataInOrderOverride(item);
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, BeatmapData,
-                          CustomBeatmapData, void, BeatmapEventData*, item) {
+                          CustomBeatmapData, BeatmapEventData*, item) {
     self->InsertBeatmapEventData(item);
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventDataInOrder, &BeatmapData::InsertBeatmapEventDataInOrder, BeatmapData,
-                          CustomBeatmapData, void, BeatmapEventData*, item) {
+                          CustomBeatmapData, BeatmapEventData*, item) {
     self->InsertBeatmapEventDataInOrder(item);
 }
 

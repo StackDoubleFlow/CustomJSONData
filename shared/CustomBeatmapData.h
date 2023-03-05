@@ -38,12 +38,12 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
       void InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData * beatmapObjectData);
       void InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData * beatmapObjectData);
 
-      inline CustomBeatmapData* GetCopyOverride(GlobalNamespace::BeatmapData* orig) {
+      inline CustomBeatmapData* GetCopyOverride() {
           return GetFilteredCopyOverride([](auto i) constexpr {return i;});
       }
 
       template<typename F>
-      CustomBeatmapData* GetFilteredCopyOverride(F filter) {
+      CustomBeatmapData* GetFilteredCopyOverride(F&& filter) {
 
           isCreatingFilteredCopy = true;
 
