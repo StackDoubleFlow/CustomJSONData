@@ -395,7 +395,10 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem *> *self, BeatmapDataItem *item) {
     auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->subtypeIdentifier);
 
+
     auto node = list->Insert(item);
+    // Remove to avoid exception
+    self->itemToNodeMap->Remove(item);
     self->itemToNodeMap->Add(item, node);
 
     return node;
