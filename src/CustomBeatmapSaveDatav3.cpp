@@ -1026,7 +1026,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
 
                                 // translation float
                                 IF_CHECK_HASH(t) {
-                                    translation = it.value.GetInt();
+                                    translation = it.value.GetFloat();
                                 }
                             }
 
