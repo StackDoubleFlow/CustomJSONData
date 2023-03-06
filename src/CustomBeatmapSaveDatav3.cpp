@@ -947,7 +947,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
                 BeatmapSaveData::EventBox::DistributionParamType gapDistributionParamType;
                 bool gapDistributionShouldAffectFirstBaseEvent;
                 BeatmapSaveData::Axis axis;
-                bool flipRotation;
+                bool flipTranslation;
                 EaseType gapDistributionEaseType;
                 SAFEPTR_VLIST(BeatmapSaveData::LightTranslationBaseData*, lightTranslationBaseDataList );
 
@@ -965,30 +965,37 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
                     IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParamType) {
                         beatDistributionParamType = it.value.GetInt();
                     }
-
+                    // gapDistributionParam float
                     IF_CHECK_HASH(s) {
                         gapDistributionParam = it.value.GetFloat();
                     }
 
+                    // gapDistributionParamType (1 - wave, 2 - step)
                     IF_CHECK_HASH(t) {
                         gapDistributionParamType = it.value.GetInt();
                     }
 
+                    // gapDistributionShouldAffectFirstBaseEvent (bool) (0, 1) as int
                     IF_CHECK_HASH(b) {
-                        gapDistributionShouldAffectFirstBaseEvent = ParseBool(it.value);
+                        gapDistributionShouldAffectFirstBaseEvent = it.value.GetInt() == 1;
                     }
 
+                    // axis (0 - x, 1 - y, 2 - z)
                     IF_CHECK_HASH(a) {
                         axis = it.value.GetInt();
                     }
 
+                    // flipTranslation (bool) (0, 1) as int
                     IF_CHECK_HASH(r) {
-                        flipRotation = ParseBool(it.value);
+                        flipTranslation = it.value.GetInt() == 1;
                     }
+
+                    // gapDistributionShouldAffectFirstBaseEvent (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
                     IF_CHECK_HASH(i) {
                         gapDistributionEaseType = it.value.GetInt();
                     }
 
+                    // lightTranslationBaseDataList (array)
                     IF_CHECK_HASH(l) {
                         auto arr = it.value.GetArray();
                         lightTranslationBaseDataList.resize(arr.Size());
@@ -1002,18 +1009,22 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
                             for (auto const &it: arrIt.GetObject()) {
                                 IT_HASH
 
+                                // beat float
                                 IF_CHECK_HASH_FROM_CONSTANTS(beat) {
                                     lightBeat = it.value.GetFloat();
                                 }
 
+                                // usePreviousEventTranslationValue (bool) (0, 1) as int
                                 IF_CHECK_HASH(p) {
-                                    usePreviousEventTransitionValue = ParseBool(it.value);
+                                    usePreviousEventTransitionValue = it.value.GetInt() == 1;
                                 }
 
+                                // easeType (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
                                 IF_CHECK_HASH(e) {
                                     easeType = it.value.GetInt();
                                 }
 
+                                // translation float
                                 IF_CHECK_HASH(t) {
                                     translation = it.value.GetInt();
                                 }
@@ -1038,7 +1049,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
                         gapDistributionShouldAffectFirstBaseEvent,
                         (int)gapDistributionEaseType,
                         axis,
-                        flipRotation,
+                        flipTranslation,
                         lightTranslationBaseDataList.getInner()));
             }
         }
