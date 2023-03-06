@@ -977,7 +977,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
 
                     // gapDistributionShouldAffectFirstBaseEvent (bool) (0, 1) as int
                     IF_CHECK_HASH(b) {
-                        gapDistributionShouldAffectFirstBaseEvent = it.value.GetInt() == 1;
+                        gapDistributionShouldAffectFirstBaseEvent = ParseBool(it.value);
                     }
 
                     // axis (0 - x, 1 - y, 2 - z)
@@ -987,7 +987,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
 
                     // flipTranslation (bool) (0, 1) as int
                     IF_CHECK_HASH(r) {
-                        flipTranslation = it.value.GetInt() == 1;
+                        flipTranslation = ParseBool(it.value);
                     }
 
                     // gapDistributionShouldAffectFirstBaseEvent (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
@@ -1016,7 +1016,7 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const &val
 
                                 // usePreviousEventTranslationValue (bool) (0, 1) as int
                                 IF_CHECK_HASH(p) {
-                                    usePreviousEventTransitionValue = it.value.GetInt() == 1;
+                                    usePreviousEventTransitionValue = ParseBool(it.value);
                                 }
 
                                 // easeType (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
