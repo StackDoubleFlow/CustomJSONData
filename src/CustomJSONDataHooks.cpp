@@ -998,25 +998,26 @@ void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData *customInfoD
             }
 
 //TODO: SelectMany
-            StandardLevelInfoSaveData::DifficultyBeatmap *diff = customInfoData->difficultyBeatmapSets |
-                                                                 Select([&](
-                                                                         StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet) {
-                                                                     return beatmapSet->difficultyBeatmaps |
-                                                                            FirstOrDefault(
-                                                                                    [&](StandardLevelInfoSaveData::DifficultyBeatmap *diff) {
-                                                                                        if (!diff ||
-                                                                                            !diff->beatmapFilename)
-                                                                                            return false;
+            StandardLevelInfoSaveData::DifficultyBeatmap *diff =
+                    customInfoData->difficultyBeatmapSets |
+                    Select([&](
+                            StandardLevelInfoSaveData::DifficultyBeatmapSet *beatmapSet) {
+                        return beatmapSet->difficultyBeatmaps |
+                               FirstOrDefault(
+                                       [&](StandardLevelInfoSaveData::DifficultyBeatmap *diff) {
+                                           if (!diff ||
+                                               !diff->beatmapFilename)
+                                               return false;
 
-                                                                                        auto *customDiff = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(
-                                                                                                diff);
+                                           auto *customDiff = il2cpp_utils::cast<CustomJSONData::CustomDifficultyBeatmap>(
+                                                   diff);
 
 
-                                                                                        return customDiff->beatmapFilename ==
-                                                                                               filename;
-                                                                                    });
-                                                                 }) |
-                                                                 FirstOrDefault([](auto x) { return x; });
+                                           return customDiff->beatmapFilename ==
+                                                  filename;
+                                       });
+                    }) |
+                    FirstOrDefault([](auto x) { return x; });
 
             if (!diff) {
                 CJDLogger::Logger.fmtLog<LogLevel::INF>("No custom diff found");

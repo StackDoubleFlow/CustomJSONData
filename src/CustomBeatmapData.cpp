@@ -62,7 +62,7 @@ void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataOverride(GlobalNam
 
 void
 CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData *beatmapEventData) {
-    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
+    static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventDataInOrder", 1);
 
     beatmapEventDatas.emplace_back(beatmapEventData);
     PAPER_IL2CPP_CATCH_HANDLER(
