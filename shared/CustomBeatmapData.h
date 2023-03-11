@@ -62,11 +62,11 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapData, GlobalNamespace::Beatma
               if (!beatmapDataItem) continue;
 
               if (auto event = il2cpp_utils::try_cast<GlobalNamespace::BeatmapEventData>(beatmapDataItem)) {
-              copy->InsertBeatmapEventDataInOrder(*event);
+              copy->InsertBeatmapEventDataInOrderOverride(*event);
              }
 
               if (auto object = il2cpp_utils::try_cast<GlobalNamespace::BeatmapObjectData>(beatmapDataItem)) {
-                copy->AddBeatmapObjectDataInOrder(*object);
+                copy->AddBeatmapObjectDataInOrderOverride(*object);
               }
 
               if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {

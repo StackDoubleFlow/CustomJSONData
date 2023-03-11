@@ -299,7 +299,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
 
     for (auto const &keyValuePair: dictionary) {
         if (keyValuePair.second->isActive) {
-            newBeatmap->InsertBeatmapEventDataInOrder(keyValuePair.second->originalBasicBeatmapEventData);
+            newBeatmap->InsertBeatmapEventDataInOrderOverride(keyValuePair.second->originalBasicBeatmapEventData);
         }
     }
     return newBeatmap->i_IReadonlyBeatmapData();
@@ -381,12 +381,12 @@ MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectDataInOrder, &BeatmapData::AddBe
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, BeatmapData,
                           CustomBeatmapData, BeatmapEventData*, item) {
-    self->InsertBeatmapEventData(item);
+    self->InsertBeatmapEventDataOverride(item);
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventDataInOrder, &BeatmapData::InsertBeatmapEventDataInOrder, BeatmapData,
                           CustomBeatmapData, BeatmapEventData*, item) {
-    self->InsertBeatmapEventDataInOrder(item);
+    self->InsertBeatmapEventDataInOrderOverride(item);
 }
 
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
@@ -581,7 +581,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
 
 
-    beatmapData->InsertBeatmapEventData(CustomJSONData::NewFast<BPMChangeBeatmapEventData *>(-100.0f, startBpm));
+    beatmapData->InsertBeatmapEventDataOverride(
+            CustomJSONData::NewFast<BPMChangeBeatmapEventData *>(-100.0f, startBpm));
 
     CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
     if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
@@ -716,12 +717,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     auto cleanAndSort = [](auto &vec) constexpr {
         for (auto it = vec.begin(); it != vec.end();) {
-            if (*it) {
-                it++;
+            auto const &v = *it;
+            if (!v) {
+                it = vec.erase(it);
                 continue;
             }
 
-            it = vec.erase(it);
+            it++;
         }
 
         std::stable_sort(vec.begin(), vec.end(),
@@ -760,7 +762,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     for (auto const &o: beatmapDataObjectItems) {
         auto *beatmapObjectData = objectConverter.ProcessItem(o);
         if (beatmapObjectData != nullptr) {
-            beatmapData->AddBeatmapObjectData(beatmapObjectData);
+            beatmapData->AddBeatmapObjectDataOverride(beatmapObjectData);
         }
     }
 
@@ -852,7 +854,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         auto *beatmapEventData = eventConverter.ProcessItem(o);
 
         if (beatmapEventData != nullptr) {
-            beatmapData->InsertBeatmapEventData(beatmapEventData);
+            beatmapData->InsertBeatmapEventDataOverride(beatmapEventData);
         }
     }
 
@@ -873,7 +875,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         std::vector<BeatmapSaveData::EventBoxGroup *> eventBoxes;
         eventBoxes.reserve(
                 beatmapSaveData->lightColorEventBoxGroups->get_Count() +
-                beatmapSaveData->lightRotationEventBoxGroups->get_Count() + 
+                beatmapSaveData->lightRotationEventBoxGroups->get_Count() +
                 beatmapSaveData->lightTranslationEventBoxGroups->get_Count()
         );
 
