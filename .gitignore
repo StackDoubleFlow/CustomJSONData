@@ -6,6 +6,8 @@ ndkpath.txt
 *.qmod
 
 build/
+qpm_defines.cmake
+extern.cmake
 
 # TODO: Ignore
 # mod.json
