@@ -166,7 +166,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
                       &BeatmapDataStrobeFilterTransform::CreateTransformedData, IReadonlyBeatmapData*,
                       IReadonlyBeatmapData *beatmapData,
                       EnvironmentIntensityReductionOptions *environmentIntensityReductionOptions) {
-    if (reinterpret_cast<Il2CppObject *>(beatmapData)->klass != classof(CustomBeatmapData*)) {
+    if (!beatmapData || reinterpret_cast<Il2CppObject *>(beatmapData)->klass != classof(CustomBeatmapData*)) {
         return BeatmapDataStrobeFilterTransform_CreateTransformedData(beatmapData,
                                                                       environmentIntensityReductionOptions);
     }
@@ -243,22 +243,29 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
 
 
     for (auto const &c: customBeatmapData->customEventDatas) {
+        if (!c) continue;
         newBeatmap->InsertCustomEventDataInOrder(c);
     }
 
     for (auto const &o: customBeatmapData->beatmapObjectDatas) {
+        if (!o) continue;
         newBeatmap->AddBeatmapObjectDataInOrderOverride(o);
     }
 
     for (auto const &beatmapDataItem: customBeatmapData->beatmapEventDatas) {
-        BasicBeatmapEventData *basicBeatmapEventData = basicBeatmapEventData = (il2cpp_utils::try_cast<BasicBeatmapEventData>(
-                beatmapDataItem).value_or(nullptr));
+        if (!beatmapDataItem) continue;
+
+        BasicBeatmapEventData *basicBeatmapEventData = il2cpp_utils::try_cast<BasicBeatmapEventData>(beatmapDataItem).value_or(nullptr);
         LightColorBeatmapEventData *lightColorBeatmapEventData = il2cpp_utils::try_cast<LightColorBeatmapEventData>(
                 beatmapDataItem).value_or(nullptr);
 
         if (lightColorBeatmapEventData) {
             lightColorBeatmapEventData->DisableStrobe();
             newBeatmap->InsertBeatmapEventDataInOrderOverride(lightColorBeatmapEventData);
+            continue;
+        }
+        if (!basicBeatmapEventData) {
+            newBeatmap->InsertBeatmapEventDataInOrder(beatmapDataItem);
             continue;
         }
         if ((!flag ||
@@ -280,6 +287,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
 
 
             BeatmapDataStrobeFilterTransform::StrobeStreakData *strobeStreakData = dictionary[basicBeatmapEventData->basicBeatmapEventType];
+            CRASH_UNLESS(strobeStreakData);
             if (strobeStreakData->isActive) {
                 if (basicBeatmapEventData->time -
                     strobeStreakData->lastSwitchTime < 0.1f) {
@@ -323,6 +331,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
     }
 
     for (auto const &keyValuePair: dictionary) {
+        if (!keyValuePair.second) continue;
         if (keyValuePair.second->isActive) {
             newBeatmap->InsertBeatmapEventDataInOrderOverride(keyValuePair.second->originalBasicBeatmapEventData);
         }
