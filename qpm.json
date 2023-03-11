@@ -13,7 +13,6 @@
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
-      "branchName": "main",
       "compileOptions": {
         "cppFlags": [
           "-DRAPIDJSON_NEON"
