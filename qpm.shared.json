@@ -29,7 +29,7 @@
       },
       {
         "id": "codegen",
-        "versionRange": "^0.32.0",
+        "versionRange": "^0.33.0",
         "additionalData": {}
       },
       {
@@ -72,7 +72,13 @@
         }
       }
     ],
-    "workspace": null
+    "workspace": {
+      "scripts": {
+        "build": [
+          "pwsh ./build.ps1"
+        ]
+      }
+    }
   },
   "restoredDependencies": [
     {
@@ -114,16 +120,16 @@
     {
       "dependency": {
         "id": "custom-types",
-        "versionRange": "=0.15.22",
+        "versionRange": "=0.15.23",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.22/libcustom-types.so",
-          "debugSoLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.22/debug_libcustom-types.so",
+          "soLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.23/libcustom-types.so",
+          "debugSoLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.23/debug_libcustom-types.so",
           "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.22/CustomTypes.qmod",
-          "branchName": "version-v0.15.22"
+          "modLink": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.23/CustomTypes.qmod",
+          "branchName": "version-v0.15.23"
         }
       },
-      "version": "0.15.22"
+      "version": "0.15.23"
     },
     {
       "dependency": {
@@ -139,16 +145,16 @@
     {
       "dependency": {
         "id": "songloader",
-        "versionRange": "=0.10.14",
+        "versionRange": "=0.10.15",
         "additionalData": {
-          "soLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.14/libsongloader.so",
-          "debugSoLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.14/debug_libsongloader.so",
+          "soLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.15/libsongloader.so",
+          "debugSoLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.15/debug_libsongloader.so",
           "overrideSoName": "libsongloader.so",
-          "modLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.14/SongLoader.qmod",
-          "branchName": "version-v0.10.14"
+          "modLink": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.15/SongLoader.qmod",
+          "branchName": "version-v0.10.15"
         }
       },
-      "version": "0.10.14"
+      "version": "0.10.15"
     },
     {
       "dependency": {
@@ -176,15 +182,15 @@
     {
       "dependency": {
         "id": "codegen",
-        "versionRange": "=0.32.0",
+        "versionRange": "=0.33.0",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.32.0/libcodegen.so",
+          "soLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.33.0/libcodegen.so",
           "overrideSoName": "libcodegen.so",
-          "modLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.32.0/Codegen.qmod",
-          "branchName": "version-v0.32.0"
+          "modLink": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.33.0/Codegen.qmod",
+          "branchName": "version-v0.33.0"
         }
       },
-      "version": "0.32.0"
+      "version": "0.33.0"
     },
     {
       "dependency": {
