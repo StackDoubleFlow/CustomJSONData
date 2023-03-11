@@ -14,6 +14,16 @@
       "downloadIfMissing": "https://github.com/sc2ad/BeatSaber-Quest-Codegen/releases/download/v0.33.0/Codegen.qmod"
     },
     {
+      "version": "^0.15.0",
+      "id": "custom-types",
+      "downloadIfMissing": "https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.23/CustomTypes.qmod"
+    },
+    {
+      "version": "^0.10.0",
+      "id": "songloader",
+      "downloadIfMissing": "https://github.com/darknight1050/SongLoader/releases/download/v0.10.15/SongLoader.qmod"
+    },
+    {
       "version": "^1.2.2",
       "id": "paper",
       "downloadIfMissing": "https://github.com/Fernthedev/paperlog/releases/download/v1.2.9/paperlog.qmod"
@@ -23,8 +33,6 @@
     "libcustom-json-data.so"
   ],
   "libraryFiles": [
-    "libcustom-types.so",
-    "libsongloader.so",
     "libbeatsaber-hook_3_14_0.so"
   ],
   "fileCopies": [],

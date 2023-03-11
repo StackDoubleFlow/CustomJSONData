@@ -9,7 +9,6 @@
       "url": "https://github.com/StackDoubleFlow/CustomJSONData",
       "additionalData": {
         "overrideSoName": "libcustom-json-data.so",
-        "branchName": "main",
         "compileOptions": {
           "cppFlags": [
             "-DRAPIDJSON_NEON"
@@ -36,14 +35,14 @@
         "id": "custom-types",
         "versionRange": "^0.15.0",
         "additionalData": {
-          "includeQmod": false
+          "includeQmod": true
         }
       },
       {
         "id": "songloader",
         "versionRange": "^0.10.0",
         "additionalData": {
-          "includeQmod": false,
+          "includeQmod": true,
           "private": true
         }
       },
