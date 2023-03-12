@@ -143,15 +143,23 @@ inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustom
     return std::nullopt;
 }
 
-#define IT_HASH auto nameHash = std::hash<std::string_view>()(it.name.GetString());
+//#define IT_HASH auto nameHash = std::hash<std::string_view>()(it.name.GetString());
+//
+//#define IF_CHECK_HASH_FROM_CONSTANTS(str) \
+//        static const auto str##_Hash = std::hash<std::string_view>()(Constants::str); \
+//        if (nameHash == str##_Hash)
+//
+//#define IF_CHECK_HASH(str) \
+//        static const auto str##_Hash = std::hash<std::string_view>()(#str); \
+//        if (nameHash == str##_Hash)
+
+#define IT_HASH auto nameHash = std::string_view(it.name.GetString());
 
 #define IF_CHECK_HASH_FROM_CONSTANTS(str) \
-        static const auto str##_Hash = std::hash<std::string_view>()(Constants::str); \
-        if (nameHash == str##_Hash)
+        if (nameHash == std::string_view(Constants::str))
 
 #define IF_CHECK_HASH(str) \
-        static const auto str##_Hash = std::hash<std::string_view>()(#str); \
-        if (nameHash == str##_Hash)
+        if (nameHash == #str)
 
 static inline bool ParseBool(rapidjson::Value const &val) {
     if (val.IsNumber()) {
