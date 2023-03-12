@@ -629,8 +629,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
         }
     }
 
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {}",
-                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d));
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {} {}",
+                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d), beatmapSaveData->basicEventTypesWithKeywords->d->size);
 
     profile.mark("Converted special events");
 
@@ -823,13 +823,14 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             });
 
     // only for v3 maps
+    auto specialEventsFilter = SafePtr(BeatmapDataLoader::SpecialEventsFilter::New_ctor(
+            beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords));
     if (flag3) {
-        auto specialEventsFilter = BeatmapDataLoader::SpecialEventsFilter::New_ctor(
-                beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+
 
         eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData *>(
                 [&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData *data) constexpr {
-                    if (!specialEventsFilter->IsEventValid(data->et)) {
+                    if (!specialEventsFilter->IsEventValid(data->get_eventType())) {
                         return (CustomBeatmapEventData *) nullptr;
                     }
 

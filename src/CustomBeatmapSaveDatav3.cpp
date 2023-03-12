@@ -1083,7 +1083,7 @@ static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const &val) {
             eventTypes.resize(arr.Size());
 
             for (auto const &arrIt: arr) {
-                eventTypes.push_back(it.value.GetInt());
+                eventTypes.getInner()->Add(it.value.GetInt());
             }
         }
     }
@@ -1256,24 +1256,25 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                 lightTranslationEventBoxGroups.push_back(DeserializeLightTranslationEventBoxGroup(o));
             }
         }
-        IF_CHECK_HASH(basicEventTypesWithKeywords) {
-
-            auto dIt = it.value.FindMember("d");
-
-            if (dIt != it.value.MemberEnd()) {
-                auto arr = dIt->value.GetArray();
-
-                basicEventTypesForKeyword.resize(arr.Size());
-
-                for (auto const &it: arr) {
-                    basicEventTypesForKeyword.push_back(DeserializeBasicEventTypesForKeyword(it));
-                }
-            }
-        }
         IF_CHECK_HASH(useNormalEventsAsCompatibleEvents) {
             useNormalEventsAsCompatibleEvents = it.value.GetBool();
         }
     }
+    auto basicEventTypesWithKeywordsIt = doc.FindMember("basicEventTypesWithKeywords");
+    if (basicEventTypesWithKeywordsIt != doc.MemberEnd()) {
+        auto dIt = basicEventTypesWithKeywordsIt->value.FindMember("d");
+
+        if (dIt != basicEventTypesWithKeywordsIt->value.MemberEnd()) {
+            auto arr = dIt->value.GetArray();
+
+            basicEventTypesForKeyword.resize(arr.Size());
+
+            for (auto const &it: arr) {
+                basicEventTypesForKeyword.push_back(DeserializeBasicEventTypesForKeyword(it));
+            }
+        }
+    }
+
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse bpm events {}", bpmEvents.size());
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse notes {}", colorNotes.size());
