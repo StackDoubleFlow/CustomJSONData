@@ -289,13 +289,16 @@ namespace CustomJSONData {
     }
 
     constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis axis) {
-        if (axis == BeatmapSaveDataVersion3::BeatmapSaveData::Axis::X) {
-            return LightAxis::X;
+        switch (axis) {
+            case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::X:
+                return LightAxis::X;
+            case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Y:
+                return LightAxis::Y;
+            case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Z:
+                return LightAxis::Z;
+            default:
+                return LightAxis::Z;
         }
-        if (axis != BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Y) {
-            return LightAxis::X;
-        }
-        return LightAxis::Y;
     }
 
     constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::EaseType easeType) {
@@ -310,9 +313,10 @@ namespace CustomJSONData {
                 return EaseType::OutQuad;
             case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuad:
                 return EaseType::InOutQuad;
-            default:
-                return EaseType::None;
+
         }
+
+        SAFE_ABORT_MSG("Message");
     }
 
     constexpr NoteLineLayer ConvertNoteLineLayer(int layer) {
@@ -615,7 +619,7 @@ namespace CustomJSONData {
 
                         auto beatDistributionParamType = DistributionParamType_Convert(
                                 EventBox_GetBeatDistributionParamType(saveData));
-                        auto rotationDistributionParamType = DistributionParamType_Convert(
+                        auto gapDistributionParamType = DistributionParamType_Convert(
                                 saveData->get_gapDistributionParamType());
 
                         return CustomJSONData::NewFast<LightTranslationBeatmapEventDataBox *>(indexFilter,
@@ -625,9 +629,10 @@ namespace CustomJSONData {
                                                                                               ConvertAxis(saveData->a),
                                                                                               saveData->get_flipTranslation(),
                                                                                               saveData->get_gapDistributionParam(),
-                                                                                              rotationDistributionParamType,
+                                                                                              gapDistributionParamType,
                                                                                               saveData->get_gapDistributionShouldAffectFirstBaseEvent(),
-                                                                                              saveData->get_gapDistributionEaseType().value,
+                                                                                              ConvertEaseType(
+                                                                                                      saveData->get_gapDistributionEaseType()),
                                                                                               reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightTranslationBaseData *> *>(list.getInner()));
                     });
         }
