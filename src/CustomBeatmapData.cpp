@@ -98,9 +98,14 @@ System::Type *CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass *obj)
     auto& typePtr = typeMap[obj];
 
     if (!typePtr) {
+        CJDLogger::Logger.fmtLog<Paper::LogLevel::INF>("Checking if {} is equal to ref {} for obj {} vs ref {}", obj->namespaze, CustomKlass->namespaze, il2cpp_utils::ClassStandardName(obj), il2cpp_utils::ClassStandardName(CustomKlass));
         if (std::string_view(obj->namespaze) == std::string_view(CustomKlass->namespaze) && obj != CustomKlass) {
+            CJDLogger::Logger.fmtLog<Paper::LogLevel::INF>("They are custom, using parent type {}", il2cpp_utils::ClassStandardName(obj->parent));
+
             typePtr = il2cpp_utils::GetSystemType(obj->parent);
         } else {
+            CJDLogger::Logger.fmtLog<Paper::LogLevel::INF>("They are not custom (basegame), using self type {}", il2cpp_utils::ClassStandardName(obj));
+
             typePtr = il2cpp_utils::GetSystemType(obj);
         }
     }
