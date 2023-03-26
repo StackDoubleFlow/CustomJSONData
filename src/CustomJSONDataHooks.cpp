@@ -4,6 +4,7 @@
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
+#include "GlobalNamespace/DefaultEnvironmentEvents_BasicBeatmapEvent.hpp"
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
@@ -255,7 +256,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
     for (auto const &beatmapDataItem: customBeatmapData->beatmapEventDatas) {
         if (!beatmapDataItem) continue;
 
-        BasicBeatmapEventData *basicBeatmapEventData = il2cpp_utils::try_cast<BasicBeatmapEventData>(beatmapDataItem).value_or(nullptr);
+        BasicBeatmapEventData *basicBeatmapEventData = il2cpp_utils::try_cast<BasicBeatmapEventData>(
+                beatmapDataItem).value_or(nullptr);
         LightColorBeatmapEventData *lightColorBeatmapEventData = il2cpp_utils::try_cast<LightColorBeatmapEventData>(
                 beatmapDataItem).value_or(nullptr);
 
@@ -577,6 +579,41 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
     self->processingCallbacks = false;
 }
 
+MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents,
+                      void,
+                      BeatmapData *beatmapData, BeatmapEventDataBoxGroupLists *beatmapEventDataBoxGroupLists,
+                      DefaultEnvironmentEvents *defaultEnvironmentEvents,
+                      EnvironmentLightGroups * environmentLightGroups
+) {
+    if (defaultEnvironmentEvents == nullptr || defaultEnvironmentEvents->get_isEmpty()) {
+        // TRANSPILE HERE
+        beatmapData->InsertBeatmapEventData(
+                CustomBeatmapEventData::New_ctor(0.0f, BasicBeatmapEventType::Event0, 1, 1.0f));
+        beatmapData->InsertBeatmapEventData(
+                CustomBeatmapEventData::New_ctor(0.0f, BasicBeatmapEventType::Event4, 1, 1.0f));
+        // END TRANSPILE HERE
+        return;
+    }
+    if (defaultEnvironmentEvents->basicBeatmapEvents) {
+        for (auto basicBeatmapEvent: defaultEnvironmentEvents->basicBeatmapEvents) {
+            // TRANSPILE HERE
+            beatmapData->InsertBeatmapEventData(
+                    CustomBeatmapEventData::New_ctor(0.0f, basicBeatmapEvent->eventType, basicBeatmapEvent->value,
+                                                     basicBeatmapEvent->floatValue));
+            // END TRANSPILE HERE
+        }
+    }
+    if (defaultEnvironmentEvents->lightGroupEvents) {
+        for (auto lightGroupEvent: defaultEnvironmentEvents->lightGroupEvents) {
+            LightGroupSO *dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->lightGroup->groupId);
+            if (dataForGroup && !dataForGroup->Equals(nullptr)) {
+                auto beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(
+                        0.0f, dataForGroup->numberOfElements, lightGroupEvent);
+                beatmapEventDataBoxGroupLists->Insert(dataForGroup->groupId, beatmapEventDataBoxGroup);
+            }
+        }
+    }
+}
 
 MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData,
                       BeatmapData *,
@@ -630,7 +667,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {} {}",
-                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d), beatmapSaveData->basicEventTypesWithKeywords->d->size);
+                                            fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d),
+                                            beatmapSaveData->basicEventTypesWithKeywords->d->size);
 
     profile.mark("Converted special events");
 
@@ -1056,6 +1094,7 @@ void CustomJSONData::InstallHooks() {
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetFilteredCopy);
     INSTALL_HOOK_ORIG(logger, BeatmapData_GetCopy);
     INSTALL_HOOK_ORIG(logger, BeatmapDataStrobeFilterTransform_CreateTransformedData);
+    INSTALL_HOOK_ORIG(logger, InsertDefaultEnvironmentEvents);
     INSTALL_HOOK(logger, BeatmapCallbacksController_Dispose);
 
 
