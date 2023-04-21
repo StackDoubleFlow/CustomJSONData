@@ -429,7 +429,7 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
                         classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem *> * ), "InsertItem",
                         System::Collections::Generic::LinkedListNode_1<BeatmapDataItem *>*,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem *> *self, BeatmapDataItem *item) {
-    auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->subtypeIdentifier);
+    auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
 
 
     auto node = list->Insert(item);
