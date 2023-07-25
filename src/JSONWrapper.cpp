@@ -9,27 +9,27 @@ DEFINE_TYPE(CustomJSONData, JSONWrapperUTF16);
 DEFINE_TYPE(CustomJSONData, DocumentWrapper);
 
 void JSONWrapper::ctor() {
-    INVOKE_CTOR();
+  INVOKE_CTOR();
 }
 
-JSONWrapper *JSONWrapper::GetCopy() {
-    auto copy = JSONWrapper::New_ctor();
+JSONWrapper* JSONWrapper::GetCopy() {
+  auto copy = JSONWrapper::New_ctor();
 
-    copy->value = value;
-    copy->associatedData = associatedData;
+  copy->value = value;
+  copy->associatedData = associatedData;
 
-    return copy;
+  return copy;
 }
 
 void JSONWrapperUTF16::ctor() {
-    INVOKE_CTOR();
+  INVOKE_CTOR();
 }
 
-JSONWrapperUTF16 *JSONWrapperUTF16::GetCopy() {
-    auto copy = JSONWrapperUTF16::New_ctor();
+JSONWrapperUTF16* JSONWrapperUTF16::GetCopy() {
+  auto copy = JSONWrapperUTF16::New_ctor();
 
-    copy->value = value;
-    copy->associatedData = associatedData;
+  copy->value = value;
+  copy->associatedData = associatedData;
 
-    return copy;
+  return copy;
 }
