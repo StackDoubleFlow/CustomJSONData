@@ -404,7 +404,7 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem,
                         classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>*), "RemoveItem", void,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-  auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->subtypeIdentifier);
+  auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
   System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>* node = nullptr;
   if (self->itemToNodeMap->TryGetValue(item, byref(node))) {
     list->Remove(node);

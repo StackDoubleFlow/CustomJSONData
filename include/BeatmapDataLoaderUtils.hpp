@@ -271,14 +271,18 @@ requires(std::is_pointer_v<To>&& std::is_pointer_v<From>) struct CppConverter {
 
   template <typename U, typename F>
   requires(std::is_pointer_v<U>&& std::is_convertible_v<U, From>&&
-               std::is_convertible_v<F, std::function<To(U, TArgs...)>>) constexpr void AddConverter(F&& o) {
+               std::is_convertible_v<F, std::function<To(U, TArgs...)>>) 
+               constexpr void AddConverter(F&& o) {
     converters[classof(U)] = [o](From const& t, TArgs const&... args) constexpr {
       return o(static_cast<U>(t), args...);
     };
   }
 
   constexpr To ProcessItem(From o, TArgs&... args) const {
-    auto uKlass = o ? o->klass : classof(From);
+    if (!o) {
+      return {};
+    }
+    auto uKlass = o->klass;
     auto it = converters.find(uKlass);
     if (it == converters.end()) {
       //                for (auto const& [klass, func] : converters) {
