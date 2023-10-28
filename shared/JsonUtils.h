@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <optional>
 
 #include "sombrero/shared/FastVector3.hpp"
@@ -24,6 +25,10 @@ static std::optional<bool> ReadOptionalBool(rapidjson::Value const& object, std:
       }
 
       return false;
+    }
+
+    if (itr->value.IsNumber()) {
+      return itr->value.GetInt() != 0;
     }
 
     return itr->value.GetBool();
@@ -55,25 +60,8 @@ static std::optional<int> ReadOptionalInt(rapidjson::Value const& object, std::s
   return std::nullopt;
 }
 
-template <typename T>
-static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::string_view const key) {
-  auto itr = object.FindMember(key.data());
-  if (itr != object.MemberEnd()) {
-    return itr->value.Get<T>();
-  }
-  return std::nullopt;
-}
-template <typename T, typename F>
-static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::string_view const key, F&& func) {
-  auto itr = object.FindMember(key.data());
-  if (itr != object.MemberEnd()) {
-    return func(itr->value);
-  }
-  return std::nullopt;
-}
-
 static std::optional<Sombrero::FastVector2> ReadOptionalVector2(rapidjson::Value const& object,
-                                                            std::string_view const key) {
+                                                                std::string_view const key) {
   auto itr = object.FindMember(key.data());
   if (itr != object.MemberEnd() && itr->value.Size() >= 2) {
     float x = itr->value[0].GetFloat();
@@ -111,15 +99,15 @@ static OptPair ReadOptionalPair(rapidjson::Value const& object, std::string_view
 
     if (itr->value.Size() >= 2) {
       y = itr->value[1].GetFloat();
-      return {std::optional<float>(x), std::optional<float>(y)};
+      return { std::optional<float>(x), std::optional<float>(y) };
     }
-    return {std::optional<float>(x), std::nullopt};
+    return { std::optional<float>(x), std::nullopt };
   }
-  return {std::nullopt, std::nullopt};
+  return { std::nullopt, std::nullopt };
 }
 
 static std::optional<Sombrero::FastQuaternion> ReadOptionalRotation(rapidjson::Value const& object,
-                                                                std::string_view const key) {
+                                                                    std::string_view const key) {
   auto itr = object.FindMember(key.data());
   if (itr != object.MemberEnd()) {
     Sombrero::FastVector3 rot;
@@ -138,7 +126,7 @@ static std::optional<Sombrero::FastQuaternion> ReadOptionalRotation(rapidjson::V
 }
 
 static std::optional<Sombrero::FastVector3> ReadOptionalVector3(rapidjson::Value const& object,
-                                                            std::string_view const key) {
+                                                                std::string_view const key) {
   auto itr = object.FindMember(key.data());
   if (itr != object.MemberEnd() && itr->value.Size() >= 3) {
     float x = itr->value[0].GetFloat();
@@ -158,6 +146,77 @@ static std::optional<std::array<std::optional<float>, 3>> ReadOptionalScale(rapi
     std::optional<float> y = size >= 2 ? std::optional{ itr->value[1].GetFloat() } : std::nullopt;
     std::optional<float> z = size >= 3 ? std::optional{ itr->value[2].GetFloat() } : std::nullopt;
     return { { x, y, z } };
+  }
+  return std::nullopt;
+}
+
+static std::optional<rapidjson::Value::ConstObject> ReadOptionalObject(rapidjson::Value const& object,
+                                                                       std::string_view const key) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    return itr->value.GetObject();
+  }
+  return std::nullopt;
+}
+static std::optional<rapidjson::Value const*> ReadOptionalValuePtr(rapidjson::Value const& object,
+                                                                std::string_view const key) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    return &itr->value;
+  }
+  return std::nullopt;
+}
+static std::optional<std::reference_wrapper<rapidjson::Value const>> ReadOptionalValue(rapidjson::Value const& object,
+                                                                std::string_view const key) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    return std::ref(itr->value);
+  }
+  return std::nullopt;
+}
+
+template <typename T, typename F>
+static std::optional<std::vector<T>> ReadOptionalArray(rapidjson::Value const& object, std::string_view const key,
+                                                       F&& func) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    auto jsonArray = itr->value.GetArray();
+    std::vector<T> vec;
+    vec.reserve(jsonArray.Size());
+
+    for (auto const& v : jsonArray) {
+      vec.emplace_back(func(v));
+    }
+
+    return vec;
+  }
+  return std::nullopt;
+}
+
+template <typename T, typename F>
+static inline std::vector<T> ReadArrayOrEmpty(rapidjson::Value const& object, std::string_view const key, F&& func) {
+  auto opt = ReadOptionalArray<T, F>(object, key, std::forward<F>(func));
+
+  if (!opt) {
+    return {};
+  }
+
+  return *opt;
+}
+
+template <typename T>
+static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::string_view const key) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    return itr->value.Get<T>();
+  }
+  return std::nullopt;
+}
+template <typename T, typename F>
+static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::string_view const key, F&& func) {
+  auto itr = object.FindMember(key.data());
+  if (itr != object.MemberEnd()) {
+    return func(itr->value);
   }
   return std::nullopt;
 }

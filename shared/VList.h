@@ -43,6 +43,23 @@
 //     pointer ptr;
 // }
 
+namespace CustomJSONData {
+template <typename Ty>
+inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::span<Ty> const list) {
+  auto inner = System::Collections::Generic::List_1<Ty>::New_ctor(list.size());
+  for (int i = 0; i < list.size(); i++) {
+    inner->items.get(i) = list[i];
+  }
+
+  return inner;
+}
+
+template <typename Ty>
+inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::vector<Ty> const& list) {
+  return SpanToSystemList<Ty>(std::span<Ty>(const_cast<Ty*>(list.data()), list.size()));
+}
+} // namespace CustomJSONData
+
 template <typename Ty> class VList {
 private:
   using InnerTy = System::Collections::Generic::List_1<Ty>;
@@ -59,11 +76,11 @@ public:
   using const_iterator = const_pointer;
 
 public:
-  constexpr VList() : inner(InnerTy::New_ctor()){};
+  constexpr VList() : inner(InnerTy::New_ctor()) {}
 
-  constexpr VList(int size) : inner(InnerTy::New_ctor(size)){};
+  constexpr VList(int size) : inner(InnerTy::New_ctor(size)) {}
 
-  constexpr VList(InnerTy* list) : inner(list){};
+  constexpr VList(InnerTy* list) : inner(list) {}
 
   constexpr InnerTy* operator*() const {
     return inner;

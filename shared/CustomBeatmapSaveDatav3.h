@@ -106,7 +106,7 @@ DECLARE_CLASS_CODEGEN(
     DECLARE_SIMPLE_DTOR();
 
     public
-    : static CustomBeatmapSaveData * Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc);
+    : static CustomBeatmapSaveData * Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc);
 
     static CustomBeatmapSaveData * Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData const* beatmap);
 

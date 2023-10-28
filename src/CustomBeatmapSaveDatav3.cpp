@@ -2,6 +2,7 @@
 #include "CustomBeatmapSaveDatav2.h"
 #include "BeatmapFieldUtils.hpp"
 
+#include "JsonUtils.h"
 #include "VList.h"
 
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
@@ -30,6 +31,10 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_ObstacleData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_SliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
+
+#define SAFEPTR_VLIST_DEFAULT(type, name, ...)                                                                         \
+  SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(__VA_ARGS__);                                          \
+  VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 
 //#define SAFEPTR_VLIST_ARG(type, name, ...) \
 //    SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
@@ -137,62 +142,14 @@ inline CustomDataOpt GetCustomData(rapidjson::Value const& doc) {
   return std::nullopt;
 }
 
-// #define IT_HASH auto nameHash = std::hash<std::string_view>()(it.name.GetString());
-//
-// #define  IF_CHECK_HASH_FROM_CONSTANTS(str) \
-//        static const auto str##_Hash = std::hash<std::string_view>()(Constants::str); \
-//        if (nameHash == str##_Hash)
-//
-// #define  IF_CHECK_HASH(str) \
-//        static const auto str##_Hash = std::hash<std::string_view>()(#str); \
-//        if (nameHash == str##_Hash)
-
-#define IT_HASH auto nameHash = std::string_view(it.name.GetString());
-
-#define IF_CHECK_HASH_FROM_CONSTANTS(str) if (nameHash == std::string_view(Constants::str))
-
-#define IF_CHECK_HASH(str) if (nameHash == #str)
-
 CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColorNote(rapidjson::Value const& val) {
-  float beat = 0;
-  int line = 0;
-  int layer = 0;
-  BeatmapSaveData::NoteColorType color;
-  NoteCutDirection cutDirection;
-  int angleOffset = 0;
-  CustomDataOpt customData;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      line = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      layer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(colorType) {
-      color = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(cutDirection) {
-      cutDirection = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(a) {
-      angleOffset = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      customData = it.value;
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int line = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int layer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  BeatmapSaveData::NoteColorType color = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
+  NoteCutDirection cutDirection = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
+  int angleOffset = NEJSON::ReadOptionalInt(val, "a").value_or(0);
+  CustomDataOpt customData = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* note = CustomBeatmapSaveData_ColorNoteData::New_ctor(beat, line, layer, color, cutDirection, angleOffset);
   note->customData = CustomJSONData::JSONWrapperOrNull(customData);
@@ -201,30 +158,10 @@ CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColo
 }
 
 CustomBeatmapSaveData_BombNoteData* CustomJSONData::v3::Parser::DeserializeBombNote(rapidjson::Value const& val) {
-  float beat = 0;
-  int line = 0;
-  int layer = 0;
-  CustomDataOpt data;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      line = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      layer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int line = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int layer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* bomb = CustomBeatmapSaveData_BombNoteData::New_ctor(beat, line, layer);
   bomb->customData = CustomJSONData::JSONWrapperOrNull(data);
@@ -233,45 +170,13 @@ CustomBeatmapSaveData_BombNoteData* CustomJSONData::v3::Parser::DeserializeBombN
 }
 
 CustomBeatmapSaveData_ObstacleData* CustomJSONData::v3::Parser::DeserializeObstacle(rapidjson::Value const& val) {
-  float beat = 0;
-  int line = 0;
-  int layer = 0;
-  float duration = 0;
-  int width = 0;
-  int height = 0;
-  CustomDataOpt data;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      line = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      layer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(d) {
-      duration = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(w) {
-      width = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(h) {
-      height = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int line = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int layer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  float duration = NEJSON::ReadOptionalFloat(val, "d").value_or(0);
+  int width = NEJSON::ReadOptionalInt(val, "w").value_or(0);
+  int height = NEJSON::ReadOptionalInt(val, "h").value_or(0);
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* obstacle = CustomBeatmapSaveData_ObstacleData::New_ctor(beat, line, layer, duration, width, height);
   obstacle->customData = CustomJSONData::JSONWrapperOrNull(data);
@@ -279,75 +184,24 @@ CustomBeatmapSaveData_ObstacleData* CustomJSONData::v3::Parser::DeserializeObsta
 }
 
 CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(rapidjson::Value const& val) {
-  BeatmapSaveData::NoteColorType color;
-  float headBeat = 0;
-  int headLine = 0;
-  int headLayer = 0;
-  float headControlPointLengthMultiplier = 0;
-  NoteCutDirection headCutDirection;
-  float tailBeat = 0;
-  int tailLine = 0;
-  int tailLayer = 0;
-  float tailControlPointLengthMultiplier = 0;
-  NoteCutDirection tailCutDirection;
-  SliderMidAnchorMode sliderMidAnchorMode;
-  CustomDataOpt data;
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
+  BeatmapSaveData::NoteColorType color = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
+  float headBeat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int headLine = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int headLayer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  NoteCutDirection headCutDirection = NEJSON::ReadOptionalInt(val, Constants::cutDirection).value_or(0);
+  float tailBeat = NEJSON::ReadOptionalFloat(val, Constants::tailBeat).value_or(0);
+  int tailLine = NEJSON::ReadOptionalInt(val, Constants::tailLine).value_or(0);
+  int tailLayer = NEJSON::ReadOptionalInt(val, Constants::tailLayer).value_or(0);
+  int sliceCount = NEJSON::ReadOptionalInt(val, "sc").value_or(0);
+  float squishAmount = NEJSON::ReadOptionalFloat(val, "s").value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(colorType) {
-      color = it.value.GetInt();
-    }
+  float headControlPointLengthMultiplier = NEJSON::ReadOptionalFloat(val, "mu").value_or(0);
+  float tailControlPointLengthMultiplier = NEJSON::ReadOptionalFloat(val, "tmu").value_or(0);
+  NoteCutDirection tailCutDirection = NEJSON::ReadOptionalInt(val, "tc").value_or(0);
+  SliderMidAnchorMode sliderMidAnchorMode = NEJSON::ReadOptionalInt(val, "m").value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      headBeat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      headLine = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      headLayer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(mu) {
-      headControlPointLengthMultiplier = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(cutDirection) {
-      headCutDirection = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailBeat) {
-      tailBeat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailLine) {
-      tailLine = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailLayer) {
-      tailLayer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(tmu) {
-      tailControlPointLengthMultiplier = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(tc) {
-      tailCutDirection = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(m) {
-      sliderMidAnchorMode = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* slider = CustomBeatmapSaveData_SliderData::New_ctor(
       color, headBeat, headLine, headLayer, headControlPointLengthMultiplier, headCutDirection, tailBeat, tailLine,
@@ -360,65 +214,17 @@ CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(
 
 CustomJSONData::v3::CustomBeatmapSaveData_BurstSliderData*
 CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) {
-  BeatmapSaveData::NoteColorType color;
-  float headBeat = 0;
-  int headLine = 0;
-  int headLayer = 0;
-  NoteCutDirection headCutDirection;
-  float tailBeat = 0;
-  int tailLine = 0;
-  int tailLayer = 0;
-  int sliceCount = 0;
-  float squishAmount = 0;
-  CustomDataOpt data;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(colorType) {
-      color = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      headBeat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      headLine = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      headLayer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(cutDirection) {
-      headCutDirection = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailBeat) {
-      tailBeat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailLine) {
-      tailLine = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(tailLayer) {
-      tailLayer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(sc) {
-      sliceCount = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(s) {
-      squishAmount = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
+  BeatmapSaveData::NoteColorType color = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
+  float headBeat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int headLine = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int headLayer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  NoteCutDirection headCutDirection = NEJSON::ReadOptionalInt(val, Constants::cutDirection).value_or(0);
+  float tailBeat = NEJSON::ReadOptionalFloat(val, Constants::tailBeat).value_or(0);
+  int tailLine = NEJSON::ReadOptionalInt(val, Constants::tailLine).value_or(0);
+  int tailLayer = NEJSON::ReadOptionalInt(val, Constants::tailLayer).value_or(0);
+  int sliceCount = NEJSON::ReadOptionalInt(val, "sc").value_or(0);
+  float squishAmount = NEJSON::ReadOptionalFloat(val, "s").value_or(0);
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* slider = CustomBeatmapSaveData_BurstSliderData::New_ctor(
       color, headBeat, headLine, headLayer, headCutDirection, tailBeat, tailLine, tailLayer, sliceCount, squishAmount);
@@ -429,777 +235,331 @@ CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) 
 }
 
 namespace {
-inline bool ParseBool(rapidjson::Value const& val) {
-  if (val.IsNumber()) {
-    return val.GetInt() == 1;
-  }
-  if (val.IsString()) {
-    return std::string_view(val.GetString()) == "true";
-  }
-  if (!val.IsBool()) {
-    return false;
-  }
-
-  return val.GetBool();
-}
-
 auto DeserializeBpmChangeEventData(rapidjson::Value const& val) {
-  float beat = 0;
-  float bpm = 0;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(m) {
-      bpm = it.value.GetFloat();
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  float bpm = NEJSON::ReadOptionalFloat(val, "m").value_or(0);
 
   return CustomJSONData::NewFast<BeatmapSaveData::BpmChangeEventData*>(beat, bpm);
 }
 
 auto DeserializeRotation(rapidjson::Value const& val) {
-  float beat = 0;
-  BeatmapSaveData::ExecutionTime executionTime{};
-  float rotation = 0;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(e) {
-      executionTime = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(r) {
-      rotation = it.value.GetFloat();
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  BeatmapSaveData::ExecutionTime executionTime = NEJSON::ReadOptionalInt(val, "e").value_or(0);
+  float rotation = NEJSON::ReadOptionalFloat(val, "r").value_or(0);
 
   return CustomJSONData::NewFast<BeatmapSaveData::RotationEventData*>(beat, executionTime, rotation);
 }
 
-
-static auto DeserializeWaypoint(rapidjson::Value const& val) {
-  float beat = 0;
-  int line = 0;
-  int layer = 0;
-  OffsetDirection offsetDirection;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(line) {
-      line = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(layer) {
-      layer = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(cutDirection) {
-      offsetDirection = it.value.GetInt();
-    }
-  }
+auto DeserializeWaypoint(rapidjson::Value const& val) {
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int line = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
+  int layer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
+  OffsetDirection offsetDirection = NEJSON::ReadOptionalInt(val, Constants::cutDirection).value_or(0);
 
   return CustomJSONData::NewFast<BeatmapSaveData::WaypointData*>(beat, line, layer, offsetDirection);
 }
 
-static auto DeserializeBasicEvent(rapidjson::Value const& val) {
-  float beat = 0;
-  BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType eventType;
-  int value = 0;
-  float floatValue = 0;
-  CustomDataOpt data;
+auto DeserializeBasicEvent(rapidjson::Value const& val) {
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType eventType =
+      NEJSON::ReadOptionalInt(val, "et").value_or(0);
+  int value = NEJSON::ReadOptionalInt(val, "i").value_or(0);
+  float floatValue = NEJSON::ReadOptionalFloat(val, "f").value_or(0);
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(et) {
-      eventType = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(i) {
-      value = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(f) {
-      floatValue = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
-
-  auto *event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
+  auto* event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
   event->customData = CustomJSONData::JSONObjectOrNull(data);
   return event;
 }
 
 static auto DeserializeColorBoostEventData(rapidjson::Value const& val) {
-  float beat = 0;
-  bool boost = false;
-  CustomDataOpt data;
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  bool boost = NEJSON::ReadOptionalBool(val, "o").value_or(false);
+  CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(o) {
-      boost = ParseBool(it.value);
-    }
-
-    IF_CHECK_HASH_FROM_CONSTANTS(customData) {
-      data = it.value;
-    }
-  }
-
-  auto *event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
+  auto* event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
   //    event->customData = CustomJSONData::JSONObjectOrNull(data);
   return event;
 }
 
 auto DeserializeIndexFilter(rapidjson::Value const& val) {
-  BeatmapSaveData::IndexFilter::IndexFilterType type = 0;
-  int param0 = 0;
-  int param1 = 0;
-  bool reversed = false;
-  BeatmapSaveData::IndexFilterRandomType random = 0;
-  int seed = 0;
-  int chunks = 0;
-  float limit = 0;
-  BeatmapSaveData::IndexFilterLimitAlsoAffectsType limitAlsoAffectsType = 0;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH(f) {
-      type = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(p) {
-      param0 = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(t) {
-      param1 = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(r) {
-      reversed = ParseBool(it.value);
-    }
-
-    IF_CHECK_HASH(c) {
-      chunks = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(l) {
-      limit = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(d) {
-      limitAlsoAffectsType = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(n) {
-      random = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(s) {
-      seed = it.value.GetInt();
-    }
-  }
+  BeatmapSaveData::IndexFilter::IndexFilterType type = NEJSON::ReadOptionalInt(val, "f").value_or(0);
+  int param0 = NEJSON::ReadOptionalInt(val, "p").value_or(0);
+  int param1 = NEJSON::ReadOptionalInt(val, "t").value_or(0);
+  bool reversed = NEJSON::ReadOptionalBool(val, "r").value_or(false);
+  BeatmapSaveData::IndexFilterRandomType random = NEJSON::ReadOptionalInt(val, "n").value_or(0);
+  int seed = NEJSON::ReadOptionalInt(val, "s").value_or(0);
+  int chunks = NEJSON::ReadOptionalInt(val, "c").value_or(0);
+  float limit = NEJSON::ReadOptionalFloat(val, "l").value_or(0);
+  BeatmapSaveData::IndexFilterLimitAlsoAffectsType limitAlsoAffectsType = NEJSON::ReadOptionalInt(val, "d").value_or(0);
 
   return CustomJSONData::NewFast<BeatmapSaveData::IndexFilter*>(type, param0, param1, reversed, random, seed, chunks,
                                                                 limit, limitAlsoAffectsType);
 }
 
 auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
-  float beat = 0;
-  SAFEPTR_VLIST(BeatmapSaveData::LightColorEventBox*, eventBoxes);
-  int groupId = 0;
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int groupId = NEJSON::ReadOptionalInt(val, Constants::groupId).value_or(0);
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
+  auto eventBoxesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightColorEventBox*>(
+      val, Constants::eventBoxes, [](rapidjson::Value const& arrIt) {
+        /* nullable */
+        BeatmapSaveData::IndexFilter* indexFilter =
+            NEJSON::ReadOptionalType<BeatmapSaveData::IndexFilter*>(
+                arrIt, Constants::indexFilter,
+                [](rapidjson::Value const& it) { return DeserializeIndexFilter(it); })
+                .value_or(nullptr);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
+        float beatDistributionParam = NEJSON::ReadOptionalFloat(arrIt, Constants::beatDistributionParam).value_or(0);
+        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, Constants::beatDistributionParamType).value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(groupId) {
-      groupId = it.value.GetInt();
-    }
+        float brightnessDistributionParam = NEJSON::ReadOptionalFloat(arrIt, "r").value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(eventBoxes) {
-      // idc if it shadows
-      for (auto const& arrIt : it.value.GetArray()) {
+        bool brightnessDistributionShouldAffectFirstBaseEvent = NEJSON::ReadOptionalBool(arrIt, "b").value_or(false);
 
-        /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
-        float beatDistributionParam = 0;
-        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float brightnessDistributionParam = 0;
-        bool brightnessDistributionShouldAffectFirstBaseEvent = false;
-        BeatmapSaveData::EventBox::DistributionParamType brightnessDistributionParamType;
-        EaseType brightnessDistributionEaseType;
-        SAFEPTR_VLIST(BeatmapSaveData::LightColorBaseData*, lightColorBaseDataList);
+        BeatmapSaveData::EventBox::DistributionParamType brightnessDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, "t").value_or(0);
 
-        for (auto const& it : arrIt.GetObject()) {
-          IT_HASH
+        EaseType brightnessDistributionEaseType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
 
-          IF_CHECK_HASH_FROM_CONSTANTS(indexFilter) {
-            indexFilter = DeserializeIndexFilter(it.value);
-          }
+        auto lightColorBaseDataListVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightColorBaseData*>(
+            arrIt, "e", [](rapidjson::Value const& arrIt) {
+              float lightBeat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
+              BeatmapSaveData::TransitionType transitionType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
+              BeatmapSaveData::EnvironmentColorType colorType =
+                  NEJSON::ReadOptionalInt(arrIt, Constants::colorType).value_or(0);
+              float brightness = NEJSON::ReadOptionalFloat(arrIt, "s").value_or(0);
+              int strobeFrequency = NEJSON::ReadOptionalInt(arrIt, "f").value_or(0);
 
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParam) {
-            beatDistributionParam = it.value.GetFloat();
-          }
+              return CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(
+                  lightBeat, transitionType.value, colorType.value, brightness, strobeFrequency);
+            });
+        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorBaseData*, lightColorBaseDataList,
+                              CustomJSONData::SpanToSystemList(lightColorBaseDataListVec));
 
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParamType) {
-            beatDistributionParamType = it.value.GetInt();
-          }
-
-          IF_CHECK_HASH(r) {
-            brightnessDistributionParam = it.value.GetFloat();
-          }
-
-          IF_CHECK_HASH(b) {
-            brightnessDistributionShouldAffectFirstBaseEvent = ParseBool(it.value);
-          }
-
-          IF_CHECK_HASH(t) {
-            brightnessDistributionParamType = it.value.GetInt();
-          }
-          IF_CHECK_HASH(i) {
-            brightnessDistributionEaseType = it.value.GetInt();
-          }
-
-          IF_CHECK_HASH(e) {
-            for (auto const& arrIt : it.value.GetArray()) {
-              float lightBeat = 0;
-              BeatmapSaveData::TransitionType transitionType;
-              BeatmapSaveData::EnvironmentColorType colorType;
-              float brightness = 0;
-              int strobeFrequency = 0;
-
-              for (auto const& it : arrIt.GetObject()) {
-                IT_HASH
-
-                IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-                  lightBeat = it.value.GetFloat();
-                }
-
-                IF_CHECK_HASH(i) {
-                  transitionType = it.value.GetInt();
-                }
-
-                IF_CHECK_HASH_FROM_CONSTANTS(colorType) {
-                  colorType = it.value.GetInt();
-                }
-
-                IF_CHECK_HASH(s) {
-                  brightness = it.value.GetFloat();
-                }
-
-                IF_CHECK_HASH(f) {
-                  strobeFrequency = it.value.GetInt();
-                }
-              }
-
-              lightColorBaseDataList.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(
-                  lightBeat, transitionType, colorType, brightness, strobeFrequency));
-            }
-          }
-        }
-
-        CRASH_UNLESS(indexFilter);
-
-        eventBoxes.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBox*>(
+        return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBox*>(
             indexFilter, beatDistributionParam, beatDistributionParamType, brightnessDistributionParam,
-            brightnessDistributionShouldAffectFirstBaseEvent, brightnessDistributionParamType,
-            (int)brightnessDistributionEaseType, lightColorBaseDataList.getInner()));
-      }
-    }
-  }
+            brightnessDistributionShouldAffectFirstBaseEvent, brightnessDistributionParamType.value,
+            brightnessDistributionEaseType.value, lightColorBaseDataList.getInner());
+      });
+
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorEventBox*, eventBoxes,
+                        CustomJSONData::SpanToSystemList(eventBoxesVec));
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
 auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
-  float beat = 0;
-  SAFEPTR_VLIST(BeatmapSaveData::LightRotationEventBox*, eventBoxes);
-  int groupId = 0;
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int groupId = NEJSON::ReadOptionalInt(val, Constants::groupId).value_or(0);
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
+  auto eventBoxesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightRotationEventBox*>(
+      val, Constants::eventBoxes, [](rapidjson::Value const& arrIt) {
+        /* nullable */
+        BeatmapSaveData::IndexFilter* indexFilter =
+            NEJSON::ReadOptionalType<BeatmapSaveData::IndexFilter*>(
+                arrIt, Constants::indexFilter, [](rapidjson::Value const& it) { return DeserializeIndexFilter(it); })
+                .value_or(nullptr);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
+        float beatDistributionParam = NEJSON::ReadOptionalFloat(arrIt, Constants::beatDistributionParam).value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(groupId) {
-      groupId = it.value.GetInt();
-    }
+        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, Constants::beatDistributionParamType).value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(eventBoxes) {
-      auto arr = it.value.GetArray();
+        float rotationDistributionParam = NEJSON::ReadOptionalFloat(arrIt, "s").value_or(0);
+        BeatmapSaveData::EventBox::DistributionParamType rotationDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, "t").value_or(0);
+        bool rotationDistributionShouldAffectFirstBaseEvent = NEJSON::ReadOptionalBool(arrIt, "b").value_or(false);
+        BeatmapSaveData::Axis axis = NEJSON::ReadOptionalInt(arrIt, "a").value_or(0);
+        bool flipRotation = NEJSON::ReadOptionalBool(arrIt, "r").value_or(false);
+        EaseType rotationDistributionEaseType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
 
-      eventBoxes.resize(arr.Size());
+        auto lightTranslationBaseDataListVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightRotationBaseData*>(
+            arrIt, "l", [](rapidjson::Value const& arrIt) {
+              float lightBeat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
+              bool usePreviousEventRotationValue = NEJSON::ReadOptionalBool(arrIt, "p").value_or(false);
+              BeatmapSaveData::EaseType easeType = NEJSON::ReadOptionalInt(arrIt, "e").value_or(0);
+              int loopsCount = NEJSON::ReadOptionalInt(arrIt, "l").value_or(0);
+              float rotation = NEJSON::ReadOptionalFloat(arrIt, "r").value_or(0);
+              BeatmapSaveData::LightRotationBaseData::RotationDirection rotationDirection =
+                  NEJSON::ReadOptionalInt(arrIt, "o").value_or(0);
 
-      // idc if it shadows
-      for (auto const& arrIt : arr) {
+              return CustomJSONData::NewFast<BeatmapSaveData::LightRotationBaseData*>(
+                  lightBeat, usePreviousEventRotationValue, easeType.value, loopsCount, rotation,
+                  rotationDirection.value);
+            });
 
-        /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
-        float beatDistributionParam = 0;
-        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float rotationDistributionParam = 0;
-        BeatmapSaveData::EventBox::DistributionParamType rotationDistributionParamType;
-        bool rotationDistributionShouldAffectFirstBaseEvent = false;
-        BeatmapSaveData::Axis axis;
-        bool flipRotation = false;
-        EaseType rotationDistributionEaseType;
-        SAFEPTR_VLIST(BeatmapSaveData::LightRotationBaseData*, lightRotationBaseDataList);
+        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationBaseData*, lightTranslationBaseDataList,
+                              CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec));
 
-        for (auto const& it : arrIt.GetObject()) {
-          IT_HASH
-
-          IF_CHECK_HASH_FROM_CONSTANTS(indexFilter) {
-            indexFilter = DeserializeIndexFilter(it.value);
-          }
-
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParam) {
-            beatDistributionParam = it.value.GetFloat();
-          }
-
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParamType) {
-            beatDistributionParamType = it.value.GetInt();
-          }
-
-          IF_CHECK_HASH(s) {
-            rotationDistributionParam = it.value.GetFloat();
-          }
-
-          IF_CHECK_HASH(t) {
-            rotationDistributionParamType = it.value.GetInt();
-          }
-
-          IF_CHECK_HASH(b) {
-            rotationDistributionShouldAffectFirstBaseEvent = ParseBool(it.value);
-          }
-
-          IF_CHECK_HASH(a) {
-            axis = it.value.GetInt();
-          }
-
-          IF_CHECK_HASH(r) {
-            flipRotation = ParseBool(it.value);
-          }
-
-          IF_CHECK_HASH(l) {
-            auto arr = it.value.GetArray();
-            lightRotationBaseDataList.resize(arr.Size());
-
-            for (auto const& arrIt : arr) {
-              float lightBeat = 0;
-              bool usePreviousEventRotationValue = false;
-              BeatmapSaveData::EaseType easeType;
-              int loopsCount = 0;
-              float rotation = 0;
-              BeatmapSaveData::LightRotationBaseData::RotationDirection rotationDirection;
-
-              for (auto const& it : arrIt.GetObject()) {
-                IT_HASH
-
-                IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-                  lightBeat = it.value.GetFloat();
-                }
-
-                IF_CHECK_HASH(p) {
-                  usePreviousEventRotationValue = ParseBool(it.value);
-                }
-
-                IF_CHECK_HASH(e) {
-                  easeType = it.value.GetInt();
-                }
-
-                IF_CHECK_HASH(l) {
-                  loopsCount = it.value.GetInt();
-                }
-
-                IF_CHECK_HASH(r) {
-                  rotation = it.value.GetFloat();
-                }
-
-                IF_CHECK_HASH(o) {
-                  rotationDirection = it.value.GetInt();
-                }
-                IF_CHECK_HASH(i) {
-                  rotationDistributionEaseType = it.value.GetInt();
-                }
-              }
-
-              lightRotationBaseDataList.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightRotationBaseData*>(
-                  lightBeat, usePreviousEventRotationValue, easeType, loopsCount, rotation, rotationDirection));
-            }
-          }
-        }
-
-        eventBoxes.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBox*>(
-            indexFilter, beatDistributionParam, beatDistributionParamType, rotationDistributionParam,
-            rotationDistributionParamType, rotationDistributionShouldAffectFirstBaseEvent,
-            (int)rotationDistributionEaseType, axis, flipRotation, lightRotationBaseDataList.getInner()));
-      }
-    }
-  }
+        return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBox*>(
+            indexFilter, beatDistributionParam, beatDistributionParamType.value, rotationDistributionParam,
+            rotationDistributionParamType.value, rotationDistributionShouldAffectFirstBaseEvent,
+            rotationDistributionEaseType.value, axis.value, flipRotation, lightTranslationBaseDataList.getInner());
+      });
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationEventBox*, eventBoxes,
+                        CustomJSONData::SpanToSystemList(eventBoxesVec));
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
 auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val) {
-  float beat = 0;
-  SAFEPTR_VLIST(BeatmapSaveData::LightTranslationEventBox*, eventBoxes);
-  int groupId = 0;
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int groupId = NEJSON::ReadOptionalInt(val, Constants::groupId).value_or(0);
 
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
+  auto eventBoxesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightTranslationEventBox*>(
+      val, Constants::eventBoxes, [](rapidjson::Value const& arrIt) {
+        /* nullable */
+        BeatmapSaveData::IndexFilter* indexFilter =
+            NEJSON::ReadOptionalType < BeatmapSaveData::IndexFilter * >(
+                                                                          arrIt, Constants::indexFilter,
+                                                                          [](rapidjson::Value const& it) {
+                                                                            return DeserializeIndexFilter(it);
+                                                                          })
+                                                                          .value_or(nullptr);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
+        float beatDistributionParam = NEJSON::ReadOptionalFloat(arrIt, Constants::beatDistributionParam).value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(groupId) {
-      groupId = it.value.GetInt();
-    }
+        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, Constants::beatDistributionParamType).value_or(0);
 
-    IF_CHECK_HASH_FROM_CONSTANTS(eventBoxes) {
-      auto arr = it.value.GetArray();
+        float gapDistributionParam = NEJSON::ReadOptionalFloat(arrIt, "s").value_or(0);
 
-      eventBoxes.resize(arr.Size());
+        BeatmapSaveData::EventBox::DistributionParamType gapDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, "t").value_or(0);
 
-      // idc if it shadows
-      for (auto const& arrIt : arr) {
+        bool gapDistributionShouldAffectFirstBaseEvent = NEJSON::ReadOptionalBool(arrIt, "b").value_or(false);
 
-        /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
-        float beatDistributionParam = 0;
-        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float gapDistributionParam = 0;
-        BeatmapSaveData::EventBox::DistributionParamType gapDistributionParamType;
-        bool gapDistributionShouldAffectFirstBaseEvent = false;
-        BeatmapSaveData::Axis axis;
-        bool flipTranslation = false;
-        EaseType gapDistributionEaseType;
-        SAFEPTR_VLIST(BeatmapSaveData::LightTranslationBaseData*, lightTranslationBaseDataList);
+        BeatmapSaveData::Axis axis = NEJSON::ReadOptionalInt(arrIt, "a").value_or(0);
 
-        for (auto const& it : arrIt.GetObject()) {
-          IT_HASH
+        bool flipTranslation = NEJSON::ReadOptionalBool(arrIt, "r").value_or(false);
 
-          IF_CHECK_HASH_FROM_CONSTANTS(indexFilter) {
-            indexFilter = DeserializeIndexFilter(it.value);
-          }
+        EaseType gapDistributionEaseType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
 
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParam) {
-            beatDistributionParam = it.value.GetFloat();
-          }
+        auto lightTranslationBaseDataListVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightTranslationBaseData*>(
+            arrIt, "l", [](rapidjson::Value const& arrIt) {
+              float lightBeat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
+              bool usePreviousEventTransitionValue = NEJSON::ReadOptionalBool(arrIt, "p").value_or(false);
+              BeatmapSaveData::EaseType easeType = NEJSON::ReadOptionalInt(arrIt, "e").value_or(0);
+              float translation = NEJSON::ReadOptionalFloat(arrIt, "t").value_or(0);
 
-          IF_CHECK_HASH_FROM_CONSTANTS(beatDistributionParamType) {
-            beatDistributionParamType = it.value.GetInt();
-          }
-          // gapDistributionParam float
-          IF_CHECK_HASH(s) {
-            gapDistributionParam = it.value.GetFloat();
-          }
+              return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationBaseData*>(
+                  lightBeat, usePreviousEventTransitionValue, (int)easeType, translation);
+            });
 
-          // gapDistributionParamType (1 - wave, 2 - step)
-          IF_CHECK_HASH(t) {
-            gapDistributionParamType = it.value.GetInt();
-          }
+        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightTranslationBaseData*, lightTranslationBaseDataList,
+                              CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec));
 
-          // gapDistributionShouldAffectFirstBaseEvent (bool) (0, 1) as int
-          IF_CHECK_HASH(b) {
-            gapDistributionShouldAffectFirstBaseEvent = ParseBool(it.value);
-          }
-
-          // axis (0 - x, 1 - y, 2 - z)
-          IF_CHECK_HASH(a) {
-            axis = it.value.GetInt();
-          }
-
-          // flipTranslation (bool) (0, 1) as int
-          IF_CHECK_HASH(r) {
-            flipTranslation = ParseBool(it.value);
-          }
-
-          // gapDistributionShouldAffectFirstBaseEvent (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
-          IF_CHECK_HASH(i) {
-            gapDistributionEaseType = it.value.GetInt();
-          }
-
-          // lightTranslationBaseDataList (array)
-          IF_CHECK_HASH(l) {
-            auto arr = it.value.GetArray();
-            lightTranslationBaseDataList.resize(arr.Size());
-
-            for (auto const& arrIt : arr) {
-              float lightBeat = 0;
-              bool usePreviousEventTransitionValue = false;
-              BeatmapSaveData::EaseType easeType;
-              float translation = 0;
-
-              for (auto const& it : arrIt.GetObject()) {
-                IT_HASH
-
-                // beat float
-                IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-                  lightBeat = it.value.GetFloat();
-                }
-
-                // usePreviousEventTranslationValue (bool) (0, 1) as int
-                IF_CHECK_HASH(p) {
-                  usePreviousEventTransitionValue = ParseBool(it.value);
-                }
-
-                // easeType (-1 - None, 0 - Linear, 1 - InQuad, 2 - OutQuad, 3 - InOutQuad)
-                IF_CHECK_HASH(e) {
-                  easeType = it.value.GetInt();
-                }
-
-                // translation float
-                IF_CHECK_HASH(t) {
-                  translation = it.value.GetFloat();
-                }
-              }
-
-              lightTranslationBaseDataList.push_back(
-                  CustomJSONData::NewFast<BeatmapSaveData::LightTranslationBaseData*>(
-                      lightBeat, usePreviousEventTransitionValue, (int)easeType, translation));
-            }
-          }
-        }
-
-        eventBoxes.push_back(CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBox*>(
-            indexFilter, beatDistributionParam, (int)beatDistributionParamType, gapDistributionParam,
-            (int)gapDistributionParamType, gapDistributionShouldAffectFirstBaseEvent, (int)gapDistributionEaseType,
-            axis, flipTranslation, lightTranslationBaseDataList.getInner()));
-      }
-    }
-  }
+        return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBox*>(
+            indexFilter, beatDistributionParam, beatDistributionParamType.value, gapDistributionParam,
+            gapDistributionParamType.value, gapDistributionShouldAffectFirstBaseEvent, gapDistributionEaseType.value,
+            axis, flipTranslation, lightTranslationBaseDataList.getInner());
+      });
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightTranslationEventBox*, eventBoxes,
+                        CustomJSONData::SpanToSystemList(eventBoxesVec));
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
 auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
-  std::string_view keyword = "";
+  std::string_view keyword = NEJSON::ReadOptionalString(val, "k").value_or("");
+  auto eventTypesVec =
+      NEJSON::ReadArrayOrEmpty<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType>(
+          val, "e",
+          [](rapidjson::Value const& it) -> BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType {
+            return it.GetInt();
+          });
 
-  SAFEPTR_VLIST(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType, eventTypes);
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH(k) {
-      keyword = it.value.GetString();
-    }
-
-    IF_CHECK_HASH(e) {
-      auto const& arr = it.value.GetArray();
-      eventTypes.resize(arr.Size());
-
-      for (auto const& arrIt : arr) {
-        eventTypes.getInner()->Add(it.value.GetInt());
-      }
-    }
-  }
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType, eventTypes,
+                        CustomJSONData::SpanToSystemList(eventTypesVec));
 
   return BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(keyword,
                                                                                            eventTypes.getInner());
 }
 
 auto DeserializeCustomEvent(rapidjson::Value const& val) {
-  float beat = 0;
-  std::string_view type = "";
-  rapidjson::Value const* data = nullptr;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      if (it.value.IsString()) {
-        beat = std::stof(it.value.GetString());
-      } else {
-        beat = it.value.GetFloat();
-      }
-    }
-
-    IF_CHECK_HASH(t) {
-      type = it.value.GetString();
-    }
-
-    IF_CHECK_HASH(d) {
-      data = &it.value;
-    }
-  }
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  std::string_view type = NEJSON::ReadOptionalString(val, "t").value_or("");
+  rapidjson::Value const* data = NEJSON::ReadOptionalValuePtr(val, "d").value_or(nullptr);
 
   return CustomJSONData::CustomEventSaveData(type, beat, data);
 }
 } // namespace
 
 CustomJSONData::v3::CustomBeatmapSaveData*
-CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc) {
+CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc) {
   using namespace Parser;
 
   auto const& doc = *sharedDoc;
 
-  SAFEPTR_VLIST(BeatmapSaveData::BpmChangeEventData*, bpmEvents);
-  SAFEPTR_VLIST(BeatmapSaveData::RotationEventData*, rotationEvents);
-  SAFEPTR_VLIST(BeatmapSaveData::ColorNoteData*, colorNotes);
-  SAFEPTR_VLIST(BeatmapSaveData::BombNoteData*, bombNotes);
-  SAFEPTR_VLIST(BeatmapSaveData::ObstacleData*, obstacles);
-  SAFEPTR_VLIST(BeatmapSaveData::SliderData*, sliders);
-  SAFEPTR_VLIST(BeatmapSaveData::BurstSliderData*, burstSliders);
-  SAFEPTR_VLIST(BeatmapSaveData::WaypointData*, waypoints);
-  SAFEPTR_VLIST(BeatmapSaveData::BasicEventData*, basicBeatmapEvents);
-  SAFEPTR_VLIST(BeatmapSaveData::ColorBoostEventData*, colorBoostBeatmapEvents);
-  SAFEPTR_VLIST(BeatmapSaveData::LightColorEventBoxGroup*, lightColorEventBoxGroups);
-  SAFEPTR_VLIST(BeatmapSaveData::LightRotationEventBoxGroup*, lightRotationEventBoxGroups);
+  auto bpmEventsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::BpmChangeEventData*>(
+      doc, "bpmEvents", [](rapidjson::Value const& arr) { return DeserializeBpmChangeEventData(arr); });
+
+  auto rotationEventsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::RotationEventData*>(
+      doc, "rotationEvents", [](rapidjson::Value const& arr) { return DeserializeRotation(arr); });
+
+  auto colorNotesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::ColorNoteData*>(
+      doc, "colorNotes", [](rapidjson::Value const& arr) { return DeserializeColorNote(arr); });
+
+  auto bombNotesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::BombNoteData*>(
+      doc, "bombNotes", [](rapidjson::Value const& arr) { return DeserializeBombNote(arr); });
+
+  auto obstaclesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::ObstacleData*>(
+      doc, "obstacles", [](rapidjson::Value const& arr) { return DeserializeObstacle(arr); });
+
+  auto slidersVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::SliderData*>(
+      doc, "sliders", [](rapidjson::Value const& arr) { return DeserializeSlider(arr); });
+
+  auto burstSlidersVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::BurstSliderData*>(
+      doc, "burstSliders", [](rapidjson::Value const& arr) { return DeserializeBurstSlider(arr); });
+
+  auto waypointsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::WaypointData*>(
+      doc, "waypoints", [](rapidjson::Value const& arr) { return DeserializeWaypoint(arr); });
+
+  auto basicBeatmapEventsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::BasicEventData*>(
+      doc, "basicBeatmapEvents", [](rapidjson::Value const& arr) { return DeserializeBasicEvent(arr); });
+
+  auto colorBoostBeatmapEventsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::ColorBoostEventData*>(
+      doc, "colorBoostBeatmapEvents", [](rapidjson::Value const& arr) { return DeserializeColorBoostEventData(arr); });
+
+  auto lightColorEventBoxGroupsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightColorEventBoxGroup*>(
+      doc, "lightColorEventBoxGroups",
+      [](rapidjson::Value const& arr) { return DeserializeLightColorEventBoxGroup(arr); });
+
+  auto lightRotationEventBoxGroupsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightRotationEventBoxGroup*>(
+      doc, "lightRotationEventBoxGroups",
+      [](rapidjson::Value const& arr) { return DeserializeLightRotationEventBoxGroup(arr); });
+
+  auto lightTranslationEventBoxGroupsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::LightTranslationEventBoxGroup*>(
+      doc, "lightTranslationEventBoxGroups",
+      [](rapidjson::Value const& arr) { return DeserializeLightTranslationEventBoxGroup(arr); });
+
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BpmChangeEventData*, bpmEvents,
+                        CustomJSONData::SpanToSystemList(bpmEventsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::RotationEventData*, rotationEvents,
+                        CustomJSONData::SpanToSystemList(rotationEventsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ColorNoteData*, colorNotes, CustomJSONData::SpanToSystemList(colorNotesVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BombNoteData*, bombNotes, CustomJSONData::SpanToSystemList(bombNotesVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ObstacleData*, obstacles, CustomJSONData::SpanToSystemList(obstaclesVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::SliderData*, sliders, CustomJSONData::SpanToSystemList(slidersVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BurstSliderData*, burstSliders,
+                        CustomJSONData::SpanToSystemList(burstSlidersVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::WaypointData*, waypoints, CustomJSONData::SpanToSystemList(waypointsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BasicEventData*, basicBeatmapEvents,
+                        CustomJSONData::SpanToSystemList(basicBeatmapEventsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ColorBoostEventData*, colorBoostBeatmapEvents,
+                        CustomJSONData::SpanToSystemList(colorBoostBeatmapEventsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorEventBoxGroup*, lightColorEventBoxGroups,
+                        CustomJSONData::SpanToSystemList(lightColorEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationEventBoxGroup*, lightRotationEventBoxGroups,
+                        CustomJSONData::SpanToSystemList(lightRotationEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups,
+                        CustomJSONData::SpanToSystemList(lightTranslationEventBoxGroupsVec));
   SAFEPTR_VLIST(BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, basicEventTypesForKeyword);
-  SAFEPTR_VLIST(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups);
-  bool useNormalEventsAsCompatibleEvents = false;
+  bool useNormalEventsAsCompatibleEvents =
+      NEJSON::ReadOptionalBool(doc, "useNormalEventsAsCompatibleEvents").value_or(false);
 
-  for (auto const& it : doc.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH(bpmEvents) {
-      auto arr = it.value.GetArray();
-      bpmEvents.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        bpmEvents.push_back(DeserializeBpmChangeEventData(o));
-      }
-    }
-
-    IF_CHECK_HASH(rotationEvents) {
-      auto arr = it.value.GetArray();
-      rotationEvents.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        rotationEvents.push_back(DeserializeRotation(o));
-      }
-    }
-    IF_CHECK_HASH(colorNotes) {
-      auto arr = it.value.GetArray();
-      colorNotes.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        colorNotes.push_back(CRASH_UNLESS(DeserializeColorNote(o)));
-      }
-    }
-    IF_CHECK_HASH(bombNotes) {
-      auto arr = it.value.GetArray();
-      bombNotes.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        bombNotes.push_back(DeserializeBombNote(o));
-      }
-    }
-    IF_CHECK_HASH(obstacles) {
-      auto arr = it.value.GetArray();
-      obstacles.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        obstacles.push_back(DeserializeObstacle(o));
-      }
-    }
-    IF_CHECK_HASH(sliders) {
-      auto arr = it.value.GetArray();
-      sliders.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        sliders.push_back(DeserializeSlider(o));
-      }
-    }
-    IF_CHECK_HASH(burstSliders) {
-      auto arr = it.value.GetArray();
-      burstSliders.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        burstSliders.push_back(DeserializeBurstSlider(o));
-      }
-    }
-    IF_CHECK_HASH(waypoints) {
-      auto arr = it.value.GetArray();
-
-      waypoints.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        waypoints.push_back(DeserializeWaypoint(o));
-      }
-    }
-    IF_CHECK_HASH(basicBeatmapEvents) {
-      auto arr = it.value.GetArray();
-
-      basicBeatmapEvents.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        basicBeatmapEvents.push_back(DeserializeBasicEvent(o));
-      }
-    }
-    IF_CHECK_HASH(colorBoostBeatmapEvents) {
-      auto arr = it.value.GetArray();
-
-      colorBoostBeatmapEvents.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        colorBoostBeatmapEvents.push_back(DeserializeColorBoostEventData(o));
-      }
-    }
-    IF_CHECK_HASH(lightColorEventBoxGroups) {
-      auto arr = it.value.GetArray();
-
-      lightColorEventBoxGroups.resize(arr.Size());
-
-      for (auto const& o : arr) {
-        lightColorEventBoxGroups.push_back(DeserializeLightColorEventBoxGroup(o));
-      }
-    }
-    IF_CHECK_HASH(lightRotationEventBoxGroups) {
-      auto arr = it.value.GetArray();
-
-      lightRotationEventBoxGroups.resize(arr.Size());
-
-      for (auto const& o : it.value.GetArray()) {
-        lightRotationEventBoxGroups.push_back(DeserializeLightRotationEventBoxGroup(o));
-      }
-    }
-    IF_CHECK_HASH(lightTranslationEventBoxGroups) {
-      auto arr = it.value.GetArray();
-
-      lightTranslationEventBoxGroups.resize(arr.Size());
-
-      for (auto const& o : it.value.GetArray()) {
-        lightTranslationEventBoxGroups.push_back(DeserializeLightTranslationEventBoxGroup(o));
-      }
-    }
-    IF_CHECK_HASH(useNormalEventsAsCompatibleEvents) {
-      useNormalEventsAsCompatibleEvents = it.value.GetBool();
-    }
-  }
   auto basicEventTypesWithKeywordsIt = doc.FindMember("basicEventTypesWithKeywords");
   if (basicEventTypesWithKeywordsIt != doc.MemberEnd()) {
     auto dIt = basicEventTypesWithKeywordsIt->value.FindMember("d");
