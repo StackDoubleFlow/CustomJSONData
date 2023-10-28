@@ -35,9 +35,10 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
 //    SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
 //    VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 //
-//#define SAFEPTR_VLIST(type, name) \
+// #define SAFEPTR_VLIST(type, name) \
 //    SafePtr<System::Collections::Generic::List_1<type>>
-//    name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(0)); \ VList<type>
+ //    name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(0)); \
+ VList<type>
 //    name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 
 #define SAFEPTR_VLIST_ARG(type, name, ...)                                                                             \
@@ -68,7 +69,7 @@ void CustomBeatmapSaveData::ctor(
     ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
     bool useNormalEventsAsCompatibleEvents) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 15);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 15);
   CRASH_UNLESS(il2cpp_utils::RunMethod(
       this, ctor, bpmEvents, rotationEvents, colorNotes, bombNotes, obstacles, sliders, burstSliders, waypoints,
       basicBeatmapEvents, colorBoostBeatmapEvents, lightColorEventBoxGroups, lightRotationEventBoxGroups,
@@ -79,13 +80,13 @@ void CustomBeatmapSaveData_ColorNoteData::ctor(float beat, int line, int layer,
                                                ::BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType color,
                                                ::GlobalNamespace::NoteCutDirection cutDirection, int angleOffset) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ColorNoteData*), ".ctor", 6);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ColorNoteData*), ".ctor", 6);
   CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, beat, line, layer, color, cutDirection, angleOffset));
 }
 
 void CustomBeatmapSaveData_BombNoteData::ctor(float beat, int line, int layer) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BombNoteData*), ".ctor", 3);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BombNoteData*), ".ctor", 3);
   CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, beat, line, layer));
 }
 
@@ -97,7 +98,7 @@ void CustomBeatmapSaveData_SliderData::ctor(BeatmapSaveDataVersion3::BeatmapSave
                                             ::GlobalNamespace::NoteCutDirection tailCutDirection,
                                             ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::SliderData*), ".ctor", 12);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::SliderData*), ".ctor", 12);
   CRASH_UNLESS(il2cpp_utils::RunMethod(
       this, ctor, colorType, headBeat, headLine, headLayer, headControlPointLengthMultiplier, headCutDirection,
       tailBeat, tailLine, tailLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode));
@@ -108,7 +109,7 @@ void CustomBeatmapSaveData_BurstSliderData::ctor(BeatmapSaveDataVersion3::Beatma
                                                  ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat,
                                                  int tailLine, int tailLayer, int sliceCount, float squishAmount) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BurstSliderData*), ".ctor", 10);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BurstSliderData*), ".ctor", 10);
   CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, colorType, headBeat, headLine, headLayer, headCutDirection, tailBeat,
                                        tailLine, tailLayer, sliceCount, squishAmount));
 }
@@ -123,11 +124,11 @@ void CustomJSONData::v3::CustomBeatmapSaveData_BasicEventData::ctor(
     float time, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType type, int value,
     float floatValue) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BasicEventData*), ".ctor", 4);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::BasicEventData*), ".ctor", 4);
   CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, type, value, floatValue));
 }
 
-inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustomData(rapidjson::Value const& doc) {
+inline CustomDataOpt GetCustomData(rapidjson::Value const& doc) {
   auto customDataIt = doc.FindMember(Constants::customData);
   if (customDataIt != doc.MemberEnd() && customDataIt->value.IsObject()) {
     return customDataIt->value;
@@ -136,13 +137,13 @@ inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustom
   return std::nullopt;
 }
 
-//#define IT_HASH auto nameHash = std::hash<std::string_view>()(it.name.GetString());
+// #define IT_HASH auto nameHash = std::hash<std::string_view>()(it.name.GetString());
 //
-//#define IF_CHECK_HASH_FROM_CONSTANTS(str) \
+// #define  IF_CHECK_HASH_FROM_CONSTANTS(str) \
 //        static const auto str##_Hash = std::hash<std::string_view>()(Constants::str); \
 //        if (nameHash == str##_Hash)
 //
-//#define IF_CHECK_HASH(str) \
+// #define  IF_CHECK_HASH(str) \
 //        static const auto str##_Hash = std::hash<std::string_view>()(#str); \
 //        if (nameHash == str##_Hash)
 
@@ -152,71 +153,13 @@ inline decltype(CustomJSONData::v3::CustomBeatmapSaveData::customData) GetCustom
 
 #define IF_CHECK_HASH(str) if (nameHash == #str)
 
-static inline bool ParseBool(rapidjson::Value const& val) {
-  if (val.IsNumber()) {
-    return val.GetInt() == 1;
-  }
-  if (val.IsString()) {
-    return std::string_view(val.GetString()) == "true";
-  }
-  if (!val.IsBool()) {
-    return false;
-  }
-
-  return val.GetBool();
-}
-
-static auto DeserializeBpmChangeEventData(rapidjson::Value const& val) {
-  float beat;
-  float bpm;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(m) {
-      bpm = it.value.GetFloat();
-    }
-  }
-
-  return CustomJSONData::NewFast<BeatmapSaveData::BpmChangeEventData*>(beat, bpm);
-}
-
-static auto DeserializeRotation(rapidjson::Value const& val) {
-  float beat;
-  BeatmapSaveData::ExecutionTime executionTime;
-  float rotation;
-
-  for (auto const& it : val.GetObject()) {
-    IT_HASH
-
-    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
-      beat = it.value.GetFloat();
-    }
-
-    IF_CHECK_HASH(e) {
-      executionTime = it.value.GetInt();
-    }
-
-    IF_CHECK_HASH(r) {
-      rotation = it.value.GetFloat();
-    }
-  }
-
-  return CustomJSONData::NewFast<BeatmapSaveData::RotationEventData*>(beat, executionTime, rotation);
-}
-
 CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColorNote(rapidjson::Value const& val) {
-
-  float beat;
-  int line;
-  int layer;
+  float beat = 0;
+  int line = 0;
+  int layer = 0;
   BeatmapSaveData::NoteColorType color;
   NoteCutDirection cutDirection;
-  int angleOffset;
+  int angleOffset = 0;
   CustomDataOpt customData;
 
   for (auto const& it : val.GetObject()) {
@@ -251,16 +194,16 @@ CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColo
     }
   }
 
-  auto note = CustomBeatmapSaveData_ColorNoteData::New_ctor(beat, line, layer, color, cutDirection, angleOffset);
+  auto* note = CustomBeatmapSaveData_ColorNoteData::New_ctor(beat, line, layer, color, cutDirection, angleOffset);
   note->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
   return note;
 }
 
 CustomBeatmapSaveData_BombNoteData* CustomJSONData::v3::Parser::DeserializeBombNote(rapidjson::Value const& val) {
-  float beat;
-  int line;
-  int layer;
+  float beat = 0;
+  int line = 0;
+  int layer = 0;
   CustomDataOpt data;
 
   for (auto const& it : val.GetObject()) {
@@ -283,19 +226,19 @@ CustomBeatmapSaveData_BombNoteData* CustomJSONData::v3::Parser::DeserializeBombN
     }
   }
 
-  auto bomb = CustomBeatmapSaveData_BombNoteData::New_ctor(beat, line, layer);
+  auto* bomb = CustomBeatmapSaveData_BombNoteData::New_ctor(beat, line, layer);
   bomb->customData = CustomJSONData::JSONWrapperOrNull(data);
 
   return bomb;
 }
 
 CustomBeatmapSaveData_ObstacleData* CustomJSONData::v3::Parser::DeserializeObstacle(rapidjson::Value const& val) {
-  float beat;
-  int line;
-  int layer;
-  float duration;
-  int width;
-  int height;
+  float beat = 0;
+  int line = 0;
+  int layer = 0;
+  float duration = 0;
+  int width = 0;
+  int height = 0;
   CustomDataOpt data;
 
   for (auto const& it : val.GetObject()) {
@@ -330,22 +273,22 @@ CustomBeatmapSaveData_ObstacleData* CustomJSONData::v3::Parser::DeserializeObsta
     }
   }
 
-  auto obstacle = CustomBeatmapSaveData_ObstacleData::New_ctor(beat, line, layer, duration, width, height);
+  auto* obstacle = CustomBeatmapSaveData_ObstacleData::New_ctor(beat, line, layer, duration, width, height);
   obstacle->customData = CustomJSONData::JSONWrapperOrNull(data);
   return obstacle;
 }
 
 CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(rapidjson::Value const& val) {
   BeatmapSaveData::NoteColorType color;
-  float headBeat;
-  int headLine;
-  int headLayer;
-  float headControlPointLengthMultiplier;
+  float headBeat = 0;
+  int headLine = 0;
+  int headLayer = 0;
+  float headControlPointLengthMultiplier = 0;
   NoteCutDirection headCutDirection;
-  float tailBeat;
-  int tailLine;
-  int tailLayer;
-  float tailControlPointLengthMultiplier;
+  float tailBeat = 0;
+  int tailLine = 0;
+  int tailLayer = 0;
+  float tailControlPointLengthMultiplier = 0;
   NoteCutDirection tailCutDirection;
   SliderMidAnchorMode sliderMidAnchorMode;
   CustomDataOpt data;
@@ -406,7 +349,7 @@ CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(
     }
   }
 
-  auto slider = CustomBeatmapSaveData_SliderData::New_ctor(
+  auto* slider = CustomBeatmapSaveData_SliderData::New_ctor(
       color, headBeat, headLine, headLayer, headControlPointLengthMultiplier, headCutDirection, tailBeat, tailLine,
       tailLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode);
 
@@ -418,15 +361,15 @@ CustomBeatmapSaveData_SliderData* CustomJSONData::v3::Parser::DeserializeSlider(
 CustomJSONData::v3::CustomBeatmapSaveData_BurstSliderData*
 CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) {
   BeatmapSaveData::NoteColorType color;
-  float headBeat;
-  int headLine;
-  int headLayer;
+  float headBeat = 0;
+  int headLine = 0;
+  int headLayer = 0;
   NoteCutDirection headCutDirection;
-  float tailBeat;
-  int tailLine;
-  int tailLayer;
-  int sliceCount;
-  float squishAmount;
+  float tailBeat = 0;
+  int tailLine = 0;
+  int tailLayer = 0;
+  int sliceCount = 0;
+  float squishAmount = 0;
   CustomDataOpt data;
 
   for (auto const& it : val.GetObject()) {
@@ -477,7 +420,7 @@ CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) 
     }
   }
 
-  auto slider = CustomBeatmapSaveData_BurstSliderData::New_ctor(
+  auto* slider = CustomBeatmapSaveData_BurstSliderData::New_ctor(
       color, headBeat, headLine, headLayer, headCutDirection, tailBeat, tailLine, tailLayer, sliceCount, squishAmount);
 
   slider->customData = CustomJSONData::JSONWrapperOrNull(data);
@@ -485,10 +428,69 @@ CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) 
   return slider;
 }
 
+namespace {
+inline bool ParseBool(rapidjson::Value const& val) {
+  if (val.IsNumber()) {
+    return val.GetInt() == 1;
+  }
+  if (val.IsString()) {
+    return std::string_view(val.GetString()) == "true";
+  }
+  if (!val.IsBool()) {
+    return false;
+  }
+
+  return val.GetBool();
+}
+
+auto DeserializeBpmChangeEventData(rapidjson::Value const& val) {
+  float beat = 0;
+  float bpm = 0;
+
+  for (auto const& it : val.GetObject()) {
+    IT_HASH
+
+    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
+      beat = it.value.GetFloat();
+    }
+
+    IF_CHECK_HASH(m) {
+      bpm = it.value.GetFloat();
+    }
+  }
+
+  return CustomJSONData::NewFast<BeatmapSaveData::BpmChangeEventData*>(beat, bpm);
+}
+
+auto DeserializeRotation(rapidjson::Value const& val) {
+  float beat = 0;
+  BeatmapSaveData::ExecutionTime executionTime{};
+  float rotation = 0;
+
+  for (auto const& it : val.GetObject()) {
+    IT_HASH
+
+    IF_CHECK_HASH_FROM_CONSTANTS(beat) {
+      beat = it.value.GetFloat();
+    }
+
+    IF_CHECK_HASH(e) {
+      executionTime = it.value.GetInt();
+    }
+
+    IF_CHECK_HASH(r) {
+      rotation = it.value.GetFloat();
+    }
+  }
+
+  return CustomJSONData::NewFast<BeatmapSaveData::RotationEventData*>(beat, executionTime, rotation);
+}
+
+
 static auto DeserializeWaypoint(rapidjson::Value const& val) {
-  float beat;
-  int line;
-  int layer;
+  float beat = 0;
+  int line = 0;
+  int layer = 0;
   OffsetDirection offsetDirection;
 
   for (auto const& it : val.GetObject()) {
@@ -515,10 +517,10 @@ static auto DeserializeWaypoint(rapidjson::Value const& val) {
 }
 
 static auto DeserializeBasicEvent(rapidjson::Value const& val) {
-  float beat;
+  float beat = 0;
   BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType eventType;
-  int value;
-  float floatValue;
+  int value = 0;
+  float floatValue = 0;
   CustomDataOpt data;
 
   for (auto const& it : val.GetObject()) {
@@ -545,14 +547,14 @@ static auto DeserializeBasicEvent(rapidjson::Value const& val) {
     }
   }
 
-  auto event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
+  auto *event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
   event->customData = CustomJSONData::JSONObjectOrNull(data);
   return event;
 }
 
 static auto DeserializeColorBoostEventData(rapidjson::Value const& val) {
-  float beat;
-  bool boost;
+  float beat = 0;
+  bool boost = false;
   CustomDataOpt data;
 
   for (auto const& it : val.GetObject()) {
@@ -571,12 +573,12 @@ static auto DeserializeColorBoostEventData(rapidjson::Value const& val) {
     }
   }
 
-  auto event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
+  auto *event = CustomJSONData::NewFast<BeatmapSaveData::ColorBoostEventData*>(beat, boost);
   //    event->customData = CustomJSONData::JSONObjectOrNull(data);
   return event;
 }
 
-static auto DeserializeIndexFilter(rapidjson::Value const& val) {
+auto DeserializeIndexFilter(rapidjson::Value const& val) {
   BeatmapSaveData::IndexFilter::IndexFilterType type = 0;
   int param0 = 0;
   int param1 = 0;
@@ -631,10 +633,10 @@ static auto DeserializeIndexFilter(rapidjson::Value const& val) {
                                                                 limit, limitAlsoAffectsType);
 }
 
-static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
-  float beat;
+auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
+  float beat = 0;
   SAFEPTR_VLIST(BeatmapSaveData::LightColorEventBox*, eventBoxes);
-  int groupId;
+  int groupId = 0;
 
   for (auto const& it : val.GetObject()) {
     IT_HASH
@@ -651,11 +653,11 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
       // idc if it shadows
       for (auto const& arrIt : it.value.GetArray()) {
 
-        /* nullable */ BeatmapSaveData::IndexFilter* indexFilter;
-        float beatDistributionParam;
+        /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
+        float beatDistributionParam = 0;
         BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float brightnessDistributionParam;
-        bool brightnessDistributionShouldAffectFirstBaseEvent;
+        float brightnessDistributionParam = 0;
+        bool brightnessDistributionShouldAffectFirstBaseEvent = false;
         BeatmapSaveData::EventBox::DistributionParamType brightnessDistributionParamType;
         EaseType brightnessDistributionEaseType;
         SAFEPTR_VLIST(BeatmapSaveData::LightColorBaseData*, lightColorBaseDataList);
@@ -692,11 +694,11 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
 
           IF_CHECK_HASH(e) {
             for (auto const& arrIt : it.value.GetArray()) {
-              float lightBeat;
+              float lightBeat = 0;
               BeatmapSaveData::TransitionType transitionType;
               BeatmapSaveData::EnvironmentColorType colorType;
-              float brightness;
-              int strobeFrequency;
+              float brightness = 0;
+              int strobeFrequency = 0;
 
               for (auto const& it : arrIt.GetObject()) {
                 IT_HASH
@@ -741,10 +743,10 @@ static auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
   return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
-static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
-  float beat;
+auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
+  float beat = 0;
   SAFEPTR_VLIST(BeatmapSaveData::LightRotationEventBox*, eventBoxes);
-  int groupId;
+  int groupId = 0;
 
   for (auto const& it : val.GetObject()) {
     IT_HASH
@@ -766,13 +768,13 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
       for (auto const& arrIt : arr) {
 
         /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
-        float beatDistributionParam;
+        float beatDistributionParam = 0;
         BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float rotationDistributionParam;
+        float rotationDistributionParam = 0;
         BeatmapSaveData::EventBox::DistributionParamType rotationDistributionParamType;
-        bool rotationDistributionShouldAffectFirstBaseEvent;
+        bool rotationDistributionShouldAffectFirstBaseEvent = false;
         BeatmapSaveData::Axis axis;
-        bool flipRotation;
+        bool flipRotation = false;
         EaseType rotationDistributionEaseType;
         SAFEPTR_VLIST(BeatmapSaveData::LightRotationBaseData*, lightRotationBaseDataList);
 
@@ -816,11 +818,11 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
             lightRotationBaseDataList.resize(arr.Size());
 
             for (auto const& arrIt : arr) {
-              float lightBeat;
-              bool usePreviousEventRotationValue;
+              float lightBeat = 0;
+              bool usePreviousEventRotationValue = false;
               BeatmapSaveData::EaseType easeType;
-              int loopsCount;
-              float rotation;
+              int loopsCount = 0;
+              float rotation = 0;
               BeatmapSaveData::LightRotationBaseData::RotationDirection rotationDirection;
 
               for (auto const& it : arrIt.GetObject()) {
@@ -871,10 +873,10 @@ static auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
   return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
-static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val) {
-  float beat;
+auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val) {
+  float beat = 0;
   SAFEPTR_VLIST(BeatmapSaveData::LightTranslationEventBox*, eventBoxes);
-  int groupId;
+  int groupId = 0;
 
   for (auto const& it : val.GetObject()) {
     IT_HASH
@@ -896,13 +898,13 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val
       for (auto const& arrIt : arr) {
 
         /* nullable */ BeatmapSaveData::IndexFilter* indexFilter = nullptr;
-        float beatDistributionParam;
+        float beatDistributionParam = 0;
         BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType;
-        float gapDistributionParam;
+        float gapDistributionParam = 0;
         BeatmapSaveData::EventBox::DistributionParamType gapDistributionParamType;
-        bool gapDistributionShouldAffectFirstBaseEvent;
+        bool gapDistributionShouldAffectFirstBaseEvent = false;
         BeatmapSaveData::Axis axis;
-        bool flipTranslation;
+        bool flipTranslation = false;
         EaseType gapDistributionEaseType;
         SAFEPTR_VLIST(BeatmapSaveData::LightTranslationBaseData*, lightTranslationBaseDataList);
 
@@ -956,10 +958,10 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val
             lightTranslationBaseDataList.resize(arr.Size());
 
             for (auto const& arrIt : arr) {
-              float lightBeat;
-              bool usePreviousEventTransitionValue;
+              float lightBeat = 0;
+              bool usePreviousEventTransitionValue = false;
               BeatmapSaveData::EaseType easeType;
-              float translation;
+              float translation = 0;
 
               for (auto const& it : arrIt.GetObject()) {
                 IT_HASH
@@ -1003,8 +1005,8 @@ static auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val
   return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBoxGroup*>(beat, groupId, eventBoxes.getInner());
 }
 
-static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
-  std::string_view keyword;
+auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
+  std::string_view keyword = "";
 
   SAFEPTR_VLIST(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType, eventTypes);
 
@@ -1029,10 +1031,10 @@ static auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
                                                                                            eventTypes.getInner());
 }
 
-static auto DeserializeCustomEvent(rapidjson::Value const& val) {
-  float beat;
-  std::string_view type;
-  rapidjson::Value const* data;
+auto DeserializeCustomEvent(rapidjson::Value const& val) {
+  float beat = 0;
+  std::string_view type = "";
+  rapidjson::Value const* data = nullptr;
 
   for (auto const& it : val.GetObject()) {
     IT_HASH
@@ -1056,6 +1058,7 @@ static auto DeserializeCustomEvent(rapidjson::Value const& val) {
 
   return CustomJSONData::CustomEventSaveData(type, beat, data);
 }
+} // namespace
 
 CustomJSONData::v3::CustomBeatmapSaveData*
 CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc) {
@@ -1077,7 +1080,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   SAFEPTR_VLIST(BeatmapSaveData::LightRotationEventBoxGroup*, lightRotationEventBoxGroups);
   SAFEPTR_VLIST(BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, basicEventTypesForKeyword);
   SAFEPTR_VLIST(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups);
-  bool useNormalEventsAsCompatibleEvents;
+  bool useNormalEventsAsCompatibleEvents = false;
 
   for (auto const& it : doc.GetObject()) {
     IT_HASH
@@ -1228,7 +1231,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     }
   }
 
-  auto beatmap = CustomBeatmapSaveData::New_ctor(
+  auto* beatmap = CustomBeatmapSaveData::New_ctor(
       bpmEvents.getInner(), rotationEvents.getInner(), colorNotes.getInner(), bombNotes.getInner(),
       obstacles.getInner(), sliders.getInner(), burstSliders.getInner(), waypoints.getInner(),
       basicBeatmapEvents.getInner(), colorBoostBeatmapEvents.getInner(), lightColorEventBoxGroups.getInner(),

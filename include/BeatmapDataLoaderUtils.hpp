@@ -26,6 +26,7 @@
 #include "GlobalNamespace/DefaultEnvironmentEvents_LightGroupEvent.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupFactory.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
+#include "GlobalNamespace/EnvironmentLightGroups.hpp"
 #include "GlobalNamespace/IndexFilter.hpp"
 #include "GlobalNamespace/LightGroupSO.hpp"
 #include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilter.hpp"
