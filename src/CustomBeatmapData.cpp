@@ -114,7 +114,7 @@ CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy()
 
   // copy the rest
   copy->doc = this->doc;
-  copy->customData = customData;
+  copy->customData = customData->GetCopy();
   copy->beatmapCustomData = beatmapCustomData;
   copy->levelCustomData = levelCustomData;
   copy->v2orEarlier = v2orEarlier;
@@ -145,7 +145,7 @@ CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::
   copy->subtypeIdentifier = subtypeIdentifier;
   copy->sameTypeIndex = sameTypeIndex;
   // For some reason this is needed
-  copy->customData = this->customData;
+  copy->customData = this->customData->GetCopy();
   return copy;
 }
 
@@ -162,7 +162,7 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
 CustomJSONData::CustomObstacleData* CustomJSONData::CustomObstacleData::GetCopy() {
   auto *copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->lineIndex, this->lineLayer, this->duration,
                                                            this->width, height);
-  copy->customData = this->customData;
+  copy->customData = this->customData->GetCopy();
   copy->bpm = this->bpm;
   copy->aheadTimeNoodle = this->aheadTimeNoodle;
   return copy;
@@ -193,7 +193,7 @@ CustomJSONData::CustomSliderData* CustomJSONData::CustomSliderData::GetCopy() {
       headControlPointLengthMultiplier, headCutDirection, headCutDirectionAngleOffset, hasTailNote, tailTime,
       tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection,
       tailCutDirectionAngleOffset, midAnchorMode, sliceCount, squishAmount);
-  copy->customData = this->customData;
+  copy->customData = this->customData->GetCopy();
   copy->bpm = this->bpm;
   return copy;
 }
@@ -221,7 +221,7 @@ CustomJSONData::CustomNoteData* CustomJSONData::CustomNoteData::GetCopy() {
                                                        gameplayType, scoringType, colorType, cutDirection,
                                                        timeToNextColorNote, timeToPrevColorNote, flipLineIndex,
                                                        flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
-  copy->customData = this->customData;
+  copy->customData = this->customData->GetCopy();
   copy->bpm = this->bpm;
   copy->aheadTimeNoodle = this->aheadTimeNoodle;
   return copy;
