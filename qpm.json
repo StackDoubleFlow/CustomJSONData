@@ -60,7 +60,7 @@
     },
     {
       "id": "paper",
-      "versionRange": "<=2.0.0",
+      "versionRange": "<2.0.0",
       "additionalData": {}
     },
     {
