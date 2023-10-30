@@ -114,7 +114,9 @@ CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy()
 
   // copy the rest
   copy->doc = this->doc;
-  copy->customData = customData->GetCopy();
+  if (this->customData) {
+    copy->customData = this->customData->GetCopy();
+  }
   copy->beatmapCustomData = beatmapCustomData;
   copy->levelCustomData = levelCustomData;
   copy->v2orEarlier = v2orEarlier;
@@ -125,7 +127,7 @@ CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy()
 void CustomJSONData::CustomBeatmapEventData::ctor(float time,
                                                   ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType,
                                                   int value, float floatValue) {
-  static const auto *BeatmapEventData_Ctor =
+  static auto const* BeatmapEventData_Ctor =
       CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BasicBeatmapEventData*), ".ctor", 4));
   il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, basicBeatmapEventType, value,
                                               floatValue);
@@ -145,13 +147,15 @@ CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::
   copy->subtypeIdentifier = subtypeIdentifier;
   copy->sameTypeIndex = sameTypeIndex;
   // For some reason this is needed
-  copy->customData = this->customData->GetCopy();
+  if (this->customData) {
+    copy->customData = this->customData->GetCopy();
+  }
   return copy;
 }
 
 void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::GlobalNamespace::NoteLineLayer lineLayer,
                                               float duration, int width, int height) {
-  static const auto *NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 6));
+  static auto const* NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 6));
   ObstacleData* instance = this;
   il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width,
                                             height);
@@ -162,7 +166,9 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
 CustomJSONData::CustomObstacleData* CustomJSONData::CustomObstacleData::GetCopy() {
   auto *copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->lineIndex, this->lineLayer, this->duration,
                                                            this->width, height);
-  copy->customData = this->customData->GetCopy();
+  if (this->customData) {
+    copy->customData = this->customData->GetCopy();
+  }
   copy->bpm = this->bpm;
   copy->aheadTimeNoodle = this->aheadTimeNoodle;
   return copy;
@@ -193,7 +199,9 @@ CustomJSONData::CustomSliderData* CustomJSONData::CustomSliderData::GetCopy() {
       headControlPointLengthMultiplier, headCutDirection, headCutDirectionAngleOffset, hasTailNote, tailTime,
       tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection,
       tailCutDirectionAngleOffset, midAnchorMode, sliceCount, squishAmount);
-  copy->customData = this->customData->GetCopy();
+  if (this->customData) {
+    copy->customData = this->customData->GetCopy();
+  }
   copy->bpm = this->bpm;
   return copy;
 }
@@ -221,7 +229,9 @@ CustomJSONData::CustomNoteData* CustomJSONData::CustomNoteData::GetCopy() {
                                                        gameplayType, scoringType, colorType, cutDirection,
                                                        timeToNextColorNote, timeToPrevColorNote, flipLineIndex,
                                                        flipYSide, cutDirectionAngleOffset, cutSfxVolumeMultiplier);
-  copy->customData = this->customData->GetCopy();
+  if (this->customData) {
+    copy->customData = this->customData->GetCopy();
+  }
   copy->bpm = this->bpm;
   copy->aheadTimeNoodle = this->aheadTimeNoodle;
   return copy;

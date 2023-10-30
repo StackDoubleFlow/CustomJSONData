@@ -136,7 +136,9 @@ DECLARE_CLASS_CODEGEN(
         beatmapObjectDatas;
     std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas; std::vector<CustomEventData*> customEventDatas;
 
-    DECLARE_INSTANCE_FIELD(bool, v2orEarlier); DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
+    DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
+    // optional
+    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);)
@@ -149,6 +151,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::B
                       DECLARE_OVERRIDE_METHOD(CustomBeatmapEventData*, GetCopy,
                                               il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
+                      // optional
                       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);)
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::ObstacleData,
@@ -158,9 +161,12 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::Obsta
                       DECLARE_OVERRIDE_METHOD(CustomObstacleData*, GetCopy,
                                               il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
+                      // optional
                       DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
                       // Used for Noodle Extensions
-                      DECLARE_INSTANCE_FIELD(float, bpm); DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);)
+                      DECLARE_INSTANCE_FIELD(float, bpm);
+                      DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);
+)
 
 DECLARE_CLASS_CODEGEN(
     CustomJSONData, CustomNoteData, GlobalNamespace::NoteData,
@@ -174,6 +180,7 @@ DECLARE_CLASS_CODEGEN(
 
     DECLARE_OVERRIDE_METHOD(CustomNoteData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
+    // optional
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm); DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);)
@@ -192,6 +199,7 @@ DECLARE_CLASS_CODEGEN(
 
     DECLARE_OVERRIDE_METHOD(CustomSliderData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
+    // optional
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm);)
@@ -204,4 +212,5 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
                                               il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
                       // Used for Noodle Extensions
-                      DECLARE_INSTANCE_FIELD(float, bpm);)
+                      DECLARE_INSTANCE_FIELD(float, bpm);
+)
