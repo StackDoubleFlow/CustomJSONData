@@ -8,6 +8,10 @@
 #include "sombrero/shared/FastQuaternion.hpp"
 #include "sombrero/shared/FastColor.hpp"
 
+#ifndef RAPIDJSON_NEON
+#define RAPIDJSON_NEON
+#endif
+
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "CJDLogger.h"
 
