@@ -179,18 +179,20 @@ template <typename T, typename F>
 static std::optional<std::vector<T>> ReadOptionalArray(rapidjson::Value const& object, std::string_view const key,
                                                        F&& func) {
   auto itr = object.FindMember(key.data());
-  if (itr != object.MemberEnd()) {
-    auto jsonArray = itr->value.GetArray();
-    std::vector<T> vec;
-    vec.reserve(jsonArray.Size());
-
-    for (auto const& v : jsonArray) {
-      vec.emplace_back(func(v));
-    }
-
-    return vec;
+  if (itr == object.MemberEnd()) {
+    return std::nullopt;
   }
-  return std::nullopt;
+
+  auto jsonArray = itr->value.GetArray();
+
+  std::vector<T> vec;
+  vec.reserve(jsonArray.Size());
+
+  for (auto const& v : jsonArray) {
+    vec.emplace_back(func(v));
+  }
+
+  return vec;
 }
 
 template <typename T, typename F>

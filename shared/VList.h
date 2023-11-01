@@ -55,8 +55,8 @@ inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::span<Ty> 
 }
 
 template <typename Ty>
-inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::vector<Ty> const& list) {
-  return SpanToSystemList<Ty>(std::span<Ty>(const_cast<Ty*>(list.data()), list.size()));
+inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::vector<Ty>& list) {
+  return SpanToSystemList<Ty>(std::span<Ty>(list));
 }
 } // namespace CustomJSONData
 
