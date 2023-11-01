@@ -45,11 +45,13 @@
 
 namespace CustomJSONData {
 template <typename Ty>
-inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::span<Ty> const list) {
-  auto inner = System::Collections::Generic::List_1<Ty>::New_ctor(list.size());
-  for (int i = 0; i < list.size(); i++) {
-    inner->items.get(i) = list[i];
-  }
+inline System::Collections::Generic::List_1<Ty>* SpanToSystemList(std::span<Ty> const span) {
+  auto inner = System::Collections::Generic::List_1<Ty>::New_ctor(span.size());
+  // update size field, otherwise will be "empty"
+  inner->size = span.size();
+
+  std::copy(span.begin(), span.end(), inner->items.begin());
+
 
   return inner;
 }
