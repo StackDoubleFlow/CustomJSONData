@@ -2,6 +2,7 @@
 #include "BeatmapFieldUtils.hpp"
 
 #include "VList.h"
+#include "JsonUtils.h"
 
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
 
@@ -144,11 +145,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
       rapidjson::Value const& note_json = notesArr[i];
 
-      float time = note_json["_time"].GetFloat();
-      int lineIndex = note_json["_lineIndex"].GetInt();
-      auto lineLayer = NoteLineLayer(note_json["_lineLayer"].GetInt());
-      auto type = BeatmapSaveData::NoteType(note_json["_type"].GetInt());
-      auto cutDirection = NoteCutDirection(note_json["_cutDirection"].GetInt());
+      float time = NEJSON::ReadOptionalFloat(note_json, "_time").value_or(0);
+      int lineIndex = NEJSON::ReadOptionalFloat(note_json, "_lineIndex").value_or(0);
+      auto lineLayer = NoteLineLayer(NEJSON::ReadOptionalFloat(note_json, "_lineLayer").value_or(0));
+      auto type = BeatmapSaveData::NoteType(NEJSON::ReadOptionalFloat(note_json, "_type").value_or(0));
+      auto cutDirection = NoteCutDirection(NEJSON::ReadOptionalFloat(note_json, "_cutDirection").value_or(0));
       auto note =
           CRASH_UNLESS(CustomBeatmapSaveData_NoteData::New_ctor(time, lineIndex, lineLayer, type, cutDirection));
 
