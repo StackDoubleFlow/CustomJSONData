@@ -147,7 +147,7 @@ CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColo
   int line = NEJSON::ReadOptionalInt(val, Constants::line).value_or(0);
   int layer = NEJSON::ReadOptionalInt(val, Constants::layer).value_or(0);
   BeatmapSaveData::NoteColorType color = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
-  NoteCutDirection cutDirection = NEJSON::ReadOptionalInt(val, Constants::colorType).value_or(0);
+  NoteCutDirection cutDirection = NEJSON::ReadOptionalInt(val, Constants::cutDirection).value_or(0);
   int angleOffset = NEJSON::ReadOptionalInt(val, "a").value_or(0);
   CustomDataOpt customData = NEJSON::ReadOptionalValue(val, Constants::customData);
 
