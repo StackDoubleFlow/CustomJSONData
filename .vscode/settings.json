@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.dat": "json",
         "cmath": "cpp",
         "complex": "cpp",
         "valarray": "cpp",
@@ -99,6 +100,10 @@
         "any": "cpp",
         "coroutine": "cpp",
         "semaphore": "cpp",
-        "numbers": "cpp"
+        "numbers": "cpp",
+        "xlocnum": "cpp",
+        "xtr1common": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }
