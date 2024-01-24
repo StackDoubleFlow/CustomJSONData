@@ -34,6 +34,7 @@
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Collections/Generic/IEnumerator_1.hpp"
+#include "GlobalNamespace/IEnvironmentLightGroups.hpp"
 
 #include "CustomBeatmapSaveDatav3.h"
 #include "CustomBeatmapData.h"
@@ -207,7 +208,9 @@ constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis a
   }
 }
 
+// TODO: Check!
 constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::EaseType easeType) {
+  static_assert(false, "Must update this to PC equivalent");
   switch (easeType) {
   case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::None:
     return EaseType::None;
@@ -448,8 +451,8 @@ LightTranslationBaseData_Convert(BeatmapSaveData::LightTranslationBaseData* save
 }
 
 struct EventBoxGroupConvertor {
-  EventBoxGroupConvertor(IEnvironmentLightGroups* lightGroups) {
-    this->lightGroups = lightGroups;
+  explicit EventBoxGroupConvertor(IEnvironmentLightGroups* lightGroups) : lightGroups(lightGroups) {
+    
     dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox*>([](BeatmapSaveData::LightColorEventBox* saveData,
                                                                         GlobalNamespace::ILightGroup* lightGroupData) {
       auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
