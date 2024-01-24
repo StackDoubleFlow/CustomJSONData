@@ -141,7 +141,7 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time,
 }
 
 CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::GetCopy() {
-  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, type, value, floatValue);
+  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, type.value__, this->value, this->floatValue);
   copy->set_previousSameTypeEventData(previousSameTypeEventData);
   copy->set_nextSameTypeEventData(nextSameTypeEventData);
   copy->type = type;

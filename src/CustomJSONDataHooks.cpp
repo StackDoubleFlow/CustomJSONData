@@ -565,6 +565,7 @@ MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsF
   }
 }
 
+// TODO: Update
 MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData,
                       BeatmapData*, ::BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
                       ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, float startBpm,
@@ -572,6 +573,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                       ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents,
                       ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings) {
+  static_assert(false, "Must update this to PC equivalent");
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData),
                                           fmt::ptr(cachedSaveData));
@@ -772,9 +774,9 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
             return (CustomBeatmapEventData*)nullptr;
           }
 
-          auto event = CustomBeatmapEventData::New_ctor(BeatToTime(data->get_beat()),
-                                                        data->get_eventType(),
-                                                        data->get_value(), data->get_floatValue());
+          auto event = CustomBeatmapEventData::New_ctor(BeatToTime(data->b),
+                                                        data->eventType.value__,
+                                                        data->value, data->floatValue);
 
           event->customData = ToJsonWrapper(data->customData);
 
