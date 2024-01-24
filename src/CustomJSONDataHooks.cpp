@@ -256,7 +256,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
       }
 
       BeatmapDataStrobeFilterTransform::StrobeStreakData* strobeStreakData =
-          dictionary[basicBeatmapEventData->basicBeatmapEventType];
+          dictionary[basicBeatmapEventData->basicBeatmapEventType.value__];
       CRASH_UNLESS(strobeStreakData);
       if (strobeStreakData->isActive) {
         if (basicBeatmapEventData->time - strobeStreakData->lastSwitchTime < 0.1f) {
@@ -266,7 +266,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
             int onEventDataValue =
                 BeatmapDataStrobeFilterTransform::GetOnEventDataValue(strobeStreakData->startColorType);
             auto* beatmapEventData2 = static_cast<BasicBeatmapEventData*>(basicBeatmapEventData->GetCopy());
-            beatmapEventData2->time = strobeStreakData->strobeStartTime;
+            beatmapEventData2->_time_k__BackingField = strobeStreakData->strobeStartTime;
             beatmapEventData2->value = onEventDataValue;
             newBeatmap->InsertBeatmapEventDataInOrderOverride(beatmapEventData2);
             int value;
@@ -537,7 +537,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
 MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents,
                       void, BeatmapData* beatmapData, BeatmapEventDataBoxGroupLists* beatmapEventDataBoxGroupLists,
                       DefaultEnvironmentEvents* defaultEnvironmentEvents,
-                      EnvironmentLightGroups* environmentLightGroups) {
+                      IEnvironmentLightGroups* environmentLightGroups) {
   if (defaultEnvironmentEvents == nullptr || defaultEnvironmentEvents->get_isEmpty()) {
     // TRANSPILE HERE
     beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(0.0f, BasicBeatmapEventType::Event0, 1, 1.0f));
@@ -555,8 +555,8 @@ MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsF
   }
   if (defaultEnvironmentEvents->lightGroupEvents) {
     for (auto lightGroupEvent : defaultEnvironmentEvents->lightGroupEvents) {
-      LightGroupSO* dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->lightGroup->groupId);
-      if (dataForGroup && !dataForGroup->Equals(nullptr)) {
+      auto dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->lightGroup->groupId);
+      if (dataForGroup && !reinterpret_cast<System::Object*>(dataForGroup)->Equals(nullptr)) {
         auto beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(
             0.0f, dataForGroup->numberOfElements, lightGroupEvent);
         beatmapEventDataBoxGroupLists->Insert(dataForGroup->groupId, beatmapEventDataBoxGroup);
@@ -647,9 +647,9 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   objectConverter.AddConverter<v3::CustomBeatmapSaveData_ObstacleData*>([&BeatToTime](
       v3::CustomBeatmapSaveData_ObstacleData * data) constexpr {
     float beat = BeatToTime(data->b);
-    auto obstacle = CustomObstacleData::New_ctor(beat, data->get_line(), GetNoteLineLayer(data->get_layer()),
-                                                 BeatToTime(data->b + data->get_duration()) - beat, data->get_width(),
-                                                 data->get_height());
+    auto obstacle = CustomObstacleData::New_ctor(
+        beat, data->get_line(), BeatmapDataLoader::ObstacleConvertor::GetNoteLineLayer(data->get_layer()),
+        BeatToTime(data->b + data->get_duration()) - beat, data->get_width(), data->get_height());
 
     obstacle->customData = data->customData->GetCopy();
 

@@ -20,6 +20,9 @@ using namespace GlobalNamespace;
 using namespace BeatmapSaveDataVersion3;
 using namespace CustomJSONData::v3;
 
+template<typename T>
+using SList = System::Collections::Generic::List_1<T>;
+
 UnorderedEventCallback<CustomJSONData::v3::CustomBeatmapSaveData*> CustomJSONData::v3::Parser::ParsedEvent;
 
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData);
@@ -69,14 +72,17 @@ void CustomBeatmapSaveData::ctor(
         lightRotationEventBoxGroups,
     ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationEventBoxGroup*>*
         lightTranslationEventBoxGroups,
+    ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup*>*
+        lightFxEventBoxGroups,
+    BeatmapSaveData::FxEventsCollection* eventsCollection,
     ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
     bool useNormalEventsAsCompatibleEvents) {
   INVOKE_CTOR();
-  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 15);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 17);
   il2cpp_utils::RunMethodRethrow(
       this, ctor, bpmEvents, rotationEvents, colorNotes, bombNotes, obstacles, sliders, burstSliders, waypoints,
       basicBeatmapEvents, colorBoostBeatmapEvents, lightColorEventBoxGroups, lightRotationEventBoxGroups,
-      lightTranslationEventBoxGroups, basicEventTypesWithKeywords, useNormalEventsAsCompatibleEvents);
+      lightTranslationEventBoxGroups, lightFxEventBoxGroups, eventsCollection, basicEventTypesWithKeywords, useNormalEventsAsCompatibleEvents);
 }
 
 void CustomBeatmapSaveData_ColorNoteData::ctor(float beat, int line, int layer,
@@ -790,11 +796,15 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   colorNotes->TrimExcess();
   bombNotes->TrimExcess();
 
-  auto v3beatmap = CustomBeatmapSaveData::New_ctor(
-      *bpmChanges, *rotationEvents, *colorNotes, *bombNotes, *obstacles, *sliders,
-      *VList<BeatmapSaveData::BurstSliderData*>(), *waypoints, *basicEvents, *colorBoosts,
-      *VList<BeatmapSaveData::LightColorEventBoxGroup*>(), *VList<BeatmapSaveData::LightRotationEventBoxGroup*>(),
-      *VList<BeatmapSaveData::LightTranslationEventBoxGroup*>(), basicEventTypesWithKeywords, true);
+  auto v3beatmap =
+      CustomBeatmapSaveData::New_ctor(bpmChanges, rotationEvents, colorNotes, bombNotes, obstacles, sliders,
+                                      SList<BeatmapSaveData::BurstSliderData*>::New_ctor(), waypoints, basicEvents,
+                                      colorBoosts, SList<BeatmapSaveData::LightColorEventBoxGroup*>::New_ctor(),
+                                      SList<BeatmapSaveData::LightRotationEventBoxGroup*>::New_ctor(),
+                                      SList<BeatmapSaveData::LightTranslationEventBoxGroup*>::New_ctor(),
+                                      SList<BeatmapSaveData::FxEventBoxGroup*>::New_ctor(),
+                                      BeatmapSaveData::FxEventsCollection::New_ctor(),
+      basicEventTypesWithKeywords, true);
 
   v3beatmap->customEventsData = beatmap->customEventsData;
   v3beatmap->doc = beatmap->doc;
