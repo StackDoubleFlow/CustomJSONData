@@ -1,10 +1,10 @@
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 
-extern "C" void setup(ModInfo& info) {
-  info.id = "CustomJSONData";
-  info.version = VERSION;
-  CJDLogger::modInfo = info;
+
+
+extern "C" void setup(CModInfo& info) {
+  info = CustomJSONData::modInfo.to_c();
 }
 
 extern "C" void load() {

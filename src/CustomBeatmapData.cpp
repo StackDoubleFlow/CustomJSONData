@@ -24,7 +24,7 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
 
   INVOKE_CTOR();
 
-  beatmapDataItemsPerTypeAndId->items->Add(csTypeOf(CustomEventData*),
+  _beatmapDataItemsPerTypeAndId->_items->Add(csTypeOf(CustomEventData*),
                                            reinterpret_cast<ISortedList_1<BeatmapDataItem*>*>(
                                                SortedList_2<CustomEventData*, BeatmapDataItem*>::New_ctor(nullptr)));
 }
@@ -63,7 +63,7 @@ void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataInOrderOverride(
 
 void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {
   customEventDatas.emplace_back(customEventData);
-  auto *node = beatmapDataItemsPerTypeAndId->InsertItem(customEventData);
+  auto *node = _beatmapDataItemsPerTypeAndId->InsertItem(customEventData);
   if (updateAllBeatmapDataOnInsert) {
     InsertToAllBeatmapData(customEventData, node);
   }
@@ -85,7 +85,7 @@ System::Type* CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass* obj)
     return nullptr;
   }
 
-  static std::unordered_map<Il2CppClass*, System::Type*> typeMap;
+  static std::unordered_map<Il2CppClass*, Il2CppReflectionType*> typeMap;
 
   auto& typePtr = typeMap[obj];
 
@@ -106,7 +106,7 @@ System::Type* CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass* obj)
     }
   }
 
-  return typePtr;
+  return reinterpret_cast<System::Type*>(typePtr);
 }
 
 CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy() {
@@ -132,16 +132,16 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time,
   il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, basicBeatmapEventType, value,
                                               floatValue);
   INVOKE_CTOR();
-  this->time = time;
+  this->_time_k__BackingField = time;
   this->basicBeatmapEventType = basicBeatmapEventType;
   this->value = value;
   this->floatValue = floatValue;
 }
 
 CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::GetCopy() {
-  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, (int)type, value, floatValue);
-  copy->previousSameTypeEventData = previousSameTypeEventData;
-  copy->nextSameTypeEventData = nextSameTypeEventData;
+  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, type, value, floatValue);
+  copy->set_previousSameTypeEventData(previousSameTypeEventData);
+  copy->set_nextSameTypeEventData(nextSameTypeEventData);
   copy->type = type;
   copy->basicBeatmapEventType = basicBeatmapEventType;
   copy->subtypeIdentifier = subtypeIdentifier;
@@ -157,7 +157,7 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
                                               float duration, int width, int height) {
   static auto const* NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 6));
   ObstacleData* instance = this;
-  il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width,
+  il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width,
                                             height);
   INVOKE_CTOR();
   this->aheadTimeNoodle = 0;
@@ -185,7 +185,7 @@ void CustomJSONData::CustomSliderData::ctor(
     ::GlobalNamespace::SliderMidAnchorMode midAnchorMode, int sliceCount, float squishAmount) {
   static auto const* NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(SliderData*), ".ctor", 21));
   CustomSliderData* instance = this;
-  il2cpp_utils::RunMethodThrow<void, false>(
+  il2cpp_utils::RunMethodRethrow<void, false>(
       instance, NoteData_Ctor, sliderType, colorType, hasHeadNote, headTime, headLineIndex, headLineLayer,
       headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, headCutDirectionAngleOffset,
       hasTailNote, tailTime, tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier,

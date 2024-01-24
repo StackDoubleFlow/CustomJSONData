@@ -2,15 +2,21 @@
 #include "beatsaber-hook/shared/utils/logging.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 
+#include "scotland2/shared/loader.hpp"
+
 #include "paper/shared/logger.hpp"
 
 using LogLevel = Paper::LogLevel;
 
+namespace CustomJSONData {
+static modloader::ModInfo const modInfo{"CustomJSONData", VERSION, 1};
+}
+
 class CJDLogger {
 public:
-  static inline ModInfo modInfo = ModInfo();
+  
   static Logger& GetLoggerOld() {
-    static auto logger = new class Logger(modInfo, LoggerOptions(false, true));
+    static auto logger = new class Logger(CustomJSONData::modInfo, LoggerOptions(false, true));
     return *logger;
   }
   // Register file log in main.cpp
@@ -83,7 +89,7 @@ template <auto Func, class R, class... TArgs> struct PaperHookCatchWrapper<Func,
       return #name_;                                                                                                   \
     }                                                                                                                  \
     static MethodInfo const* getInfo() {                                                                               \
-      return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::get();                                           \
+      return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::methodInfo();                                           \
     }                                                                                                                  \
     static funcType* trampoline() {                                                                                    \
       return &name_;                                                                                                   \

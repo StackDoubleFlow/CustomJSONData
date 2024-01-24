@@ -6,8 +6,6 @@
 #include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "GlobalNamespace/BPMChangeBeatmapEventData.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
 #include "GlobalNamespace/BeatmapEventTransitionType.hpp"
 #include "GlobalNamespace/BeatmapEventTypeExtensions.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
@@ -23,14 +21,11 @@
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
-#include "GlobalNamespace/DefaultEnvironmentEvents_LightGroupEvent.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupFactory.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
 #include "GlobalNamespace/EnvironmentLightGroups.hpp"
 #include "GlobalNamespace/IndexFilter.hpp"
 #include "GlobalNamespace/LightGroupSO.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilter.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilterRandomType.hpp"
 
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
@@ -387,14 +382,14 @@ constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter
     int count = (param2 == 0) ? 1 : (int)std::ceil((float)num3 / (float)param2);
     if (indexFilter->get_reversed()) {
       return CustomJSONData::NewFast<IndexFilter*>(
-          num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(),
+          num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
           indexFilter->get_seed(), num, indexFilter->get_limit(),
-          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
+          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
     }
     return CustomJSONData::NewFast<IndexFilter*>(
-        param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(),
+        param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
         indexFilter->get_seed(), num, indexFilter->get_limit(),
-        (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
+        (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
   } else {
     int param3 = indexFilter->get_param0();
     int param4 = indexFilter->get_param1();
@@ -402,15 +397,15 @@ constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter
     if (indexFilter->get_reversed()) {
       int num5 = num2 - num4 * param4 - 1;
       return CustomJSONData::NewFast<IndexFilter*>(
-          num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random(),
+          num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
           indexFilter->get_seed(), num, indexFilter->get_limit(),
-          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
+          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
     }
     int num6 = num4 * param4;
     return CustomJSONData::NewFast<IndexFilter*>(
         num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
-        (IndexFilter::IndexFilterRandomType)indexFilter->get_random(), indexFilter->get_seed(), num,
-        indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType());
+        (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__, indexFilter->get_seed(), num,
+        indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
   }
 }
 
@@ -447,17 +442,18 @@ LightTranslationBaseData_Convert(BeatmapSaveData::LightTranslationBaseData* save
 }
 
 struct EventBoxGroupConvertor {
-  EventBoxGroupConvertor(EnvironmentLightGroups* lightGroups) {
+  EventBoxGroupConvertor(IEnvironmentLightGroups* lightGroups) {
     this->lightGroups = lightGroups;
     dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox*>([](BeatmapSaveData::LightColorEventBox* saveData,
-                                                                        LightGroupSO* lightGroupData) {
+                                                                        GlobalNamespace::ILightGroup* lightGroupData) {
       auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
       auto saveDataList = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>*>(
           saveData->e);
-      VList<LightColorBaseData*> list(saveDataList->get_Count());
+      auto list = VList<LightColorBaseData*>::New();
+      list->EnsureCapacity(saveDataList->get_Count());
 
-      for (auto saveData2 : VList(saveDataList)) {
+      for (auto saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>(saveDataList)) {
         list.push_back(LightColorBaseData_Convert(saveData2));
       }
 
@@ -468,21 +464,22 @@ struct EventBoxGroupConvertor {
           indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
           saveData->get_brightnessDistributionParam(), brightnessDistributionParamType,
           saveData->get_brightnessDistributionShouldAffectFirstBaseEvent(),
-          saveData->get_brightnessDistributionEaseType().value,
-          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightColorBaseData*>*>(list.getInner()));
+          saveData->get_brightnessDistributionEaseType().value__,
+          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightColorBaseData*>*>(list.convert()));
     });
 
-    dataConvertor.AddConverter<BeatmapSaveData::LightRotationEventBox*>([](BeatmapSaveData::LightRotationEventBox*
-                                                                               saveData,
-                                                                           LightGroupSO* lightGroupData) {
+    dataConvertor.AddConverter<
+        BeatmapSaveData::LightRotationEventBox*>([](BeatmapSaveData::LightRotationEventBox* saveData,
+                                                    GlobalNamespace::ILightGroup* lightGroupData) {
       auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
       auto collection = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(
           saveData->get_lightRotationBaseDataList());
 
-      VList<LightRotationBaseData*> list(collection->get_Count());
+      auto list = VList<LightRotationBaseData*>::New();
+      list->EnsureCapacity(collection->get_Count());
 
-      for (auto saveData2 : VList(collection)) {
+      for (auto saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
         list.push_back(LightRotationBaseData_Convert(saveData2));
       }
 
@@ -492,21 +489,22 @@ struct EventBoxGroupConvertor {
           indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType, ConvertAxis(saveData->a),
           saveData->get_flipRotation(), saveData->get_rotationDistributionParam(), rotationDistributionParamType,
           saveData->get_rotationDistributionShouldAffectFirstBaseEvent(),
-          saveData->get_rotationDistributionEaseType().value,
-          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData*>*>(list.getInner()));
+          saveData->get_rotationDistributionEaseType().value__,
+          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData*>*>(list.convert()));
     });
-    dataConvertor.AddConverter<BeatmapSaveData::LightTranslationEventBox*>([](BeatmapSaveData::LightTranslationEventBox*
-                                                                                  saveData,
-                                                                              LightGroupSO* lightGroupData) {
+    dataConvertor.AddConverter<
+        BeatmapSaveData::LightTranslationEventBox*>([](BeatmapSaveData::LightTranslationEventBox* saveData,
+                                                       GlobalNamespace::ILightGroup* lightGroupData) {
       auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
 
       auto collection = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>*>(
           saveData->get_lightTranslationBaseDataList());
 
-      VList<LightTranslationBaseData*> list(collection->get_Count());
+      auto list = VList<LightTranslationBaseData*>::New();
+      list->EnsureCapacity(collection->get_Count());
 
-      for (auto saveData2 : VList(collection)) {
+      for (auto saveData2 : VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
         list.push_back(LightTranslationBaseData_Convert(saveData2));
       }
 
@@ -518,21 +516,27 @@ struct EventBoxGroupConvertor {
           saveData->get_flipTranslation(), saveData->get_gapDistributionParam(), gapDistributionParamType,
           saveData->get_gapDistributionShouldAffectFirstBaseEvent(),
           ConvertEaseType(saveData->get_gapDistributionEaseType()),
-          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightTranslationBaseData*>*>(list.getInner()));
+          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightTranslationBaseData*>*>(list.convert()));
     });
   }
 
   BeatmapEventDataBoxGroup*
   Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup* eventBoxGroupSaveData) const {
     auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
-    if (dataForGroup == nullptr || dataForGroup->m_CachedPtr.m_value == nullptr) {
+    if (dataForGroup == nullptr) {
+      return nullptr;
+    }
+
+    if (auto dataForGroupUnity = il2cpp_utils::try_cast<UnityEngine::Object>(dataForGroup);
+        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr == nullptr)) {
       return nullptr;
     }
 
     auto collection =
         reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>*>(
             eventBoxGroupSaveData->get_baseEventBoxes());
-    VList<BeatmapEventDataBox*> list(collection->get_Count());
+    auto list = VList<BeatmapEventDataBox*>::New();
+    list->EnsureCapacity(collection->get_Count());
 
     for (auto item : VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>(collection)) {
       auto beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
@@ -543,11 +547,11 @@ struct EventBoxGroupConvertor {
 
     return CustomJSONData::NewFast<BeatmapEventDataBoxGroup*>(
         eventBoxGroupSaveData->b,
-        reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox*>*>(list.getInner()));
+        reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox*>*>(list.convert()));
   }
 
-  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*, LightGroupSO*> dataConvertor;
+  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*, GlobalNamespace::ILightGroup*> dataConvertor;
 
-  EnvironmentLightGroups* lightGroups;
+  IEnvironmentLightGroups* lightGroups;
 };
 } // namespace CustomJSONData

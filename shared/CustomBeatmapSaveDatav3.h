@@ -3,39 +3,6 @@
 #include "custom-types/shared/macros.hpp"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "BeatmapSaveDataVersion3/BeatmapSaveData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_ColorNoteData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_SliderData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BurstSliderData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_ObstacleData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_WaypointData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BpmChangeEventData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BombNoteData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BasicEventData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_WaypointData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_ColorBoostEventData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightColorEventBoxGroup.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightRotationEventBoxGroup.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightTranslationEventBox.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightTranslationEventBoxGroup.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightTranslationBaseData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BasicEventTypesWithKeywords.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BasicEventTypesWithKeywords_BasicEventTypesForKeyword.hpp"
-
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_ExecutionTime.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_RotationEventData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_IndexFilter.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_EventBox.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_SliderType.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_TransitionType.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightColorBaseData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_EnvironmentColorType.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightColorEventBox.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightRotationBaseData.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_LightRotationEventBox.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_Axis.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BasicEventTypesWithKeywords.hpp"
-#include "BeatmapSaveDataVersion3/BeatmapSaveData_BasicEventTypesWithKeywords_BasicEventTypesForKeyword.hpp"
-
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 
 #include "LowLevelUtils.hpp"
@@ -108,7 +75,7 @@ DECLARE_CLASS_CODEGEN(
     public
     : static CustomBeatmapSaveData * Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc);
 
-    static CustomBeatmapSaveData * Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData const* beatmap);
+    static CustomBeatmapSaveData * Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData* beatmap);
 
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc;
