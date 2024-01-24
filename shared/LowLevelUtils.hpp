@@ -19,10 +19,10 @@ template <class T, class... TArgs>
 T NewFastKlass(Il2CppClass* klass, TArgs&&... args) {
   //        return CRASH_UNLESS(il2cpp_utils::New<T, il2cpp_utils::CreationType::Temporary, TArgs...>(klass,
   //        std::forward<TArgs>(args)...));
-  static auto ctor =
-      CRASH_UNLESS(il2cpp_utils::FindMethod(klass, ".ctor", il2cpp_utils::ExtractIndependentType<TArgs>()...));
+  static auto ctor = CRASH_UNLESS(il2cpp_utils::FindMethod(
+      klass, ".ctor", std::array<Il2CppType const*, sizeof...(TArgs)>{ il2cpp_utils::ExtractIndependentType<TArgs>()... }));
   auto* obj = CRASH_UNLESS(il2cpp_functions::object_new(klass));
-  CRASH_UNLESS(il2cpp_utils::RunMethodUnsafe(obj, ctor, std::forward<TArgs>(args)...));
+  il2cpp_utils::RunMethodRethrow(obj, ctor, std::forward<TArgs>(args)...);
   return reinterpret_cast<T>(obj);
 }
 

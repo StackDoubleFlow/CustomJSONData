@@ -3,12 +3,6 @@
 #include "custom-types/shared/macros.hpp"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_SliderData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_NoteData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_ObstacleData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_EventData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_WaypointData.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData_SpecialEventKeywordFiltersData.hpp"
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 
 #include "LowLevelUtils.hpp"

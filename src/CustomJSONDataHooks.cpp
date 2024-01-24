@@ -4,17 +4,15 @@
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
-#include "GlobalNamespace/DefaultEnvironmentEvents_BasicBeatmapEvent.hpp"
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
+#include "GlobalNamespace/BasicBeatmapEventData.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/BeatmapCallbacksController.hpp"
 #include "GlobalNamespace/MultipleSortedListsEnumerator_1.hpp"
 #include "GlobalNamespace/BPMChangeBeatmapEventData.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
 #include "GlobalNamespace/BeatmapEventTransitionType.hpp"
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
 #include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
@@ -68,14 +66,12 @@
 #include "sombrero/shared/linq_functional.hpp"
 
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
 #include "GlobalNamespace/BeatmapCallbacksUpdater.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
 #include "GlobalNamespace/BeatmapDataStrobeFilterTransform.hpp"
-#include "GlobalNamespace/BeatmapDataStrobeFilterTransform_StrobeStreakData.hpp"
 #include "GlobalNamespace/LightColorBeatmapEventData.hpp"
 #include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
 #include "GlobalNamespace/EnvironmentIntensityReductionOptions.hpp"
@@ -211,12 +207,12 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
               EnvironmentIntensityReductionOptions::CompressExpandReductionType::RemoveWithStrobeFilter;
   bool flag2 = environmentIntensityReductionOptions->rotateRings ==
                EnvironmentIntensityReductionOptions::RotateRingsReductionType::RemoveWithStrobeFilter;
-  std::unordered_map<int, BeatmapDataStrobeFilterTransform::StrobeStreakData*> dictionary(
-      { { BasicBeatmapEventType::Event0, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event1, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event2, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event3, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event4, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() } });
+  std::unordered_map<int, BeatmapDataStrobeFilterTransform::StrobeStreakData*>
+      dictionary({ { BasicBeatmapEventType::Event0.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+                   { BasicBeatmapEventType::Event1.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+                   { BasicBeatmapEventType::Event2.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+                   { BasicBeatmapEventType::Event3.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+                   { BasicBeatmapEventType::Event4.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() } });
 
   auto newBeatmap = customBeatmapData->BaseCopy();
 
@@ -281,7 +277,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
                   strobeStreakData->lastColorType);
             }
             auto* beatmapEventData3 = static_cast<BasicBeatmapEventData*>(basicBeatmapEventData->GetCopy());
-            beatmapEventData3->time = strobeStreakData->lastSwitchTime;
+            beatmapEventData3->_time_k__BackingField = strobeStreakData->lastSwitchTime;
             beatmapEventData3->value = value;
             newBeatmap->InsertBeatmapEventDataInOrderOverride(beatmapEventData3);
           } else {
@@ -301,7 +297,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
       newBeatmap->InsertBeatmapEventDataInOrderOverride(keyValuePair.second->originalBasicBeatmapEventData);
     }
   }
-  return newBeatmap->i_IReadonlyBeatmapData();
+  return newBeatmap->i___GlobalNamespace__IReadonlyBeatmapData();
 }
 
 // MappingExtensions depends on this method getting called
@@ -396,7 +392,7 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
 
   auto node = list->Insert(item);
   // Remove to avoid exception
-  self->itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
+  self->_itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
 
   return node;
 }
@@ -406,7 +402,7 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
   auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
   System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>* node = nullptr;
-  if (self->itemToNodeMap->TryGetValue(item, byref(node))) {
+  if (self->_itemToNodeMap->TryGetValue(item, byref(node))) {
     list->Remove(node);
   }
 }
@@ -415,7 +411,7 @@ BeatmapCallbacksController* beatmapCallbacksController;
 
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacksController::ManualUpdate, void,
                       BeatmapCallbacksController* self, float songTime) {
-  if (songTime == self->prevSongTime) {
+  if (songTime == self->_prevSongTime) {
     return BeatmapCallbacksController_ManualUpdate(self, songTime);
   }
 
@@ -459,14 +455,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
   }
   //
 
-  if (songTime == self->prevSongTime) {
+  if (songTime == self->_prevSongTime) {
     return;
   }
 
-  self->songTime = songTime;
-  self->processingCallbacks = true;
-  if (songTime > self->prevSongTime) {
-    auto enumerator = self->callbacksInTimes->GetEnumerator();
+  self->_songTime = songTime;
+  self->_processingCallbacks = true;
+  if (songTime > self->_prevSongTime) {
+    auto enumerator = self->_callbacksInTimes->GetEnumerator();
 
     while (enumerator.MoveNext()) {
       auto keyValuePair = enumerator.get_Current();
@@ -479,7 +475,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
       for (auto linkedListNode =
                (value->lastProcessedNode != nullptr)
                    ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
-                   : (firstNode ? firstNode : self->beatmapData->get_allBeatmapDataItems()->get_First());
+                   : (firstNode ? firstNode : self->_beatmapData->get_allBeatmapDataItems()->get_First());
            linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
         auto value2 = linkedListNode->get_Value();
         if (value2->time - value->aheadTime - GetAheadTime(value2) > songTime) {
@@ -487,10 +483,10 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
         }
         if (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent ||
             /// TRANSPILE HERE
-            value2->type.value == 2 ||
+            value2->type.value__ == 2 ||
             /// TRANSPILE HERE
             (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapObject &&
-             value2->time >= self->startFilterTime)) {
+             value2->time >= self->_startFilterTime)) {
           value->CallCallbacks(value2);
         }
         value->lastProcessedNode = linkedListNode;
@@ -498,7 +494,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
     }
     enumerator.Dispose();
   } else {
-    auto callbacksInTimesEnumerator = self->callbacksInTimes->GetEnumerator();
+    auto callbacksInTimesEnumerator = self->_callbacksInTimes->GetEnumerator();
 
     while (callbacksInTimesEnumerator.MoveNext()) {
       auto keyValuePair2 = callbacksInTimesEnumerator.get_Current();
@@ -534,8 +530,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
     callbacksInTimesEnumerator.Dispose();
   }
 
-  self->prevSongTime = songTime;
-  self->processingCallbacks = false;
+  self->_prevSongTime = songTime;
+  self->_processingCallbacks = false;
 }
 
 MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents,
@@ -573,7 +569,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                       BeatmapData*, ::BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
                       ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, float startBpm,
                       bool loadingForDesignatedEnvironment, ::GlobalNamespace::EnvironmentKeywords* environmentKeywords,
-                      ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
+                      ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents,
                       ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings) {
 
@@ -604,10 +600,10 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   beatmapData->InsertBeatmapEventDataOverride(CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(-100.0f, startBpm));
 
   CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
-  if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
+  if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->_items) {
     CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-        "Klass {}", il2cpp_utils::ClassStandardName(beatmapSaveData->basicEventTypesWithKeywords->d->items->klass));
-    for (auto basicEventTypesForKeyword : VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
+        "Klass {}", il2cpp_utils::ClassStandardName(beatmapSaveData->basicEventTypesWithKeywords->d->_items->klass));
+    for (auto basicEventTypesForKeyword : VList<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(beatmapSaveData->basicEventTypesWithKeywords->d)) {
       if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) continue;
 
       beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
@@ -616,7 +612,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {} {}",
                                           fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d),
-                                          beatmapSaveData->basicEventTypesWithKeywords->d->size);
+                                          beatmapSaveData->basicEventTypesWithKeywords->d->_size);
 
   profile.mark("Converted special events");
 
@@ -688,14 +684,13 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   });
 
   auto addAllToVector = [](auto& vec, auto const& listPtr) constexpr {
-    VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(
-        reinterpret_cast<List<BeatmapSaveData::BeatmapSaveDataItem*>*>(listPtr));
+    VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(listPtr);
 
     std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
   };
 
   auto addAllToVector2 = [](auto& vec, auto const& listPtr) constexpr {
-    VList<BeatmapSaveData::EventBoxGroup*> vList(reinterpret_cast<List<BeatmapSaveData::EventBoxGroup*>*>(listPtr));
+    VList<BeatmapSaveData::EventBoxGroup*> vList(listPtr);
 
     std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
   };
@@ -778,7 +773,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
           }
 
           auto event = CustomBeatmapEventData::New_ctor(BeatToTime(data->get_beat()),
-                                                        (GlobalNamespace::BasicBeatmapEventType)data->get_eventType(),
+                                                        data->get_eventType(),
                                                         data->get_value(), data->get_floatValue());
 
           event->customData = ToJsonWrapper(data->customData);

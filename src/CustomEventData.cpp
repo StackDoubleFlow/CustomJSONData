@@ -2,6 +2,8 @@
 #include <utility>
 #include "CustomEventData.h"
 
+#include "GlobalNamespace/BasicBeatmapEventData.hpp"
+
 #include "CustomJSONDataHooks.h"
 
 #include "beatsaber-hook/shared/utils/il2cpp-type-check.hpp"
@@ -23,8 +25,8 @@ SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapD
 void CustomEventData::ctor(float time, void* type, size_t typeHash, void* data) {
   INVOKE_CTOR();
   static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataItem*), ".ctor", 4);
-  CRASH_UNLESS(il2cpp_utils::RunMethod(this, ctor, time, 0, 0, (BeatmapDataItemType)2));
-  BeatmapDataItem::time = time;
+  il2cpp_utils::RunMethodRethrow(this, ctor, time, 0, 0, (BeatmapDataItemType)2);
+  BeatmapDataItem::_time_k__BackingField = time;
   BeatmapDataItem::type = 2;
   this->typeHash = typeHash;
   this->type = *static_cast<decltype(this->type)*>(type);
@@ -76,6 +78,6 @@ void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksCo
   CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTER CUSTOM CALLBACK!");
   auto wrapper = CustomBeatmapDataCallbackWrapper::New_ctor();
   wrapper->controller = callbackController;
-  callbackController->callbacksInTimes->get_Item(0)->AddCallback(wrapper);
+  callbackController->_callbacksInTimes->get_Item(0)->AddCallback(wrapper);
   CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTERED CUSTOM CALLBACK!");
 }
