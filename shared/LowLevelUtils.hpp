@@ -9,8 +9,8 @@
 namespace CustomJSONData {
 
 template <class T, class... TArgs>
-T NewFast(TArgs&&... args) {
-  return il2cpp_utils::NewSpecific<T, TArgs...>(std::forward<TArgs>(args)...);
+constexpr T NewFast(TArgs&&... args) {
+  return il2cpp_utils::NewSpecific<T>(std::forward<TArgs>(args)...);
 }
 
 // template <class T, class... TArgs>

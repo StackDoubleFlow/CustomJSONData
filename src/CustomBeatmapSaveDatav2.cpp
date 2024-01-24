@@ -322,7 +322,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
   auto saveData = CRASH_UNLESS(
-      CustomBeatmapSaveData::New_ctor(*events, *notes, *sliders, *waypoints, *obstacles, specialEventsKeywordFilters));
+      CustomBeatmapSaveData::New_ctor(events, notes, sliders, waypoints, obstacles, specialEventsKeywordFilters));
   saveData->doc = sharedDoc;
   saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
   auto customDataIt = doc.FindMember("_customData");
