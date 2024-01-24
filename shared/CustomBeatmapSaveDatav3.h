@@ -67,6 +67,9 @@ DECLARE_CLASS_CODEGEN(
             lightRotationEventBoxGroups,
         ::System::Collections::Generic::List_1<
             ::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationEventBoxGroup*>* lightTranslationEventBoxGroups,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup*>*
+            lightFxEventBoxGroups,
+        BeatmapSaveData::FxEventsCollection* eventsCollection,
         ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
         bool useNormalEventsAsCompatibleEvents);
 
@@ -75,12 +78,10 @@ DECLARE_CLASS_CODEGEN(
     public
     : static CustomBeatmapSaveData * Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc);
 
-    static CustomBeatmapSaveData * Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData* beatmap);
+    static CustomBeatmapSaveData * Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData * beatmap);
 
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
-    std::shared_ptr<rapidjson::Document> doc;
-    CustomDataOpt customData;
-    CustomDataOptUTF16 beatmapCustomData;
+    std::shared_ptr<rapidjson::Document> doc; CustomDataOpt customData; CustomDataOptUTF16 beatmapCustomData;
     CustomDataOptUTF16 levelCustomData;
 
     DECLARE_INSTANCE_FIELD(bool, isV2);)
