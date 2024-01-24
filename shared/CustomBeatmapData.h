@@ -42,11 +42,11 @@ DECLARE_CLASS_CODEGEN(
     template <typename F>
     CustomBeatmapData *
     GetFilteredCopyOverride(F && filter) {
-      isCreatingFilteredCopy = true;
+      _isCreatingFilteredCopy = true;
 
       CustomBeatmapData* copy = BaseCopy();
 
-      auto linkedList = allBeatmapData->get_items();
+      auto linkedList = _allBeatmapData->get_items();
 
       for (auto node = linkedList->get_First(); node != nullptr; node = LinkedListNode_1_get_Next(node)) {
         auto beatmapDataItem = node->item;
@@ -70,7 +70,7 @@ DECLARE_CLASS_CODEGEN(
         }
       }
 
-      isCreatingFilteredCopy = false;
+      _isCreatingFilteredCopy = false;
 
       return copy;
     }
@@ -94,7 +94,7 @@ DECLARE_CLASS_CODEGEN(
     std::vector<T>
         GetBeatmapItemsCpp(GlobalNamespace::BeatmapDataItem::BeatmapDataItemType type) {
           auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(
-              beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
+              _beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
 
           if (!list) return {};
 
@@ -115,9 +115,9 @@ DECLARE_CLASS_CODEGEN(
 
     std::vector<GlobalNamespace::BeatmapDataItem*>
         GetAllBeatmapItemsCpp() {
-          if (!allBeatmapData) return {};
+          if (!_allBeatmapData) return {};
 
-          auto linkedItems = allBeatmapData->get_items();
+          auto linkedItems = _allBeatmapData->get_items();
 
           std::vector<GlobalNamespace::BeatmapDataItem*> items;
           items.reserve(linkedItems->get_Count());
@@ -132,16 +132,19 @@ DECLARE_CLASS_CODEGEN(
           return items;
         }
 
-    std::vector<GlobalNamespace::BeatmapObjectData*>
-        beatmapObjectDatas;
-    std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas; std::vector<CustomEventData*> customEventDatas;
+    std::vector<GlobalNamespace::BeatmapObjectData*> beatmapObjectDatas;
+    //
+    std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas;
+    //
+    std::vector<CustomEventData*> customEventDatas;
 
     DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
     // optional
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);)
+    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
+    )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BasicBeatmapEventData,
                       DECLARE_FASTER_CTOR(ctor, float time,
