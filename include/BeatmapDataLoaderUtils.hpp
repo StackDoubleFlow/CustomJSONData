@@ -294,21 +294,21 @@ requires(std::is_pointer_v<To>&& std::is_pointer_v<From>) struct CppConverter {
 };
 
 struct BpmChangeData {
-  float const bpmChangeStartTime;
-  float const bpmChangeStartBpmTime;
-  float const bpm;
+  float bpmChangeStartTime;
+  float bpmChangeStartBpmTime;
+  float bpm;
 
   constexpr BpmChangeData(float const bpmChangeStartTime, float const bpmChangeStartBpmTime, float const bpm)
       : bpmChangeStartTime(bpmChangeStartTime), bpmChangeStartBpmTime(bpmChangeStartBpmTime), bpm(bpm) {}
 };
 
 struct BpmTimeProcessor {
-  std::vector<BpmChangeData> bpmChangeDataList;
-  int currentBpmChangesDataIdx;
+  std::vector<BpmChangeData> bpmChangeDataList{};
+  int currentBpmChangesDataIdx = 0;
 
   BpmTimeProcessor(float startBpm,
                    VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*> bpmEventsSaveData) {
-    bool hasBpm = bpmEventsSaveData.size() > 0 && bpmEventsSaveData[0]->b == 0;
+    bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->b == 0;
     if (hasBpm) {
       startBpm = bpmEventsSaveData[0]->m;
     }
@@ -360,13 +360,16 @@ struct BpmTimeProcessor {
       num++;
     }
     auto const& bpmChangeData = bpmChangeDataList[num];
-    return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+    return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
   }
 };
 
 constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter* indexFilter, int groupSize) {
-  int num = (indexFilter->get_chunks() == 0) ? 1 : (int)std::ceil((float)groupSize / (float)indexFilter->get_chunks());
-  int num2 = std::ceil((float)groupSize / (float)num);
+  int num =
+      (indexFilter->get_chunks() == 0)
+          ? 1
+          : static_cast<int>(std::ceil(static_cast<float>(groupSize) / static_cast<float>(indexFilter->get_chunks())));
+  int num2 = std::ceil(static_cast<float>(groupSize) / static_cast<float>(num));
   auto type = indexFilter->get_type();
   if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::Division) {
     if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset) {
@@ -379,34 +382,37 @@ constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter
       CJDLogger::Logger.fmtLog<LogLevel::ERR>("Error {}!", num3);
       throw il2cpp_utils::exceptions::StackTraceException("ArgumentOutOfRangeException");
     }
-    int count = (param2 == 0) ? 1 : (int)std::ceil((float)num3 / (float)param2);
+    int count = (param2 == 0) ? 1 : static_cast<int>(std::ceil(static_cast<float>(num3) / static_cast<float>(param2)));
     if (indexFilter->get_reversed()) {
       return CustomJSONData::NewFast<IndexFilter*>(
-          num2 - 1 - param, -param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
-          indexFilter->get_seed(), num, indexFilter->get_limit(),
-          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
+          num2 - 1 - param, -param2, count, groupSize,
+          IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+          indexFilter->get_limit(),
+          IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
     }
     return CustomJSONData::NewFast<IndexFilter*>(
-        param, param2, count, groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
+        param, param2, count, groupSize, IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__),
         indexFilter->get_seed(), num, indexFilter->get_limit(),
-        (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
-  } else {
-    int param3 = indexFilter->get_param0();
-    int param4 = indexFilter->get_param1();
-    int num4 = std::ceil((float)num2 / (float)param3);
-    if (indexFilter->get_reversed()) {
-      int num5 = num2 - num4 * param4 - 1;
-      return CustomJSONData::NewFast<IndexFilter*>(
-          num5, std::max(0, num5 - num4 + 1), groupSize, (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__,
-          indexFilter->get_seed(), num, indexFilter->get_limit(),
-          (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
-    }
-    int num6 = num4 * param4;
-    return CustomJSONData::NewFast<IndexFilter*>(
-        num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
-        (IndexFilter::IndexFilterRandomType)indexFilter->get_random().value__, indexFilter->get_seed(), num,
-        indexFilter->get_limit(), (IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->get_limitAlsoAffectsType().value__);
+        IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
   }
+
+  int param3 = indexFilter->get_param0();
+  int param4 = indexFilter->get_param1();
+  int num4 = std::ceil(static_cast<float>(num2) / static_cast<float>(param3));
+  if (indexFilter->get_reversed()) {
+    int num5 = num2 - num4 * param4 - 1;
+    return CustomJSONData::NewFast<IndexFilter*>(
+        num5, std::max(0, num5 - num4 + 1), groupSize,
+        IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+        indexFilter->get_limit(),
+        IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+  }
+  int num6 = num4 * param4;
+  return CustomJSONData::NewFast<IndexFilter*>(
+      num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
+      IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+      indexFilter->get_limit(),
+      IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
 }
 
 constexpr BeatmapEventDataBox::DistributionParamType
