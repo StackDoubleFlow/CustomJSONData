@@ -687,7 +687,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting notes");
   for (auto const& n : VList <BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>(beatmap->notes)) {
-    auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData*>(n);
+    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData>(n);
 
     if (n->type == BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteType::Bomb) {
       auto newNote = CustomBeatmapSaveData_BombNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__);
@@ -706,7 +706,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting obstacles");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData * >(beatmap->obstacles)) {
-    auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
+    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
 
     auto obstacle =
         CustomBeatmapSaveData_ObstacleData::New_ctor(n->time, n->lineIndex, GetLayerForObstacleType(n->type),
@@ -720,7 +720,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting Sliders");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData*>(beatmap->sliders)) {
-    auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData*>(n);
+    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData>(n);
 
     auto slider = CustomBeatmapSaveData_SliderData::New_ctor(
         GetNoteColorType(n->colorType), n->_headTime, n->headLineIndex, (int)n->_headLineLayer.value__,
@@ -735,7 +735,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting waypoints");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>(beatmap->waypoints)) {
-    auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData*>(n);
+    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
 
     auto waypoint =
         CustomJSONData::NewFast<WaypointData*>(n->time, n->lineIndex, n->lineLayer.value__, n->offsetDirection);
@@ -746,7 +746,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting events");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData * >(beatmap->events)) {
-    auto customN = reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData*>(n);
+    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData>(n);
 
     switch (customN->type) {
     case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event5: {
