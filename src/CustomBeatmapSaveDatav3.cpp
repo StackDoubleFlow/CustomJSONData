@@ -127,7 +127,7 @@ void CustomBeatmapSaveData_BurstSliderData::ctor(BeatmapSaveDataVersion3::Beatma
 
 void CustomBeatmapSaveData_ObstacleData::ctor(float beat, int line, int layer, float duration, int width, int height) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 6);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 6);
   il2cpp_utils::RunMethodRethrow(this, ctor, beat, line, layer, duration, width, height);
 }
 
@@ -278,7 +278,7 @@ auto DeserializeBasicEvent(rapidjson::Value const& val) {
   return event;
 }
 
-static auto DeserializeColorBoostEventData(rapidjson::Value const& val) {
+auto DeserializeColorBoostEventData(rapidjson::Value const& val) {
   float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
   bool boost = NEJSON::ReadOptionalBool(val, "o").value_or(false);
   CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
@@ -614,7 +614,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   return beatmap;
 }
 
-static inline const std::array<float, 8> spawnRotations{ -60.0f, -45.0f, -30.0f, -15.0f, 15.0f, 30.0f, 45.0f, 60.0f };
+static inline const std::array<float, 8> spawnRotations{ -60.0F, -45.0F, -30.0F, -15.0F, 15.0F, 30.0F, 45.0F, 60.0F };
 
 template <typename T> constexpr bool TimeCompare(T const& a, T const& b) {
   return (a->time < b->time);
@@ -654,7 +654,7 @@ constexpr float SpawnRotationForEventValue(int index) {
     return spawnRotations[index];
   }
 
-  return 0.0f;
+  return 0.0F;
 }
 
 CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData* beatmap) {
@@ -687,16 +687,16 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting notes");
   for (auto const& n : VList <BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>(beatmap->notes)) {
-    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData>(n);
+    auto* customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_NoteData>(n);
 
     if (n->type == BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteType::Bomb) {
-      auto newNote = CustomBeatmapSaveData_BombNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__);
+      auto* newNote = CustomBeatmapSaveData_BombNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__);
       newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
 
       bombNotes.push_back(newNote);
     } else {
-      auto newNote = CustomBeatmapSaveData_ColorNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__,
-                                                                   GetNoteColorType(n->type), n->cutDirection, 0);
+      auto* newNote = CustomBeatmapSaveData_ColorNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__,
+                                                                    GetNoteColorType(n->type), n->cutDirection, 0);
       newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
       colorNotes.push_back(newNote);
     }
@@ -706,9 +706,9 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting obstacles");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData * >(beatmap->obstacles)) {
-    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
+    auto* customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
 
-    auto obstacle =
+    auto* obstacle =
         CustomBeatmapSaveData_ObstacleData::New_ctor(n->time, n->lineIndex, GetLayerForObstacleType(n->type),
                                                      n->duration, n->width, GetHeightForObstacleType(n->type));
 
@@ -720,12 +720,13 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting Sliders");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData*>(beatmap->sliders)) {
-    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData>(n);
+    auto* customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_SliderData>(n);
 
-    auto slider = CustomBeatmapSaveData_SliderData::New_ctor(
-        GetNoteColorType(n->colorType), n->_headTime, n->headLineIndex, (int)n->_headLineLayer.value__,
-        n->headControlPointLengthMultiplier, n->headCutDirection, n->tailTime, n->tailLineIndex, (int)n->tailLineLayer.value__,
-        n->tailControlPointLengthMultiplier, n->tailCutDirection, n->sliderMidAnchorMode);
+    auto* slider = CustomBeatmapSaveData_SliderData::New_ctor(
+        GetNoteColorType(n->colorType), n->_headTime, n->headLineIndex, static_cast<int>(n->_headLineLayer.value__),
+        n->headControlPointLengthMultiplier, n->headCutDirection, n->tailTime, n->tailLineIndex,
+        static_cast<int>(n->tailLineLayer.value__), n->tailControlPointLengthMultiplier, n->tailCutDirection,
+        n->sliderMidAnchorMode);
 
     slider->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
 
@@ -735,9 +736,9 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting waypoints");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>(beatmap->waypoints)) {
-    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
+    auto* customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData>(n);
 
-    auto waypoint =
+    auto* waypoint =
         CustomJSONData::NewFast<WaypointData*>(n->time, n->lineIndex, n->lineLayer.value__, n->offsetDirection);
 
     waypoints.push_back(waypoint);
@@ -746,18 +747,18 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting events");
   for (auto const& n :
        VList < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData * >(beatmap->events)) {
-    auto customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData>(n);
+    auto* customN = il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData_EventData>(n);
 
     switch (customN->type) {
     case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event5: {
-      auto boost = CustomJSONData::NewFast<ColorBoostEventData*>(n->time, n->value == 1);
+      auto* boost = CustomJSONData::NewFast<ColorBoostEventData*>(n->time, n->value == 1);
       // TODO: Custom data
       colorBoosts.push_back(boost);
       continue;
     }
     case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event14:
     case BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event15: {
-      auto rotation = CustomJSONData::NewFast<RotationEventData*>(
+      auto* rotation = CustomJSONData::NewFast<RotationEventData*>(
           n->time,
           n->type == BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType::Event14
               ? BeatmapSaveData::ExecutionTime::Early.value__
@@ -772,14 +773,14 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
       bpmChanges.push_back(CustomJSONData::NewFast<BpmChangeEventData*>(n->time, n->floatValue));
       continue;
     default:
-      auto event = v3::CustomBeatmapSaveData_BasicEventData::New_ctor(n->time, n->type, n->value, n->floatValue);
+      auto* event = v3::CustomBeatmapSaveData_BasicEventData::New_ctor(n->time, n->type, n->value, n->floatValue);
       event->customData = customN->customData;
       basicEvents.push_back(event);
       continue;
     }
   }
 
-  auto keywordsInnerList =
+  auto* keywordsInnerList =
       System::Collections::Generic::List_1<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>::
           New_ctor(beatmap->specialEventsKeywordFilters->keywords->get_Count());
   VList<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*> keywords(
@@ -794,20 +795,19 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
             n->keyword, n->specialEvents));
   }
 
-  auto basicEventTypesWithKeywords =
+  auto* basicEventTypesWithKeywords =
       CustomJSONData::NewFast<BeatmapSaveData::BasicEventTypesWithKeywords*>(keywordsInnerList);
 
   colorNotes->TrimExcess();
   bombNotes->TrimExcess();
 
-  auto v3beatmap =
-      CustomBeatmapSaveData::New_ctor(bpmChanges, rotationEvents, colorNotes, bombNotes, obstacles, sliders,
-                                      SList<BeatmapSaveData::BurstSliderData*>::New_ctor(), waypoints, basicEvents,
-                                      colorBoosts, SList<BeatmapSaveData::LightColorEventBoxGroup*>::New_ctor(),
-                                      SList<BeatmapSaveData::LightRotationEventBoxGroup*>::New_ctor(),
-                                      SList<BeatmapSaveData::LightTranslationEventBoxGroup*>::New_ctor(),
-                                      SList<BeatmapSaveData::FxEventBoxGroup*>::New_ctor(),
-                                      BeatmapSaveData::FxEventsCollection::New_ctor(),
+  auto* v3beatmap = CustomBeatmapSaveData::New_ctor(
+      bpmChanges, rotationEvents, colorNotes, bombNotes, obstacles, sliders,
+      SList<BeatmapSaveData::BurstSliderData*>::New_ctor(), waypoints, basicEvents, colorBoosts,
+      SList<BeatmapSaveData::LightColorEventBoxGroup*>::New_ctor(),
+      SList<BeatmapSaveData::LightRotationEventBoxGroup*>::New_ctor(),
+      SList<BeatmapSaveData::LightTranslationEventBoxGroup*>::New_ctor(),
+      SList<BeatmapSaveData::FxEventBoxGroup*>::New_ctor(), BeatmapSaveData::FxEventsCollection::New_ctor(),
       basicEventTypesWithKeywords, true);
 
   v3beatmap->customEventsData = beatmap->customEventsData;
@@ -822,7 +822,8 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   auto stopTime = std::chrono::high_resolution_clock::now();
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-      "This took {}ms", (int)std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+      "This took {}ms",
+      static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count()));
 
   return v3beatmap;
 }

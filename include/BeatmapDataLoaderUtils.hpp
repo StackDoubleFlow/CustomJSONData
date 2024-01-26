@@ -53,14 +53,14 @@ using namespace CustomJSONData;
 using namespace BeatmapSaveDataVersion3;
 
 inline JSONWrapper* ToJsonWrapper(v3::CustomDataOpt const& val) {
-  auto wrapper = JSONWrapper::New_ctor();
+  auto* wrapper = JSONWrapper::New_ctor();
   wrapper->value = val;
 
   return wrapper;
 }
 
 inline JSONWrapperUTF16* ToJsonWrapper(v3::CustomDataOptUTF16 const& val) {
-  auto wrapper = JSONWrapperUTF16::New_ctor();
+  auto* wrapper = JSONWrapperUTF16::New_ctor();
   wrapper->value = val;
 
   return wrapper;
@@ -69,10 +69,10 @@ inline JSONWrapperUTF16* ToJsonWrapper(v3::CustomDataOptUTF16 const& val) {
 constexpr CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                     ColorType colorType, NoteCutDirection cutDirection,
                                                     JSONWrapper* customData) {
-  auto b = CustomNoteData::New_ctor(time, lineIndex, (NoteLineLayer)noteLineLayer, (NoteLineLayer)noteLineLayer,
-                                    (NoteData::GameplayType)NoteData::GameplayType::Normal,
-                                    (NoteData::ScoringType)NoteData::ScoringType::Normal, (ColorType)colorType,
-                                    (NoteCutDirection)cutDirection, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f, 1.0f);
+  auto* b = CustomNoteData::New_ctor(time, lineIndex, NoteLineLayer(noteLineLayer), NoteLineLayer(noteLineLayer),
+                                     NoteData::GameplayType(NoteData::GameplayType::Normal),
+                                     NoteData::ScoringType(NoteData::ScoringType::Normal), ColorType(colorType),
+                                     NoteCutDirection(cutDirection), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
 
   b->customData = customData->GetCopy();
 
@@ -81,10 +81,10 @@ constexpr CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, N
 
 constexpr CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                    JSONWrapper* customData) {
-  auto b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, noteLineLayer,
-                                    NoteData::GameplayType(NoteData::GameplayType::Bomb),
-                                    NoteData::ScoringType(NoteData::ScoringType::NoScore), ColorType(ColorType::None),
-                                    NoteCutDirection(NoteCutDirection::None), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
+  auto* b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, noteLineLayer,
+                                     NoteData::GameplayType(NoteData::GameplayType::Bomb),
+                                     NoteData::ScoringType(NoteData::ScoringType::NoScore), ColorType(ColorType::None),
+                                     NoteCutDirection(NoteCutDirection::None), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
 
   b->customData = customData->GetCopy();
 
@@ -95,10 +95,10 @@ constexpr CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, N
                                                     NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType,
                                                     NoteCutDirection cutDirection, float cutSfxVolumeMultiplier,
                                                     JSONWrapper* customData) {
-  auto b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer,
-                                    (NoteData::GameplayType)NoteData::GameplayType::BurstSliderElement,
-                                    (NoteData::ScoringType)NoteData::ScoringType::BurstSliderElement, colorType,
-                                    cutDirection, 0, 0, lineIndex, 0, 0, cutSfxVolumeMultiplier);
+  auto* b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer,
+                                     NoteData::GameplayType(NoteData::GameplayType::BurstSliderElement),
+                                     NoteData::ScoringType(NoteData::ScoringType::BurstSliderElement), colorType,
+                                     cutDirection, 0, 0, lineIndex, 0, 0, cutSfxVolumeMultiplier);
 
   b->customData = customData->GetCopy();
 
@@ -110,11 +110,11 @@ constexpr auto CustomSliderData_CreateCustomBurstSliderData(
     NoteLineLayer headBeforeJumpLineLayer, NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
     NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, NoteCutDirection tailCutDirection,
     int sliceCount, float squishAmount, JSONWrapper* customData) {
-  auto slider =
-      CustomSliderData::New_ctor((SliderData::Type)SliderData::Type::Burst, colorType, false, headTime, headLineIndex,
-                                 headLineLayer, headBeforeJumpLineLayer, 0.0f, headCutDirection, 0.0f, false, tailTime,
-                                 tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0f, tailCutDirection, 0.0f,
-                                 (SliderMidAnchorMode)SliderMidAnchorMode::Straight, sliceCount, squishAmount);
+  auto* slider =
+      CustomSliderData::New_ctor(SliderData::Type(SliderData::Type::Burst), colorType, false, headTime, headLineIndex,
+                                 headLineLayer, headBeforeJumpLineLayer, 0.0F, headCutDirection, 0.0F, false, tailTime,
+                                 tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0F, tailCutDirection, 0.0F,
+                                 SliderMidAnchorMode(SliderMidAnchorMode::Straight), sliceCount, squishAmount);
   slider->customData = customData->GetCopy();
 
   return slider;
@@ -126,11 +126,11 @@ constexpr auto CustomSliderData_CreateCustomSliderData(
     float tailTime, int tailLineIndex, NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer,
     float tailControlPointLengthMultiplier, NoteCutDirection tailCutDirection, SliderMidAnchorMode midAnchorMode,
     JSONWrapper* customData) {
-  auto slider = CustomSliderData::New_ctor(
-      (SliderData::Type)SliderData::Type::Normal, colorType, false, headTime, headLineIndex, headLineLayer,
-      headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0f, false, tailTime, tailLineIndex,
-      tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection, 0.0f, midAnchorMode,
-      0, 1.0f);
+  auto* slider = CustomSliderData::New_ctor(
+      SliderData::Type(SliderData::Type::Normal), colorType, false, headTime, headLineIndex, headLineLayer,
+      headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0F, false, tailTime, tailLineIndex,
+      tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection, 0.0F, midAnchorMode,
+      0, 1.0F);
   slider->customData = customData->GetCopy();
 
   return slider;
@@ -329,7 +329,7 @@ struct BpmTimeProcessor {
       float beat = BeatmapSaveDataItem_GetBeat(v);
       float bpm = v->m;
       float bpmChangeStartTime =
-          bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0f;
+          bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
       bpmChangeDataList.emplace_back(bpmChangeStartTime, beat, bpm);
     }
   }
@@ -452,17 +452,17 @@ LightTranslationBaseData_Convert(BeatmapSaveData::LightTranslationBaseData* save
 
 struct EventBoxGroupConvertor {
   explicit EventBoxGroupConvertor(IEnvironmentLightGroups* lightGroups) : lightGroups(lightGroups) {
-    
+
     dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox*>([](BeatmapSaveData::LightColorEventBox* saveData,
                                                                         GlobalNamespace::ILightGroup* lightGroupData) {
-      auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
-      auto saveDataList = reinterpret_cast<
+      auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
+      auto* saveDataList = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>*>(
           saveData->e);
       auto list = VList<LightColorBaseData*>::New();
       list->EnsureCapacity(saveDataList->get_Count());
 
-      for (auto saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>(saveDataList)) {
+      for (auto* saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>(saveDataList)) {
         list.push_back(LightColorBaseData_Convert(saveData2));
       }
 
@@ -480,15 +480,15 @@ struct EventBoxGroupConvertor {
     dataConvertor.AddConverter<
         BeatmapSaveData::LightRotationEventBox*>([](BeatmapSaveData::LightRotationEventBox* saveData,
                                                     GlobalNamespace::ILightGroup* lightGroupData) {
-      auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
-      auto collection = reinterpret_cast<
+      auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
+      auto* collection = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(
           saveData->get_lightRotationBaseDataList());
 
       auto list = VList<LightRotationBaseData*>::New();
       list->EnsureCapacity(collection->get_Count());
 
-      for (auto saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
+      for (auto* saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
         list.push_back(LightRotationBaseData_Convert(saveData2));
       }
 
@@ -504,16 +504,16 @@ struct EventBoxGroupConvertor {
     dataConvertor.AddConverter<
         BeatmapSaveData::LightTranslationEventBox*>([](BeatmapSaveData::LightTranslationEventBox* saveData,
                                                        GlobalNamespace::ILightGroup* lightGroupData) {
-      auto indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
+      auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
 
-      auto collection = reinterpret_cast<
+      auto* collection = reinterpret_cast<
           System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>*>(
           saveData->get_lightTranslationBaseDataList());
 
       auto list = VList<LightTranslationBaseData*>::New();
       list->EnsureCapacity(collection->get_Count());
 
-      for (auto saveData2 : VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
+      for (auto* saveData2 : VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
         list.push_back(LightTranslationBaseData_Convert(saveData2));
       }
 
@@ -531,7 +531,7 @@ struct EventBoxGroupConvertor {
 
   BeatmapEventDataBoxGroup*
   Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup* eventBoxGroupSaveData) const {
-    auto dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
+    auto* dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
     if (dataForGroup == nullptr) {
       return nullptr;
     }
@@ -541,14 +541,14 @@ struct EventBoxGroupConvertor {
       return nullptr;
     }
 
-    auto collection =
+    auto* collection =
         reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>*>(
             eventBoxGroupSaveData->get_baseEventBoxes());
     auto list = VList<BeatmapEventDataBox*>::New();
     list->EnsureCapacity(collection->get_Count());
 
-    for (auto item : VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>(collection)) {
-      auto beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
+    for (auto* item : VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>(collection)) {
+      auto* beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
       if (beatmapEventDataBox != nullptr) {
         list.push_back(beatmapEventDataBox);
       }

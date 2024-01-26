@@ -9,7 +9,7 @@
 #include "CustomEventData.h"
 #include "CJDLogger.h"
 
-DECLARE_CLASS_CODEGEN(
+DECLARE_CLASS_CODEGEN&(
     CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData,
     DECLARE_FASTER_CTOR(
         ctor,
@@ -32,54 +32,57 @@ DECLARE_CLASS_CODEGEN(
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc; std::optional<std::reference_wrapper<const rapidjson::Value>> customData;)
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData,
-                      BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData,
-                      DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer,
-                                          BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteType type,
-                                          GlobalNamespace::NoteCutDirection cutDirection);
+    DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData,
+                          BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData,
+                          DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer,
+                                              BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteType type,
+                                              GlobalNamespace::NoteCutDirection cutDirection);
 
-                      DECLARE_SIMPLE_DTOR();
+                          DECLARE_SIMPLE_DTOR();
 
-                      public
-                      : std::optional<std::reference_wrapper<const rapidjson::Value>>
-                          customData;)
+                          public
+                          : std::optional<std::reference_wrapper<const rapidjson::Value>>
+                              customData;)
 
-DECLARE_CLASS_CODEGEN(
-    CustomJSONData::v2, CustomBeatmapSaveData_SliderData,
-    BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData,
-    DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ColorType colorType,
-                        float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
-                        float headControlPointLengthMultiplier, ::GlobalNamespace::NoteCutDirection headCutDirection,
-                        float tailTime, int tailLineIndex, ::GlobalNamespace::NoteLineLayer tailLineLayer,
-                        float tailControlPointLengthMultiplier, ::GlobalNamespace::NoteCutDirection tailCutDirection,
-                        ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode);
+        DECLARE_CLASS_CODEGEN(
+            CustomJSONData::v2, CustomBeatmapSaveData_SliderData,
+            BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData,
+            DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ColorType colorType,
+                                float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
+                                float headControlPointLengthMultiplier,
+                                ::GlobalNamespace::NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
+                                ::GlobalNamespace::NoteLineLayer tailLineLayer, float tailControlPointLengthMultiplier,
+                                ::GlobalNamespace::NoteCutDirection tailCutDirection,
+                                ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode);
 
-    DECLARE_SIMPLE_DTOR();
+            DECLARE_SIMPLE_DTOR();
 
-    public
-    : std::optional<std::reference_wrapper<const rapidjson::Value>>
-        customData;)
+            public
+            : std::optional<std::reference_wrapper<const rapidjson::Value>>
+                customData;)
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData,
-                      BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData,
-                      DECLARE_FASTER_CTOR(ctor, float time, int lineIndex,
-                                          BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleType type,
-                                          float duration, int width);
+            DECLARE_CLASS_CODEGEN(
+                CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData,
+                BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData,
+                DECLARE_FASTER_CTOR(ctor, float time, int lineIndex,
+                                    BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleType type,
+                                    float duration, int width);
 
-                      DECLARE_SIMPLE_DTOR();
+                DECLARE_SIMPLE_DTOR();
 
-                      public
-                      : std::optional<std::reference_wrapper<const rapidjson::Value>>
-                          customData;)
+                public
+                : std::optional<std::reference_wrapper<const rapidjson::Value>>
+                    customData;)
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData,
-                      BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData,
-                      DECLARE_FASTER_CTOR(ctor, float time,
-                                          BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType type,
-                                          int value, float floatValue);
+                DECLARE_CLASS_CODEGEN(
+                    CustomJSONData::v2, CustomBeatmapSaveData_EventData,
+                    BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData,
+                    DECLARE_FASTER_CTOR(ctor, float time,
+                                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType type,
+                                        int value, float floatValue);
 
-                      DECLARE_SIMPLE_DTOR();
+                    DECLARE_SIMPLE_DTOR();
 
-                      public
-                      : std::optional<std::reference_wrapper<const rapidjson::Value>>
-                          customData;)
+                    public
+                    : std::optional<std::reference_wrapper<const rapidjson::Value>>
+                        customData;)
