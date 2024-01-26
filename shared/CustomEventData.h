@@ -20,6 +20,7 @@ class BeatmapCallbacksController;
 
 #define FindMethodGetter(methodName) ::il2cpp_utils::il2cpp_type_check::MetadataGetter<methodName>::methodInfo()
 
+// clang-format off
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem, public
                       : DECLARE_FASTER_CTOR(ctor, float time, /* std::string_view*/ void* type, size_t typeHash,
                                             /* rapidjson::Value */ void* data);
@@ -44,7 +45,10 @@ DECLARE_CLASS_CODEGEN(
     DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCallbacksController*, controller);
 
     std::function<void(GlobalNamespace::BeatmapCallbacksController* controller, GlobalNamespace::BeatmapDataItem* item)>
-        redirectEvent;)
+        redirectEvent;
+)
+
+// clang-format on
 
 namespace CustomJSONData {
 
