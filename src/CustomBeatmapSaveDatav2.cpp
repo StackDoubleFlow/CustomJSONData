@@ -95,7 +95,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
   list->EnsureCapacity(size);
 
   for (auto originalEventData : ListW < BeatmapSaveData::EventData*>(beatmapSaveData->events)) {
-    auto* eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(originalEventData);
+    auto* eventData = il2cpp_utils::cast<CustomBeatmapSaveData_EventData>(originalEventData);
     CustomBeatmapSaveData_EventData* newData = nullptr;
     if (eventData->type == BeatmapSaveData::BeatmapEventType::Event10) {
       newData = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(
