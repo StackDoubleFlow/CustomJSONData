@@ -24,8 +24,8 @@ void CustomJSONData::v2::CustomBeatmapSaveData::ctor(
     System::Collections::Generic::List_1<BeatmapSaveData::ObstacleData*>* obstacles,
     BeatmapSaveData::SpecialEventKeywordFiltersData* specialEventsKeywordFilters) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 6);
-  
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 6);
+
   il2cpp_utils::RunMethodRethrow(this, ctor, events, notes, sliders, waypoints, obstacles, specialEventsKeywordFilters);
   //    this->events = events;
   //    this->notes = notes;
@@ -38,7 +38,7 @@ void CustomJSONData::v2::CustomBeatmapSaveData_NoteData::ctor(float time, int li
                                                               BeatmapSaveData::NoteType type,
                                                               NoteCutDirection cutDirection) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::NoteData*), ".ctor", 5);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::NoteData*), ".ctor", 5);
   il2cpp_utils::RunMethodRethrow(this, ctor, time, lineIndex, lineLayer, type, cutDirection);
   //    this->time = time;
   //    this->lineIndex = lineIndex;
@@ -51,7 +51,7 @@ void CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData::ctor(float time, in
                                                                   BeatmapSaveData::ObstacleType type, float duration,
                                                                   int width) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 5);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::ObstacleData*), ".ctor", 5);
   il2cpp_utils::RunMethodRethrow(this, ctor, time, lineIndex, type, duration, width);
   this->_time = time;
   this->_lineIndex = lineIndex;
@@ -63,7 +63,7 @@ void CustomJSONData::v2::CustomBeatmapSaveData_ObstacleData::ctor(float time, in
 void CustomJSONData::v2::CustomBeatmapSaveData_EventData::ctor(float time, BeatmapSaveData::BeatmapEventType type,
                                                                int value, float floatValue) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::EventData*), ".ctor", 4);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::EventData*), ".ctor", 4);
   il2cpp_utils::RunMethodRethrow(this, ctor, time, type, value, floatValue);
 
   this->_time = time;
@@ -79,7 +79,7 @@ void CustomJSONData::v2::CustomBeatmapSaveData_SliderData::ctor(
     ::GlobalNamespace::NoteLineLayer tailLineLayer, float tailControlPointLengthMultiplier,
     ::GlobalNamespace::NoteCutDirection tailCutDirection, ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode) {
   INVOKE_CTOR();
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::SliderData*), ".ctor", 12);
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData::SliderData*), ".ctor", 12);
   il2cpp_utils::RunMethodRethrow(
       this, ctor, colorType, headTime, headLineIndex, headLineLayer, headControlPointLengthMultiplier, headCutDirection,
       tailTime, tailLineIndex, tailLineLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode);
@@ -94,7 +94,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
   auto list = VList<BeatmapSaveData::EventData*>::New();
   list->EnsureCapacity(size);
 
-  for (auto originalEventData : ListW < BeatmapSaveData::EventData*>(beatmapSaveData->events)) {
+  for (auto* originalEventData : ListW<BeatmapSaveData::EventData*>(beatmapSaveData->events)) {
     auto* eventData = il2cpp_utils::cast<CustomBeatmapSaveData_EventData>(originalEventData);
     CustomBeatmapSaveData_EventData* newData = nullptr;
     if (eventData->type == BeatmapSaveData::BeatmapEventType::Event10) {
@@ -109,10 +109,12 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
       }
     } else {
       newData = CRASH_UNLESS(
-          CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type, eventData->value, 1.0f));
+          CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type, eventData->value, 1.0F));
     }
 
-    if (newData) newData->customData = CustomJSONData::JSONObjectOrNull(eventData->customData);
+    if (newData) {
+      newData->customData = CustomJSONData::JSONObjectOrNull(eventData->customData);
+    }
 
     list.push_back(newData ? newData : eventData);
   }
@@ -130,7 +132,7 @@ inline decltype(CustomJSONData::v2::CustomBeatmapSaveData::customData) GetCustom
 }
 
 CustomJSONData::v2::CustomBeatmapSaveData*
-CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> sharedDoc) {
+CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc) {
   auto const& doc = *sharedDoc;
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse notes");
@@ -139,7 +141,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   auto notesArrIt = doc.FindMember("_notes");
 
   if (notesArrIt != doc.MemberEnd() && notesArrIt->value.IsArray()) {
-    auto& notesArr = notesArrIt->value;
+    auto const& notesArr = notesArrIt->value;
     notes->EnsureCapacity(notesArr.Size());
 
     for (rapidjson::SizeType i = 0; i < notesArr.Size(); i++) {
@@ -150,7 +152,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       auto lineLayer = NoteLineLayer(NEJSON::ReadOptionalFloat(note_json, "_lineLayer").value_or(0));
       auto type = BeatmapSaveData::NoteType(NEJSON::ReadOptionalFloat(note_json, "_type").value_or(0));
       auto cutDirection = NoteCutDirection(NEJSON::ReadOptionalFloat(note_json, "_cutDirection").value_or(0));
-      auto note =
+      auto* note =
           CRASH_UNLESS(CustomBeatmapSaveData_NoteData::New_ctor(time, lineIndex, lineLayer, type, cutDirection));
 
       auto customDataIt = note_json.FindMember("_customData");
@@ -167,7 +169,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   auto slidersArrIt = doc.FindMember("_sliders");
 
   if (slidersArrIt != doc.MemberEnd() && slidersArrIt->value.IsArray()) {
-    auto& slidersArr = slidersArrIt->value;
+    auto const& slidersArr = slidersArrIt->value;
     sliders->EnsureCapacity(slidersArr.Size());
 
     for (rapidjson::SizeType i = 0; i < slidersArr.Size(); i++) {
@@ -179,7 +181,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       auto cutDirection = NoteCutDirection(slider_json["_cutDirection"].GetInt());
 
       float time = slider_json["_time"].GetFloat();
-      BeatmapSaveData::ColorType colorType = ColorType(slider_json["_colorType"].GetInt());
+      auto colorType = ColorType(slider_json["_colorType"].GetInt());
       int headLineIndex = slider_json["_headLineIndex"].GetInt();
       NoteLineLayer noteLineLayer = slider_json["_noteLineLayer"].GetInt();
       float headControlPointLengthMultiplier = slider_json["_headControlPointLengthMultiplier"].GetFloat();
@@ -191,7 +193,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       NoteCutDirection tailCutDirection = slider_json["_tailCutDirection"].GetInt();
       SliderMidAnchorMode sliderMidAnchorMode = slider_json["_sliderMidAnchorMode"].GetInt();
 
-      auto slider = CRASH_UNLESS(CustomBeatmapSaveData_SliderData::New_ctor(
+      auto* slider = CRASH_UNLESS(CustomBeatmapSaveData_SliderData::New_ctor(
           colorType, time, headLineIndex, noteLineLayer, headControlPointLengthMultiplier, noteCutDirection, tailTime,
           tailLineIndex, tailLineLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode));
       slider->customData = GetCustomData(slider_json);
@@ -207,7 +209,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   auto obstacles = VList<BeatmapSaveData::ObstacleData*>::New();
 
   if (obstaclesArrIt->value.IsArray()) {
-    auto& obstaclesArr = obstaclesArrIt->value;
+    auto const& obstaclesArr = obstaclesArrIt->value;
 
     obstacles->EnsureCapacity(obstaclesArr.Size());
 
@@ -216,10 +218,10 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
       float time = obstacle_json["_time"].GetFloat();
       int lineIndex = obstacle_json["_lineIndex"].GetInt();
-      ObstacleType type = ObstacleType(obstacle_json["_type"].GetInt());
+      auto type = ObstacleType(obstacle_json["_type"].GetInt());
       float duration = obstacle_json["_duration"].GetFloat();
       int width = obstacle_json["_width"].GetInt();
-      auto obstacle =
+      auto* obstacle =
           CRASH_UNLESS(CustomBeatmapSaveData_ObstacleData::New_ctor(time, lineIndex, type, duration, width));
 
       obstacle->customData = GetCustomData(obstacle_json);
@@ -253,7 +255,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         floatValue = floatValueIt->value.GetFloat();
       }
 
-      auto event = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(time, type, value, floatValue));
+      auto* event = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(time, type, value, floatValue));
       event->customData = GetCustomData(event_json);
 
       events.push_back(event);
@@ -276,9 +278,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
       float time = waypoint_json["_time"].GetFloat();
       int lineIndex = waypoint_json["_lineIndex"].GetInt();
-      NoteLineLayer lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
-      OffsetDirection offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
-      auto waypoint =
+      auto lineLayer = NoteLineLayer(waypoint_json["_lineLayer"].GetInt());
+      auto offsetDirection = OffsetDirection(waypoint_json["_offsetDirection"].GetInt());
+      auto* waypoint =
           CustomJSONData::NewFast<BeatmapSaveData::WaypointData*>(time, lineIndex, lineLayer, offsetDirection);
       waypoints.push_back(waypoint);
     }
@@ -305,9 +307,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
         auto specialEventsArray = keyword_json["_specialEvents"].GetArray();
         auto specialEvents = VList<BeatmapSaveData::BeatmapEventType>::New(specialEventsArray.Size());
 
-        for (auto& specialEvent : specialEventsArray) {
+        for (auto const& specialEvent : specialEventsArray) {
           // safety, why not?
-          if (!specialEvent.IsNumber()) continue;
+          if (!specialEvent.IsNumber()) {
+            continue;
+          }
 
           specialEvents.push_back(specialEvent.GetInt());
         }
@@ -317,11 +321,11 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       }
     }
   }
-  auto specialEventsKeywordFilters =
-      CustomJSONData::NewFast<BeatmapSaveData::SpecialEventKeywordFiltersData*>(specialEventsKeywordFiltersList.getPtr());
+  auto* specialEventsKeywordFilters = CustomJSONData::NewFast<BeatmapSaveData::SpecialEventKeywordFiltersData*>(
+      specialEventsKeywordFiltersList.getPtr());
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
-  auto saveData = CRASH_UNLESS(
+  auto* saveData = CRASH_UNLESS(
       CustomBeatmapSaveData::New_ctor(events, notes, sliders, waypoints, obstacles, specialEventsKeywordFilters));
   saveData->doc = sharedDoc;
   saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
@@ -340,7 +344,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
         // Any consequences? Nah never
         auto typeIt = eventValue.FindMember("_type");
-        if (typeIt == eventValue.MemberEnd() || typeIt->value.IsNull()) continue;
+        if (typeIt == eventValue.MemberEnd() || typeIt->value.IsNull()) {
+          continue;
+        }
 
         float time = 0;
         // Dammit Reaxt

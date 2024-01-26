@@ -13,7 +13,7 @@ void JSONWrapper::ctor() {
 }
 
 JSONWrapper* JSONWrapper::GetCopy() {
-  auto copy = JSONWrapper::New_ctor();
+  auto* copy = JSONWrapper::New_ctor();
 
   copy->value = value;
   copy->associatedData = associatedData;
@@ -26,7 +26,7 @@ void JSONWrapperUTF16::ctor() {
 }
 
 JSONWrapperUTF16* JSONWrapperUTF16::GetCopy() {
-  auto copy = JSONWrapperUTF16::New_ctor();
+  auto* copy = JSONWrapperUTF16::New_ctor();
 
   copy->value = value;
   copy->associatedData = associatedData;

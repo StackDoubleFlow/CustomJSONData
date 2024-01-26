@@ -159,7 +159,9 @@ namespace CustomJSONData {
 inline static std::optional<v3::CustomBeatmapSaveData*>
 GetBeatmapSaveData(GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
   auto customDifficultyBeatmap = il2cpp_utils::try_cast<GlobalNamespace::CustomDifficultyBeatmap>(difficultyBeatmap);
-  if (!customDifficultyBeatmap) return std::nullopt;
+  if (!customDifficultyBeatmap) {
+    return std::nullopt;
+  }
 
   return il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(customDifficultyBeatmap.value()->beatmapSaveData);
 }

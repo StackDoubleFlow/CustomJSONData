@@ -44,7 +44,7 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.10.0",
+      "versionRange": "^0.11.0",
       "additionalData": {
         "includeQmod": true,
         "private": true

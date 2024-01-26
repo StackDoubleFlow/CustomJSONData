@@ -67,7 +67,8 @@ public:
 struct CustomEventCallbackData {
   void (*callback)(GlobalNamespace::BeatmapCallbacksController* callbackController, CustomJSONData::CustomEventData*);
 
-  constexpr CustomEventCallbackData(void (*callback)(GlobalNamespace::BeatmapCallbacksController*, CustomEventData*))
+  constexpr explicit CustomEventCallbackData(void (*callback)(GlobalNamespace::BeatmapCallbacksController*,
+                                                              CustomEventData*))
       : callback(callback) {}
 };
 
