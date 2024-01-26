@@ -45,7 +45,7 @@
       },
       {
         "id": "songloader",
-        "versionRange": "^0.10.0",
+        "versionRange": "^0.11.0",
         "additionalData": {
           "includeQmod": true,
           "private": true
@@ -81,17 +81,17 @@
     {
       "dependency": {
         "id": "paper",
-        "versionRange": "=3.3.0",
+        "versionRange": "=3.3.1",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.0/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.0/debug_libpaperlog.so",
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/debug_libpaperlog.so",
           "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.0/paperlog.qmod",
-          "branchName": "version/v3_3_0",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/paperlog.qmod",
+          "branchName": "version/v3_3_1",
           "cmake": false
         }
       },
-      "version": "3.3.0"
+      "version": "3.3.1"
     },
     {
       "dependency": {
@@ -106,12 +106,13 @@
     {
       "dependency": {
         "id": "songloader",
-        "versionRange": "=0.10.18",
+        "versionRange": "=0.11.0",
         "additionalData": {
-          "overrideSoName": "libsongloader.so"
+          "overrideSoName": "libsongloader.so",
+          "cmake": true
         }
       },
-      "version": "0.10.18"
+      "version": "0.11.0"
     },
     {
       "dependency": {
@@ -127,13 +128,13 @@
     {
       "dependency": {
         "id": "custom-types",
-        "versionRange": "=0.16.6",
+        "versionRange": "=0.16.13",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.6/libcustom-types.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.6/debug_libcustom-types.so",
+          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/libcustom-types.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/debug_libcustom-types.so",
           "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.6/CustomTypes.qmod",
-          "branchName": "version/v0_16_6",
+          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/CustomTypes.qmod",
+          "branchName": "version/v0_16_13",
           "compileOptions": {
             "cppFlags": [
               "-Wno-invalid-offsetof"
@@ -142,15 +143,15 @@
           "cmake": true
         }
       },
-      "version": "0.16.6"
+      "version": "0.16.13"
     },
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=3402.1.1",
+        "versionRange": "=3402.1.2",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v3402_1_1",
+          "branchName": "version/v3402_1_2",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -165,7 +166,7 @@
           }
         }
       },
-      "version": "3402.1.1"
+      "version": "3402.1.2"
     },
     {
       "dependency": {
@@ -181,14 +182,15 @@
     {
       "dependency": {
         "id": "beatsaber-hook",
-        "versionRange": "=5.0.3",
+        "versionRange": "=5.0.7",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.0/libbeatsaber-hook.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.0/debug_libbeatsaber-hook.so",
-          "branchName": "master"
+          "soLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.7/libbeatsaber-hook_5_0_7.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.7/debug_libbeatsaber-hook_5_0_7.so",
+          "branchName": "version/v5_0_7",
+          "cmake": true
         }
       },
-      "version": "5.0.3"
+      "version": "5.0.7"
     },
     {
       "dependency": {
@@ -221,6 +223,23 @@
         }
       },
       "version": "10.0.0"
+    },
+    {
+      "dependency": {
+        "id": "kaleb",
+        "versionRange": "=0.1.7",
+        "additionalData": {
+          "headersOnly": true,
+          "branchName": "version/v0_1_7",
+          "compileOptions": {
+            "cppFlags": [
+              "-DKALEB_VERSION=\"0.1.7\""
+            ]
+          },
+          "cmake": false
+        }
+      },
+      "version": "0.1.7"
     }
   ]
 }

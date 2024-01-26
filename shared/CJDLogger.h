@@ -16,7 +16,7 @@ class CJDLogger {
 public:
   
   static Logger& GetLoggerOld() {
-    static auto logger = new class Logger(CustomJSONData::modInfo, LoggerOptions(false, true));
+    static auto* logger = new class Logger(CustomJSONData::modInfo, LoggerOptions(false, true));
     return *logger;
   }
   // Register file log in main.cpp
