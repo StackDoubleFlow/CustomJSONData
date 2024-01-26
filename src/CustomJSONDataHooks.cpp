@@ -305,7 +305,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveData,
                       &BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData, BeatmapSaveData*,
                       BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData* beatmapSaveData) {
   return v3::CustomBeatmapSaveData::Convert2_6_0(
-      reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData*>(beatmapSaveData));
+      il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData>(beatmapSaveData));
 }
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData
@@ -340,8 +340,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
     if (semver::lte(std::string(version), "2.6.0")) {
       CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
 
-      saveData =
-          reinterpret_cast<v3::CustomBeatmapSaveData*>(BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData(
+      saveData = il2cpp_utils::cast<v3::CustomBeatmapSaveData>(
+          BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData(
               v2::CustomBeatmapSaveData::Deserialize(sharedDoc)));
       saveData->isV2 = true;
     } else {
@@ -591,7 +591,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   static auto CustomBeatmapSaveDataKlass = classof(v3::CustomBeatmapSaveData*);
 
   if (beatmapSaveData->klass == CustomBeatmapSaveDataKlass) {
-    auto cBeatmapSaveData = reinterpret_cast<v3::CustomBeatmapSaveData*>(beatmapSaveData);
+    auto cBeatmapSaveData = il2cpp_utils::cast<v3::CustomBeatmapSaveData>(beatmapSaveData);
 
     beatmapData->customData = ToJsonWrapper(cBeatmapSaveData->customData);
     beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData->levelCustomData);
@@ -830,7 +830,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   bpmTimeProcessorIl2cpp->currentBpmChangesDataIdx = bpmTimeProcessor.currentBpmChangesDataIdx;
 
   auto beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(
-      beatmapData, reinterpret_cast<IBeatToTimeConvertor*>(bpmTimeProcessorIl2cpp), false);
+      beatmapData, il2cpp_utils::cast<IBeatToTimeConvertor>(bpmTimeProcessorIl2cpp), false);
   if (flag3) {
     EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 

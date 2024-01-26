@@ -82,9 +82,9 @@ constexpr CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, N
 constexpr CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                    JSONWrapper* customData) {
   auto b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, noteLineLayer,
-                                    (NoteData::GameplayType)NoteData::GameplayType::Bomb,
-                                    (NoteData::ScoringType)NoteData::ScoringType::NoScore, (ColorType)ColorType::None,
-                                    (NoteCutDirection)NoteCutDirection::None, 0.0f, 0.0f, lineIndex, 0.0f, 0.0f, 1.0f);
+                                    NoteData::GameplayType(NoteData::GameplayType::Bomb),
+                                    NoteData::ScoringType(NoteData::ScoringType::NoScore), ColorType(ColorType::None),
+                                    NoteCutDirection(NoteCutDirection::None), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
 
   b->customData = customData->GetCopy();
 
