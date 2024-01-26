@@ -15,6 +15,7 @@ Checks: "*,-llvm*,
   -altera-unroll-loops,
   -altera*,
   -readability-implicit-bool-conversion,
+  -cert-err58-cpp,
 
   -bugprone-undefined-memory-manipulation,
   -misc-use-anonymous-namespace,
