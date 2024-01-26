@@ -208,9 +208,8 @@ constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis a
   }
 }
 
-// TODO: Check!
+// BeatmapDataLoader.ConverEaseType
 constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::EaseType easeType) {
-  static_assert(false, "Must update this to PC equivalent");
   switch (easeType) {
   case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::None:
     return EaseType::None;
@@ -222,11 +221,58 @@ constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::Eas
     return EaseType::OutQuad;
   case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuad:
     return EaseType::InOutQuad;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InSine:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutSine:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutSine:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InCubic:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutCubic:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutCubic:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InQuart:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutQuart:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuart:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InQuint:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutQuint:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuint:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InExpo:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutExpo:
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutExpo:
+    break;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InCirc:
+    return EaseType::InCirc;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutCirc:
+    return EaseType::OutCirc;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutCirc:
+    return EaseType::InOutCirc;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InBack:
+    return EaseType::InBack;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutBack:
+    return EaseType::OutBack;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutBack:
+    return EaseType::InOutBack;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InElastic:
+    return EaseType::InElastic;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutElastic:
+    return EaseType::OutElastic;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutElastic:
+    return EaseType::InOutElastic;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InBounce:
+    return EaseType::InBounce;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutBounce:
+    return EaseType::OutBounce;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutBounce:
+    return EaseType::InOutBounce;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutBack:
+    return EaseType::BeatSaberInOutBack;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutElastic:
+    return EaseType::BeatSaberInOutElastic;
+  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutBounce:
+    return EaseType::BeatSaberInOutBounce;
   }
 
-  SAFE_ABORT_MSG("Message");
+  return EaseType::None;
 }
 
+// BeatmapDataLoader.ConvertNoteLineLayer
 constexpr NoteLineLayer ConvertNoteLineLayer(int layer) {
   switch (layer) {
   case 0:
@@ -240,6 +286,7 @@ constexpr NoteLineLayer ConvertNoteLineLayer(int layer) {
   }
 }
 
+// BeatmapDataLoader.ConvertSliderType
 constexpr SliderData::Type ConvertSliderType(BeatmapSaveDataVersion3::BeatmapSaveData::SliderType sliderType) {
   if (sliderType == BeatmapSaveDataVersion3::BeatmapSaveData::SliderType::Normal) {
     return SliderData::Type::Normal;
@@ -311,58 +358,41 @@ struct BpmTimeProcessor {
 
   BpmTimeProcessor(float startBpm,
                    VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*> bpmEventsSaveData) {
-    bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->b == 0;
+    bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->beat == 0.0F;
     if (hasBpm) {
-      startBpm = bpmEventsSaveData[0]->m;
+      startBpm = bpmEventsSaveData[0]->bpm;
     }
+    this->bpmChangeDataList = { BpmChangeData(0.0F, 0.0F, startBpm) };
+    bpmChangeDataList.reserve(bpmEventsSaveData.size());
 
-    bpmChangeDataList.reserve(bpmEventsSaveData.size() + 1);
-    bpmChangeDataList.emplace_back(0, 0, startBpm);
-
-    for (auto const& v : bpmEventsSaveData) {
-      if (!v || hasBpm) {
-        hasBpm = false; // skip first
-        continue;
-      }
-
-      auto const& bpmChangeData = bpmChangeDataList.back();
-      float beat = BeatmapSaveDataItem_GetBeat(v);
-      float bpm = v->m;
+    for (int i = hasBpm ? 1 : 0; i < bpmEventsSaveData.size(); i++) {
+      auto const& bpmChangeData = this->bpmChangeDataList.back();
+      float beat = bpmEventsSaveData[i]->beat;
+      float bpm = bpmEventsSaveData[i]->bpm;
       float bpmChangeStartTime =
           bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
       bpmChangeDataList.emplace_back(bpmChangeStartTime, beat, bpm);
     }
   }
 
-  void Reset() {
+  constexpr void Reset() {
     currentBpmChangesDataIdx = 0;
   }
 
-  constexpr float ConvertBeatToTime(float beat) {
-    //            while (currentBpmChangesDataIdx > 0)
-    //            {
-    //                if (currentBpmChangesDataIdx == 0) break;
-    //                if (bpmChangeDataList[currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
-    //                {
-    //                    break;
-    //                }
-    //                currentBpmChangesDataIdx--;
-    //            }
-    //            while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 &&
-    //            bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
-    //            {
-    //                currentBpmChangesDataIdx++;
-    //            }
-    //            currentBpmChangesDataIdx = std::min((int) bpmChangeDataList.size() - 1, currentBpmChangesDataIdx);
-    //            auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
-    //            return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) /
-    //            bpmChangeData.bpm * 60.0f;
+  [[nodiscard]] constexpr float ConvertBeatToTime(float beat) {
 
-    int num = 0;
-    while (num < bpmChangeDataList.size() - 1 && bpmChangeDataList[num + 1].bpmChangeStartBpmTime < beat) {
-      num++;
+    while (this->currentBpmChangesDataIdx > 0) {
+      if (bpmChangeDataList[this->currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat) {
+        break;
+      }
+      currentBpmChangesDataIdx--;
     }
-    auto const& bpmChangeData = bpmChangeDataList[num];
+    while (currentBpmChangesDataIdx < bpmChangeDataList.size() - 1 &&
+           bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat) {
+      currentBpmChangesDataIdx++;
+    }
+    auto const& bpmChangeData =
+        bpmChangeDataList[currentBpmChangesDataIdx];
     return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
   }
 };
