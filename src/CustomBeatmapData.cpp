@@ -35,7 +35,7 @@ void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataOverride(
   static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1);
 
   beatmapObjectDatas.emplace_back(beatmapObjectData);
-  PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
+  il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
 }
 
 void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataInOrderOverride(
