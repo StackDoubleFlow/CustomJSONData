@@ -16,6 +16,8 @@ Checks: "*,-llvm*,
   -altera*,
   -readability-implicit-bool-conversion,
   -cert-err58-cpp,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -hicpp-avoid-c-arrays,
 
   -bugprone-undefined-memory-manipulation,
   -misc-use-anonymous-namespace,
