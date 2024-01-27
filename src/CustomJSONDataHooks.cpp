@@ -42,6 +42,7 @@
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Collections/Generic/IEnumerator_1.hpp"
+#include "System/Collections/Generic/InsertionBehavior.hpp"
 #include "System/Linq/Enumerable.hpp"
 #include "System/Version.hpp"
 #include "System/Diagnostics/Stopwatch.hpp"
@@ -91,6 +92,9 @@ using namespace BeatmapSaveDataVersion3;
 
 v3::CustomBeatmapSaveData* cachedSaveData;
 
+
+// essentially hook a method to then redirect the call to the "override func"
+// if that "override func" calls this func again, it calls the original method
 #define MAKE_HOOK_OVERRIDE_1PARAM(name, method, Base, Child, ParamT1, param1)                                          \
   void name##__override(Child* self, ParamT1 param1);                                                                  \
   thread_local bool name##_short_circuit =                                                                             \
@@ -108,10 +112,6 @@ v3::CustomBeatmapSaveData* cachedSaveData;
   }                                                                                                                    \
   void name##__override(Child* self, ParamT1 param1)
 
-// This is to prevent issues with string limits
-std::string to_utf8(std::u16string_view view) {
-  return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
-}
 
 static std::string GetVersionFromPath(std::string_view path) {
   // SongCore has a fallback so i guess i do too
@@ -376,43 +376,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
   }
 }
 
-void CustomAddBeatmapObjectData__override(CustomBeatmapData*self, GlobalNamespace ::BeatmapObjectData* item);
-// thread_local bool CustomAddBeatmapObjectData_short_circuit = false;
-// struct Hook_CustomAddBeatmapObjectData {
-//   using funcType = void (*)((BeatmapData)*self, GlobalNamespace ::BeatmapObjectData* item);
-//   static_assert(std ::is_same_v<
-//                     funcType, ::Hooking ::InternalMethodCheck<decltype(&BeatmapData ::AddBeatmapObjectData)>::funcType>,
-//                 "Hook method signature does not match!");
-//   constexpr static char const* name() {
-//     return "CustomAddBeatmapObjectData";
-//   }
-//   static MethodInfo const* getInfo() {
-//     return ::il2cpp_utils ::il2cpp_type_check ::MetadataGetter<&BeatmapData ::AddBeatmapObjectData>::methodInfo();
-//   }
-//   static funcType* trampoline() {
-//     return &CustomAddBeatmapObjectData;
-//   }
-//   static inline void (*CustomAddBeatmapObjectData)((BeatmapData)*self,
-//                                                    GlobalNamespace ::BeatmapObjectData* item) = nullptr;
-//   static funcType hook() {
-//     return &::Hooking ::HookCatchWrapper<&hook_CustomAddBeatmapObjectData, funcType>::wrapper;
-//   }
-//   static void hook_CustomAddBeatmapObjectData((BeatmapData)*self, GlobalNamespace ::BeatmapObjectData* item);
-// };
-// void Hook_CustomAddBeatmapObjectData ::hook_CustomAddBeatmapObjectData((BeatmapData)*self,
-//                                                                        GlobalNamespace ::BeatmapObjectData* item) {
-//   auto cast = il2cpp_utils ::try_cast<CustomBeatmapData>(self);
-//   if (cast && !CustomAddBeatmapObjectData_short_circuit) {
-//     CustomAddBeatmapObjectData_short_circuit = true;
-//     CustomAddBeatmapObjectData__override(*cast, item);
-//     CustomAddBeatmapObjectData_short_circuit = false;
-//     return;
-//   } else {
-//     return CustomAddBeatmapObjectData(self, item);
-//   }
-// }
-// // void CustomAddBeatmapObjectData__override((CustomBeatmapData)*self, GlobalNamespace ::BeatmapObjectData* item)
-
 MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, BeatmapData,
                               CustomBeatmapData, GlobalNamespace::BeatmapObjectData*, item) {
   self->AddBeatmapObjectDataOverride(item);
@@ -523,9 +486,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
 
       for (auto* linkedListNode =
                (value->lastProcessedNode != nullptr)
-                   ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
+                   ? CustomJSONData::LinkedListNode_1_get_Next(value->lastProcessedNode)
                    : (firstNode ? firstNode : self->_beatmapData->get_allBeatmapDataItems()->get_First());
-           linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
+           linkedListNode != nullptr; linkedListNode = CustomJSONData::LinkedListNode_1_get_Next(linkedListNode)) {
         auto* value2 = linkedListNode->get_Value();
         if (value2->time - value->aheadTime - GetAheadTime(value2) > songTime) {
           break;
@@ -909,7 +872,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     ListW<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationEventBoxGroup*> lightTranslationEventBoxGroups =
         beatmapSaveData->lightTranslationEventBoxGroups;
     BeatmapSaveDataVersion3::BeatmapSaveData::FxEventsCollection* fxEventsCollection = beatmapSaveData->_fxEventsCollection;
-    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup> vfxEventBoxGroups = beatmapSaveData->vfxEventBoxGroups;
+    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup*> vfxEventBoxGroups = beatmapSaveData->vfxEventBoxGroups;
     if (!flag3) {
       lightColorEventBoxGroups = defaultLightshowEventsSaveData->lightColorEventBoxGroups;
       lightRotationEventBoxGroups = defaultLightshowEventsSaveData->lightRotationEventBoxGroups;
@@ -972,8 +935,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
       for (auto& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
         beatmapData->InsertCustomEventData(CustomEventData::New_ctor(
-            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), (void*)&customEventSaveData.type,
-            customEventSaveData.typeHash, (void*)const_cast<rapidjson::Value*>(customEventSaveData.data)));
+            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), static_cast<void*>(&customEventSaveData.type),
+            customEventSaveData.typeHash, static_cast<void*>(const_cast<rapidjson::Value*>(customEventSaveData.data))));
       }
 
       CJDLogger::Logger.fmtLog<LogLevel::INF>("Added {} custom events",

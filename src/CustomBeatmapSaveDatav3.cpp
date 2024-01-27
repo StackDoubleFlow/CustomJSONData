@@ -2,8 +2,6 @@
 #include "CustomBeatmapSaveDatav2.h"
 #include "BeatmapFieldUtils.hpp"
 
-#include "beatsaber-hook/shared/utils/typedefs.h"
-
 #include "JsonUtils.h"
 #include "VList.h"
 
@@ -35,12 +33,15 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_SliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
 
-#define SAFEPTR_VLIST_DEFAULT(type, name, ...)                                                                         \
-  SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(__VA_ARGS__);                                          \
-  VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
+// these use SafePtr allocs
+/*
+// #define SAFEPTR_VLIST_DEFAULT(type, name, ...) \
+//   SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(__VA_ARGS__); \
+//   VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 
 //#define SAFEPTR_VLIST_ARG(type, name, ...) \
-//    SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
+//    SafePtr<System::Collections::Generic::List_1<type>>
+name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
 //    VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 //
 // #define SAFEPTR_VLIST(type, name) \
@@ -48,11 +49,15 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
  //    name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(0)); \
  VList<type>
 //    name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
+*/
 
+// do not use safeptr allocs
 #define SAFEPTR_VLIST_ARG(type, name, ...)                                                                             \
   VList<type> name(CustomJSONData::NewFast<System::Collections::Generic::List_1<type>*>(__VA_ARGS__));
 
 #define SAFEPTR_VLIST(type, name) SAFEPTR_VLIST_ARG(type, name)
+
+#define SAFEPTR_VLIST_DEFAULT(type, name, ...) SAFEPTR_VLIST_ARG(type, name, __VA_ARGS__)
 
 void CustomBeatmapSaveData::ctor(
     System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*>* bpmEvents,
@@ -468,6 +473,87 @@ auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val) {
   return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBoxGroup*>(beat, groupId, eventBoxes.getPtr());
 }
 
+BeatmapSaveData::FxEventsCollection* DeserializeFxEventCollection(rapidjson::Document const& doc) {
+  auto it = doc.FindMember("_fxEventsCollection");
+  if (it == doc.MemberEnd()) {
+    return nullptr;
+  }
+
+  auto const& val = it->value;
+
+  auto* result = BeatmapSaveData::FxEventsCollection::New_ctor();
+  ListW<BeatmapSaveData::IntFxEventBaseData*> intEventsList = result->_il;
+  ListW<BeatmapSaveData::FloatFxEventBaseData*> floatEventsList = result->_fl;
+
+  auto intEventsListVec =
+      NEJSON::ReadArrayOrEmpty<BeatmapSaveData::IntFxEventBaseData*>(val, "_il", [](rapidjson::Value const& arrIt) {
+        float beat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
+        bool usePreviousEventValue = NEJSON::ReadOptionalBool(arrIt, "p").value_or(false);
+        int value = NEJSON::ReadOptionalInt(arrIt, "v").value_or(0);
+
+        auto* fx = BeatmapSaveData::IntFxEventBaseData::New_ctor(beat, value);
+        fx->p = usePreviousEventValue ? 1 : 0;
+
+        return fx;
+      });
+  auto floatEventsListVec =
+      NEJSON::ReadArrayOrEmpty<BeatmapSaveData::FloatFxEventBaseData*>(val, "_il", [](rapidjson::Value const& arrIt) {
+        float beat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
+        bool usePreviousEventValue = NEJSON::ReadOptionalBool(arrIt, "p").value_or(false);
+        float value = NEJSON::ReadOptionalFloat(arrIt, "v").value_or(0);
+        BeatmapSaveData::EaseType easeType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
+
+        auto* fx = BeatmapSaveData::FloatFxEventBaseData::New_ctor(beat, usePreviousEventValue, value, easeType);
+
+        return fx;
+      });
+
+  intEventsList.insert_range(intEventsListVec);
+  floatEventsList.insert_range(floatEventsListVec);
+
+  return result;
+}
+
+BeatmapSaveData::FxEventBoxGroup* DeserializeFxEventBoxGroupArray(rapidjson::Value const& val) {
+  float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
+  int groupId = NEJSON::ReadOptionalInt(val, Constants::groupId).value_or(0);
+  BeatmapSaveData::FxEventType type = NEJSON::ReadOptionalInt(val, "t").value_or(0);
+
+  auto eventBoxesVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::FxEventBox*>(
+      val, Constants::eventBoxes, [](rapidjson::Value const& arrIt) {
+        /* nullable */
+        BeatmapSaveData::IndexFilter* indexFilter =
+            NEJSON::ReadOptionalType<BeatmapSaveData::IndexFilter*>(
+                arrIt, Constants::indexFilter, [](rapidjson::Value const& it) { return DeserializeIndexFilter(it); })
+                .value_or(nullptr);
+
+        float beatDistributionParam = NEJSON::ReadOptionalFloat(arrIt, Constants::beatDistributionParam).value_or(0);
+
+        BeatmapSaveData::EventBox::DistributionParamType beatDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, Constants::beatDistributionParamType).value_or(0);
+
+        float vfxDistributionParam = NEJSON::ReadOptionalFloat(arrIt, "s").value_or(0);
+
+        BeatmapSaveData::EventBox::DistributionParamType vfxDistributionParamType =
+            NEJSON::ReadOptionalInt(arrIt, "t").value_or(0);
+
+        bool vfxDistributionShouldAffectFirstBaseEvent = NEJSON::ReadOptionalBool(arrIt, "b").value_or(false);
+
+        BeatmapSaveData::EaseType vfxDistributionEaseType = NEJSON::ReadOptionalInt(arrIt, "i").value_or(0);
+
+        std::vector<int> vfxBaseDataList =
+            NEJSON::ReadArrayOrEmpty<int>(arrIt, "l", [](rapidjson::Value const& arrIt) { return arrIt.GetInt(); });
+
+        return BeatmapSaveData::FxEventBox::New_ctor(indexFilter, beatDistributionParam, beatDistributionParamType,
+                                                     vfxDistributionParam, vfxDistributionParamType,
+                                                     vfxDistributionEaseType, vfxDistributionShouldAffectFirstBaseEvent,
+                                                     CustomJSONData::SpanToSystemList(vfxBaseDataList));
+      });
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::FxEventBox*, eventBoxes, CustomJSONData::SpanToSystemList(eventBoxesVec));
+
+  return BeatmapSaveData::FxEventBoxGroup::New_ctor(beat, groupId, type, eventBoxes.getPtr());
+}
+
 auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
   std::string_view keyword = NEJSON::ReadOptionalString(val, "k").value_or("");
   auto eventTypesVec =
@@ -541,7 +627,11 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       doc, "lightTranslationEventBoxGroups",
       [](rapidjson::Value const& arr) { return DeserializeLightTranslationEventBoxGroup(arr); });
 
-  static_assert(false, "Must update this to parse fx events");
+  auto vfxEventBoxGroupsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveData::FxEventBoxGroup*>(
+      doc, "vfxEventBoxGroups", [](rapidjson::Value const& arr) { return DeserializeFxEventBoxGroupArray(arr); });
+
+  auto *fxEventsCollection = DeserializeFxEventCollection(doc);
+
 
   SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BpmChangeEventData*, bpmEvents,
                         CustomJSONData::SpanToSystemList(bpmEventsVec));
@@ -564,6 +654,8 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
                         CustomJSONData::SpanToSystemList(lightRotationEventBoxGroupsVec));
   SAFEPTR_VLIST_DEFAULT(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups,
                         CustomJSONData::SpanToSystemList(lightTranslationEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::FxEventBoxGroup*, vfxEventBoxGroups,
+                        CustomJSONData::SpanToSystemList(vfxEventBoxGroupsVec));
   SAFEPTR_VLIST(BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, basicEventTypesForKeyword);
   bool useNormalEventsAsCompatibleEvents =
       NEJSON::ReadOptionalBool(doc, "useNormalEventsAsCompatibleEvents").value_or(false);
@@ -600,11 +692,11 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   }
 
   auto* beatmap = CustomBeatmapSaveData::New_ctor(
-      bpmEvents.getPtr(), rotationEvents.getPtr(), colorNotes.getPtr(), bombNotes.getPtr(),
-      obstacles.getPtr(), sliders.getPtr(), burstSliders.getPtr(), waypoints.getPtr(),
-      basicBeatmapEvents.getPtr(), colorBoostBeatmapEvents.getPtr(), lightColorEventBoxGroups.getPtr(),
-      lightRotationEventBoxGroups.getPtr(), lightTranslationEventBoxGroups,
-      BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword.getPtr()), useNormalEventsAsCompatibleEvents);
+      bpmEvents.getPtr(), rotationEvents.getPtr(), colorNotes.getPtr(), bombNotes.getPtr(), obstacles.getPtr(),
+      sliders.getPtr(), burstSliders.getPtr(), waypoints.getPtr(), basicBeatmapEvents.getPtr(),
+      colorBoostBeatmapEvents.getPtr(), lightColorEventBoxGroups.getPtr(), lightRotationEventBoxGroups.getPtr(),
+      lightTranslationEventBoxGroups, vfxEventBoxGroups.getPtr(), fxEventsCollection,
+      BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword.getPtr()),useNormalEventsAsCompatibleEvents);
 
   beatmap->customData = CustomJSONData::JSONObjectOrNull(dataOpt);
   beatmap->doc = sharedDoc;
