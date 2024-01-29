@@ -342,9 +342,11 @@ auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
                   NEJSON::ReadOptionalInt(arrIt, Constants::colorType).value_or(0);
               float brightness = NEJSON::ReadOptionalFloat(arrIt, "s").value_or(0);
               int strobeFrequency = NEJSON::ReadOptionalInt(arrIt, "f").value_or(0);
+              float strobeBrightness = NEJSON::ReadOptionalFloat(arrIt, "sb").value_or(0);
+              bool strobeFade = NEJSON::ReadOptionalBool(arrIt, "sf").value_or(false);
 
               return CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(
-                  lightBeat, transitionType.value__, colorType.value__, brightness, strobeFrequency);
+                  lightBeat, transitionType.value__, colorType.value__, brightness, strobeFrequency, strobeBrightness, strobeFrequency);
             });
         SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorBaseData*, lightColorBaseDataList,
                               CustomJSONData::SpanToSystemList(lightColorBaseDataListVec));
