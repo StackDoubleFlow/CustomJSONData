@@ -15,6 +15,7 @@
 #include "GlobalNamespace/EaseType.hpp"
 
 #include <numeric>
+#include <type_traits>
 
 using namespace GlobalNamespace;
 using namespace BeatmapSaveDataVersion3;
@@ -58,6 +59,34 @@ name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
 #define SAFEPTR_VLIST(type, name) SAFEPTR_VLIST_ARG(type, name)
 
 #define SAFEPTR_VLIST_DEFAULT(type, name, ...) SAFEPTR_VLIST_ARG(type, name, __VA_ARGS__)
+
+#define SORT_BEATMAP(Type, list)                                                                                       \
+  std::stable_sort(ListW<Type>(list).begin(), ListW<Type>(list).end(), TimeCompare<Type>);
+
+#define SAFEPTR_VLIST_DEFAULT_SORTED(type, name, ...)                                                                  \
+  SAFEPTR_VLIST_ARG(type, name, __VA_ARGS__);                                                                          \
+  SORT_BEATMAP(type, name)
+
+static inline std::array<float, 8> const spawnRotations{ -60.0F, -45.0F, -30.0F, -15.0F, 15.0F, 30.0F, 45.0F, 60.0F };
+
+template <typename T>
+  requires(std::is_pointer_v<T> &&
+           std::is_convertible_v<T, BeatmapSaveDataVersion3::BeatmapSaveData::BeatmapSaveDataItem*>)
+constexpr bool TimeCompare(T const& a, T const& b) {
+  return (a->b < b->b);
+}
+
+template <typename T>
+  requires(std::is_pointer_v<T> &&
+           std::is_convertible_v<T, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveDataItem*>)
+constexpr bool TimeCompare(T const& a, T const& b) {
+  return (a->time < b->time);
+}
+
+constexpr bool TimeCompare(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData* const& a,
+                           BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData* const& b) {
+  return (a->_headTime < b->_headTime);
+}
 
 void CustomBeatmapSaveData::ctor(
     System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*>* bpmEvents,
@@ -634,30 +663,34 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
   auto *fxEventsCollection = DeserializeFxEventCollection(doc);
 
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::BpmChangeEventData*, bpmEvents,
+                               CustomJSONData::SpanToSystemList(bpmEventsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::RotationEventData*, rotationEvents,
+                               CustomJSONData::SpanToSystemList(rotationEventsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::ColorNoteData*, colorNotes,
+                               CustomJSONData::SpanToSystemList(colorNotesVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::BombNoteData*, bombNotes,
+                               CustomJSONData::SpanToSystemList(bombNotesVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::ObstacleData*, obstacles,
+                               CustomJSONData::SpanToSystemList(obstaclesVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::SliderData*, sliders, CustomJSONData::SpanToSystemList(slidersVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::BurstSliderData*, burstSliders,
+                               CustomJSONData::SpanToSystemList(burstSlidersVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::WaypointData*, waypoints,
+                               CustomJSONData::SpanToSystemList(waypointsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::BasicEventData*, basicBeatmapEvents,
+                               CustomJSONData::SpanToSystemList(basicBeatmapEventsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::ColorBoostEventData*, colorBoostBeatmapEvents,
+                               CustomJSONData::SpanToSystemList(colorBoostBeatmapEventsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::LightColorEventBoxGroup*, lightColorEventBoxGroups,
+                               CustomJSONData::SpanToSystemList(lightColorEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::LightRotationEventBoxGroup*, lightRotationEventBoxGroups,
+                               CustomJSONData::SpanToSystemList(lightRotationEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups,
+                               CustomJSONData::SpanToSystemList(lightTranslationEventBoxGroupsVec));
+  SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::FxEventBoxGroup*, vfxEventBoxGroups,
+                               CustomJSONData::SpanToSystemList(vfxEventBoxGroupsVec));
 
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BpmChangeEventData*, bpmEvents,
-                        CustomJSONData::SpanToSystemList(bpmEventsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::RotationEventData*, rotationEvents,
-                        CustomJSONData::SpanToSystemList(rotationEventsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ColorNoteData*, colorNotes, CustomJSONData::SpanToSystemList(colorNotesVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BombNoteData*, bombNotes, CustomJSONData::SpanToSystemList(bombNotesVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ObstacleData*, obstacles, CustomJSONData::SpanToSystemList(obstaclesVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::SliderData*, sliders, CustomJSONData::SpanToSystemList(slidersVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BurstSliderData*, burstSliders,
-                        CustomJSONData::SpanToSystemList(burstSlidersVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::WaypointData*, waypoints, CustomJSONData::SpanToSystemList(waypointsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::BasicEventData*, basicBeatmapEvents,
-                        CustomJSONData::SpanToSystemList(basicBeatmapEventsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::ColorBoostEventData*, colorBoostBeatmapEvents,
-                        CustomJSONData::SpanToSystemList(colorBoostBeatmapEventsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorEventBoxGroup*, lightColorEventBoxGroups,
-                        CustomJSONData::SpanToSystemList(lightColorEventBoxGroupsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationEventBoxGroup*, lightRotationEventBoxGroups,
-                        CustomJSONData::SpanToSystemList(lightRotationEventBoxGroupsVec));
-  SAFEPTR_VLIST_DEFAULT(LightTranslationEventBoxGroup*, lightTranslationEventBoxGroups,
-                        CustomJSONData::SpanToSystemList(lightTranslationEventBoxGroupsVec));
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::FxEventBoxGroup*, vfxEventBoxGroups,
-                        CustomJSONData::SpanToSystemList(vfxEventBoxGroupsVec));
   SAFEPTR_VLIST(BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, basicEventTypesForKeyword);
   bool useNormalEventsAsCompatibleEvents =
       NEJSON::ReadOptionalBool(doc, "useNormalEventsAsCompatibleEvents").value_or(false);
@@ -706,17 +739,6 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
   Parser::ParsedEvent.invoke(beatmap);
   return beatmap;
-}
-
-static inline const std::array<float, 8> spawnRotations{ -60.0F, -45.0F, -30.0F, -15.0F, 15.0F, 30.0F, 45.0F, 60.0F };
-
-template <typename T> constexpr bool TimeCompare(T const& a, T const& b) {
-  return (a->time < b->time);
-}
-
-constexpr bool TimeCompareSliders(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData* const& a,
-                                  BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData* const& b) {
-  return (a->_headTime < b->_headTime);
 }
 
 constexpr BeatmapSaveData::NoteColorType
@@ -768,16 +790,11 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Sorting");
 
-#define SORT_BEATMAP(Type, list)                                                                                       \
-  std::stable_sort(ListW<Type>(list).begin(), ListW<Type>(list).end(), TimeCompare<Type>);
-
   SORT_BEATMAP(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*, beatmap->notes)
   SORT_BEATMAP(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData*, beatmap->obstacles)
   SORT_BEATMAP(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*, beatmap->waypoints)
   SORT_BEATMAP(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData*, beatmap->events)
-
-  std::stable_sort(beatmap->sliders->_items.ref_to().begin(),
-                   beatmap->sliders->_items.ref_to().begin() + beatmap->sliders->_size, TimeCompareSliders);
+  SORT_BEATMAP(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData*, beatmap->sliders)
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Converting notes");
   for (auto const& n : VList <BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>(beatmap->notes)) {
