@@ -18,6 +18,7 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # compile options used
 add_compile_options(-frtti -fexceptions)
+add_compile_options(-fPIC -fPIE)
 add_compile_options(-O3)
 # compile definitions used
 add_compile_definitions(VERSION=\"${MOD_VERSION}\")
