@@ -503,7 +503,7 @@ BeatmapSaveData::FxEventsCollection* DeserializeFxEventCollection(rapidjson::Doc
         return fx;
       });
   auto floatEventsListVec =
-      NEJSON::ReadArrayOrEmpty<BeatmapSaveData::FloatFxEventBaseData*>(val, "_il", [](rapidjson::Value const& arrIt) {
+      NEJSON::ReadArrayOrEmpty<BeatmapSaveData::FloatFxEventBaseData*>(val, "_fl", [](rapidjson::Value const& arrIt) {
         float beat = NEJSON::ReadOptionalFloat(arrIt, Constants::beat).value_or(0);
         bool usePreviousEventValue = NEJSON::ReadOptionalBool(arrIt, "p").value_or(false);
         float value = NEJSON::ReadOptionalFloat(arrIt, "v").value_or(0);
