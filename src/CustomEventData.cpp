@@ -41,8 +41,8 @@ CustomEventData* CustomEventData::GetCopy() {
 
 void CustomBeatmapDataCallbackWrapper::ctor() {
   INVOKE_CTOR();
-  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataCallbackWrapper*), ".ctor", 3);
-  PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, ctor, 0.0F, csTypeOf(CustomEventData*),
+  static auto const* ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataCallbackWrapper*), ".ctor", 3));
+  PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow<void, false>(this, ctor, 0.0F, csTypeOf(CustomEventData*),
                                                             ArrayW<int>((il2cpp_array_size_t)0));)
   redirectEvent = nullptr;
 }
