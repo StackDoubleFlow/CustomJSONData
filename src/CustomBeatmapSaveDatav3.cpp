@@ -41,7 +41,7 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
   std::stable_sort(ListW<Type>(list).begin(), ListW<Type>(list).end(), TimeCompare<Type>);
 
 #define SAFEPTR_VLIST_DEFAULT_SORTED(type, name, ...)                                                                  \
-  VList<type> name(CustomJSONData::NewFast<System::Collections::Generic::List_1<type>*>(__VA_ARGS__));                 \
+  ListW<type> name(__VA_ARGS__);                 \
   SORT_BEATMAP(type, name)
 
 static inline std::array<float, 8> const spawnRotations{ -60.0F, -45.0F, -30.0F, -15.0F, 15.0F, 30.0F, 45.0F, 60.0F };
@@ -352,7 +352,7 @@ auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
               bool strobeFade = NEJSON::ReadOptionalBool(arrIt, "sf").value_or(false);
 
               return CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(
-                  lightBeat, transitionType.value__, colorType.value__, brightness, strobeFrequency, strobeBrightness, strobeFrequency);
+                  lightBeat, transitionType.value__, colorType.value__, brightness, strobeFrequency, strobeBrightness, strobeFade);
             });
         ListW<BeatmapSaveData::LightColorBaseData*> lightColorBaseDataList = CustomJSONData::SpanToSystemList(lightColorBaseDataListVec);
 
@@ -639,7 +639,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   auto *fxEventsCollection = DeserializeFxEventCollection(doc);
 
   SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::BpmChangeEventData*, bpmEvents,
-                               CustomJSONData::SpanToSystemList(bpmEventsVec));
+                                   CustomJSONData::SpanToSystemList(bpmEventsVec));
   SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::RotationEventData*, rotationEvents,
                                CustomJSONData::SpanToSystemList(rotationEventsVec));
   SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::ColorNoteData*, colorNotes,
