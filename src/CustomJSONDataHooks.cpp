@@ -896,6 +896,8 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     cleanAndSort(eventBoxes);
 
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Sorted events");
+
     profile.mark(fmt::format("Grouped beatmap event boxes {}", eventBoxes.size()));
 
     for (auto const& o : eventBoxes) {
@@ -905,13 +907,21 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
       }
     }
 
-    BeatmapDataLoader::VfxEventBoxGroupConvertor* vfxEventBoxGroupConvertor =
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("VFX box group");
+
+    auto* vfxEventBoxGroupConvertor =
         BeatmapDataLoader::VfxEventBoxGroupConvertor::New_ctor(environmentLightGroups, fxEventsCollection);
 
-    for (auto const& fxEventBoxGroup : vfxEventBoxGroups) {
-      BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup2 = vfxEventBoxGroupConvertor->Convert(fxEventBoxGroup);
-      if (beatmapEventDataBoxGroup2 != nullptr) {
-        beatmapEventDataBoxGroupLists->Insert(fxEventBoxGroup->groupId, beatmapEventDataBoxGroup2);
+    if (!vfxEventBoxGroups.empty()) {
+      for (auto const& fxEventBoxGroup : vfxEventBoxGroups) {
+        if (!fxEventBoxGroup) {
+          continue;
+        }
+
+        BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup2 = vfxEventBoxGroupConvertor->Convert(fxEventBoxGroup);
+        if (beatmapEventDataBoxGroup2 != nullptr) {
+          beatmapEventDataBoxGroupLists->Insert(fxEventBoxGroup->groupId, beatmapEventDataBoxGroup2);
+        }
       }
     }
 
@@ -921,6 +931,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                                                     defaultEnvironmentEvents, environmentLightGroups);
   }
 
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>("Custom events");
   bpmTimeProcessor.Reset();
   if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData)) {
     if (customBeatmapSaveData.value()->customEventsData) {
@@ -940,6 +951,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
   }
 
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished! processing");
   // Figure out a way to rewrite this to not be stupid
   beatmapEventDataBoxGroupLists->SyncWithBeatmapData();
   profile.mark("Syncing event box groups");
