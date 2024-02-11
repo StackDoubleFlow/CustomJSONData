@@ -312,13 +312,14 @@ constexpr LightRotationDirection ConvertRotationOrientation(
 }
 
 template <typename To, typename From, typename... TArgs>
-requires(std::is_pointer_v<To>&& std::is_pointer_v<From>) struct CppConverter {
+  requires(std::is_pointer_v<To> && std::is_pointer_v<From>)
+struct CppConverter {
   std::unordered_map<Il2CppClass*, std::function<To(From, TArgs...)>> converters;
 
   template <typename U, typename F>
-  requires(std::is_pointer_v<U>&& std::is_convertible_v<U, From>&&
-               std::is_convertible_v<F, std::function<To(U, TArgs...)>>) 
-               constexpr void AddConverter(F&& o) {
+    requires(std::is_pointer_v<U> && std::is_convertible_v<U, From> &&
+             std::is_convertible_v<F, std::function<To(U, TArgs...)>>)
+  constexpr void AddConverter(F&& o) {
     converters[classof(U)] = [o](From const& t, TArgs const&... args) constexpr {
       return o(static_cast<U>(t), args...);
     };
@@ -391,8 +392,7 @@ struct BpmTimeProcessor {
            bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat) {
       currentBpmChangesDataIdx++;
     }
-    auto const& bpmChangeData =
-        bpmChangeDataList[currentBpmChangesDataIdx];
+    auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
     return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
   }
 };
@@ -464,7 +464,9 @@ constexpr LightColorBaseData* LightColorBaseData_Convert(BeatmapSaveData::LightC
       BeatmapSaveDataItem_GetBeat(saveData),
       ConvertBeatmapEventTransitionType(LightColorBaseData_GetTransitionType(saveData)),
       ConvertColorType(LightColorBaseData_GetColorType(saveData)), LightColorBaseData_GetBrightness(saveData),
-      LightColorBaseData_GetStrobeFrequency(saveData));
+      LightColorBaseData_GetStrobeFrequency(saveData),
+      saveData->strobeBrightness,
+      saveData->strobeFade);
 }
 
 constexpr LightRotationBaseData* LightRotationBaseData_Convert(BeatmapSaveData::LightRotationBaseData* saveData) {
@@ -507,56 +509,59 @@ struct EventBoxGroupConvertor {
           reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightColorBaseData*>*>(list.convert()));
     });
 
-    dataConvertor.AddConverter<
-        BeatmapSaveData::LightRotationEventBox*>([](BeatmapSaveData::LightRotationEventBox* saveData,
-                                                    GlobalNamespace::ILightGroup* lightGroupData) {
-      auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
-      auto* collection = reinterpret_cast<
-          System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(
-          saveData->get_lightRotationBaseDataList());
+    dataConvertor.AddConverter<BeatmapSaveData::LightRotationEventBox*>(
+        [](BeatmapSaveData::LightRotationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
+          auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
+          auto* collection = reinterpret_cast<System::Collections::Generic::List_1<
+              ::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(
+              saveData->get_lightRotationBaseDataList());
 
-      auto list = VList<LightRotationBaseData*>::New();
-      list->EnsureCapacity(collection->get_Count());
+          auto list = VList<LightRotationBaseData*>::New();
+          list->EnsureCapacity(collection->get_Count());
 
-      for (auto* saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
-        list.push_back(LightRotationBaseData_Convert(saveData2));
-      }
+          for (auto* saveData2 :
+               VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
+            list.push_back(LightRotationBaseData_Convert(saveData2));
+          }
 
-      auto beatDistributionParamType = DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
-      auto rotationDistributionParamType = DistributionParamType_Convert(saveData->get_rotationDistributionParamType());
-      return CustomJSONData::NewFast<LightRotationBeatmapEventDataBox*>(
-          indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType, ConvertAxis(saveData->a),
-          saveData->get_flipRotation(), saveData->get_rotationDistributionParam(), rotationDistributionParamType,
-          saveData->get_rotationDistributionShouldAffectFirstBaseEvent(),
-          saveData->get_rotationDistributionEaseType().value__,
-          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData*>*>(list.convert()));
-    });
-    dataConvertor.AddConverter<
-        BeatmapSaveData::LightTranslationEventBox*>([](BeatmapSaveData::LightTranslationEventBox* saveData,
-                                                       GlobalNamespace::ILightGroup* lightGroupData) {
-      auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
+          auto beatDistributionParamType =
+              DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
+          auto rotationDistributionParamType =
+              DistributionParamType_Convert(saveData->get_rotationDistributionParamType());
+          return CustomJSONData::NewFast<LightRotationBeatmapEventDataBox*>(
+              indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
+              ConvertAxis(saveData->a), saveData->get_flipRotation(), saveData->get_rotationDistributionParam(),
+              rotationDistributionParamType, saveData->get_rotationDistributionShouldAffectFirstBaseEvent(),
+              saveData->get_rotationDistributionEaseType().value__,
+              reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData*>*>(list.convert()));
+        });
+    dataConvertor.AddConverter<BeatmapSaveData::LightTranslationEventBox*>(
+        [](BeatmapSaveData::LightTranslationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
+          auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
 
-      auto* collection = reinterpret_cast<
-          System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>*>(
-          saveData->get_lightTranslationBaseDataList());
+          auto* collection = reinterpret_cast<System::Collections::Generic::List_1<
+              ::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>*>(
+              saveData->get_lightTranslationBaseDataList());
 
-      auto list = VList<LightTranslationBaseData*>::New();
-      list->EnsureCapacity(collection->get_Count());
+          auto list = VList<LightTranslationBaseData*>::New();
+          list->EnsureCapacity(collection->get_Count());
 
-      for (auto* saveData2 : VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
-        list.push_back(LightTranslationBaseData_Convert(saveData2));
-      }
+          for (auto* saveData2 :
+               VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
+            list.push_back(LightTranslationBaseData_Convert(saveData2));
+          }
 
-      auto beatDistributionParamType = DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
-      auto gapDistributionParamType = DistributionParamType_Convert(saveData->get_gapDistributionParamType());
+          auto beatDistributionParamType =
+              DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
+          auto gapDistributionParamType = DistributionParamType_Convert(saveData->get_gapDistributionParamType());
 
-      return CustomJSONData::NewFast<LightTranslationBeatmapEventDataBox*>(
-          indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType, ConvertAxis(saveData->a),
-          saveData->get_flipTranslation(), saveData->get_gapDistributionParam(), gapDistributionParamType,
-          saveData->get_gapDistributionShouldAffectFirstBaseEvent(),
-          ConvertEaseType(saveData->get_gapDistributionEaseType()),
-          reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightTranslationBaseData*>*>(list.convert()));
-    });
+          return CustomJSONData::NewFast<LightTranslationBeatmapEventDataBox*>(
+              indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
+              ConvertAxis(saveData->a), saveData->get_flipTranslation(), saveData->get_gapDistributionParam(),
+              gapDistributionParamType, saveData->get_gapDistributionShouldAffectFirstBaseEvent(),
+              ConvertEaseType(saveData->get_gapDistributionEaseType()),
+              reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightTranslationBaseData*>*>(list.convert()));
+        });
   }
 
   BeatmapEventDataBoxGroup*
@@ -589,7 +594,8 @@ struct EventBoxGroupConvertor {
         reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox*>*>(list.convert()));
   }
 
-  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*, GlobalNamespace::ILightGroup*> dataConvertor;
+  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*, GlobalNamespace::ILightGroup*>
+      dataConvertor;
 
   IEnvironmentLightGroups* lightGroups;
 };

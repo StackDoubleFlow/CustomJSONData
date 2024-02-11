@@ -9,14 +9,15 @@
 namespace CustomJSONData {
 
 template <class T, class... TArgs>
+concept CtorArgs = requires(T t, TArgs&&... args) {
+  { T::New_ctor(std::forward<TArgs>(args)...) };
+};
+
+template <class T, class... TArgs>
+requires(CtorArgs<std::remove_pointer_t<T>, TArgs...>)
 constexpr T NewFast(TArgs&&... args) {
   return il2cpp_utils::NewSpecific<T>(std::forward<TArgs>(args)...);
 }
-
-// template <class T, class... TArgs>
-// concept CtorArgs = requires(T t, TArgs&&... args) {
-//   { T::New_ctor(std::forward<TArgs>(args)...) };
-// };
 
 // // Faster allocation with method cache
 // template <class T, class... TArgs>
