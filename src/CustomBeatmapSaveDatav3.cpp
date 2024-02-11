@@ -34,37 +34,14 @@ DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_SliderData);
 DEFINE_TYPE(CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData);
 
-// these use SafePtr allocs
-/*
-// #define SAFEPTR_VLIST_DEFAULT(type, name, ...) \
-//   SafePtr<System::Collections::Generic::List_1<type>> name##Ptr(__VA_ARGS__); \
-//   VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
 
-//#define SAFEPTR_VLIST_ARG(type, name, ...) \
-//    SafePtr<System::Collections::Generic::List_1<type>>
-name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(__VA_ARGS__)); \
-//    VList<type> name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
-//
-// #define SAFEPTR_VLIST(type, name) \
-//    SafePtr<System::Collections::Generic::List_1<type>>
- //    name##Ptr(System::Collections::Generic::List_1<type>::New_ctor(0)); \
- VList<type>
-//    name(static_cast<System::Collections::Generic::List_1<type>*>(name##Ptr));
-*/
 
 // do not use safeptr allocs
-#define SAFEPTR_VLIST_ARG(type, name, ...)                                                                             \
-  VList<type> name(CustomJSONData::NewFast<System::Collections::Generic::List_1<type>*>(__VA_ARGS__));
-
-#define SAFEPTR_VLIST(type, name) SAFEPTR_VLIST_ARG(type, name)
-
-#define SAFEPTR_VLIST_DEFAULT(type, name, ...) SAFEPTR_VLIST_ARG(type, name, __VA_ARGS__)
-
 #define SORT_BEATMAP(Type, list)                                                                                       \
   std::stable_sort(ListW<Type>(list).begin(), ListW<Type>(list).end(), TimeCompare<Type>);
 
 #define SAFEPTR_VLIST_DEFAULT_SORTED(type, name, ...)                                                                  \
-  SAFEPTR_VLIST_ARG(type, name, __VA_ARGS__);                                                                          \
+  VList<type> name(CustomJSONData::NewFast<System::Collections::Generic::List_1<type>*>(__VA_ARGS__));                 \
   SORT_BEATMAP(type, name)
 
 static inline std::array<float, 8> const spawnRotations{ -60.0F, -45.0F, -30.0F, -15.0F, 15.0F, 30.0F, 45.0F, 60.0F };
@@ -377,8 +354,7 @@ auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
               return CustomJSONData::NewFast<BeatmapSaveData::LightColorBaseData*>(
                   lightBeat, transitionType.value__, colorType.value__, brightness, strobeFrequency, strobeBrightness, strobeFrequency);
             });
-        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorBaseData*, lightColorBaseDataList,
-                              CustomJSONData::SpanToSystemList(lightColorBaseDataListVec));
+        ListW<BeatmapSaveData::LightColorBaseData*> lightColorBaseDataList = CustomJSONData::SpanToSystemList(lightColorBaseDataListVec);
 
         return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBox*>(
             indexFilter, beatDistributionParam, beatDistributionParamType, brightnessDistributionParam,
@@ -386,8 +362,8 @@ auto DeserializeLightColorEventBoxGroup(rapidjson::Value const& val) {
             brightnessDistributionEaseType.value__, lightColorBaseDataList.getPtr());
       });
 
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightColorEventBox*, eventBoxes,
-                        CustomJSONData::SpanToSystemList(eventBoxesVec));
+  ListW<BeatmapSaveData::LightColorEventBox*> eventBoxes =
+                        CustomJSONData::SpanToSystemList(eventBoxesVec);
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightColorEventBoxGroup*>(beat, groupId, eventBoxes.getPtr());
 }
@@ -432,16 +408,15 @@ auto DeserializeLightRotationEventBoxGroup(rapidjson::Value const& val) {
                   rotationDirection.value__);
             });
 
-        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationBaseData*, lightTranslationBaseDataList,
-                              CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec));
+        ListW<BeatmapSaveData::LightRotationBaseData*> lightTranslationBaseDataList = CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec);
 
         return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBox*>(
             indexFilter, beatDistributionParam, beatDistributionParamType, rotationDistributionParam,
             rotationDistributionParamType.value__, rotationDistributionShouldAffectFirstBaseEvent,
             rotationDistributionEaseType.value__, axis.value__, flipRotation, lightTranslationBaseDataList.getPtr());
       });
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightRotationEventBox*, eventBoxes,
-                        CustomJSONData::SpanToSystemList(eventBoxesVec));
+  ListW<BeatmapSaveData::LightRotationEventBox*> eventBoxes =
+                        CustomJSONData::SpanToSystemList(eventBoxesVec);
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightRotationEventBoxGroup*>(beat, groupId, eventBoxes.getPtr());
 }
@@ -490,16 +465,16 @@ auto DeserializeLightTranslationEventBoxGroup(rapidjson::Value const& val) {
                   lightBeat, usePreviousEventTransitionValue, easeType.value__, translation);
             });
 
-        SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightTranslationBaseData*, lightTranslationBaseDataList,
-                              CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec));
+        ListW<BeatmapSaveData::LightTranslationBaseData*> lightTranslationBaseDataList =
+                              CustomJSONData::SpanToSystemList(lightTranslationBaseDataListVec);
 
         return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBox*>(
             indexFilter, beatDistributionParam, beatDistributionParamType.value__, gapDistributionParam,
             gapDistributionParamType.value__, gapDistributionShouldAffectFirstBaseEvent, gapDistributionEaseType.value__,
             axis, flipTranslation, lightTranslationBaseDataList.getPtr());
       });
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::LightTranslationEventBox*, eventBoxes,
-                        CustomJSONData::SpanToSystemList(eventBoxesVec));
+  ListW<BeatmapSaveData::LightTranslationEventBox*> eventBoxes = 
+                        CustomJSONData::SpanToSystemList(eventBoxesVec);
 
   return CustomJSONData::NewFast<BeatmapSaveData::LightTranslationEventBoxGroup*>(beat, groupId, eventBoxes.getPtr());
 }
@@ -580,7 +555,7 @@ BeatmapSaveData::FxEventBoxGroup* DeserializeFxEventBoxGroupArray(rapidjson::Val
                                                      vfxDistributionEaseType, vfxDistributionShouldAffectFirstBaseEvent,
                                                      CustomJSONData::SpanToSystemList(vfxBaseDataList));
       });
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveData::FxEventBox*, eventBoxes, CustomJSONData::SpanToSystemList(eventBoxesVec));
+  ListW<BeatmapSaveData::FxEventBox*> eventBoxes = CustomJSONData::SpanToSystemList(eventBoxesVec);
 
   return BeatmapSaveData::FxEventBoxGroup::New_ctor(beat, groupId, type, eventBoxes.getPtr());
 }
@@ -594,8 +569,8 @@ auto DeserializeBasicEventTypesForKeyword(rapidjson::Value const& val) {
             return it.GetInt();
           });
 
-  SAFEPTR_VLIST_DEFAULT(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType, eventTypes,
-                        CustomJSONData::SpanToSystemList(eventTypesVec));
+  ListW<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType> eventTypes =
+                        CustomJSONData::SpanToSystemList(eventTypesVec);
 
   return BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword::New_ctor(keyword,
                                                                                            eventTypes.getPtr());
@@ -691,7 +666,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   SAFEPTR_VLIST_DEFAULT_SORTED(BeatmapSaveData::FxEventBoxGroup*, vfxEventBoxGroups,
                                CustomJSONData::SpanToSystemList(vfxEventBoxGroupsVec));
 
-  SAFEPTR_VLIST(BasicEventTypesWithKeywords::BasicEventTypesForKeyword*, basicEventTypesForKeyword);
+  auto basicEventTypesForKeyword = ListW<BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>::New();
   bool useNormalEventsAsCompatibleEvents =
       NEJSON::ReadOptionalBool(doc, "useNormalEventsAsCompatibleEvents").value_or(false);
 
@@ -725,6 +700,9 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       }
     }
   }
+
+  CJDLogger::Logger.info("Size {} empty {}", bpmEvents.size(), bpmEvents.empty());
+  if (!bpmEvents.empty()) CRASH_UNLESS(bpmEvents.front() != nullptr);
 
   auto* beatmap = CustomBeatmapSaveData::New_ctor(
       bpmEvents.getPtr(), rotationEvents.getPtr(), colorNotes.getPtr(), bombNotes.getPtr(), obstacles.getPtr(),
@@ -777,16 +755,16 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
   auto startTime = std::chrono::high_resolution_clock::now();
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Initiating converting 2.0.0 to 3.0.0 map");
 
-  SAFEPTR_VLIST_ARG(BeatmapSaveData::ColorNoteData*, colorNotes, beatmap->notes->_size);
-  SAFEPTR_VLIST_ARG(BeatmapSaveData::BombNoteData*, bombNotes, beatmap->notes->_size);
-  SAFEPTR_VLIST_ARG(BeatmapSaveData::SliderData*, sliders, beatmap->sliders->_size);
-  SAFEPTR_VLIST_ARG(BeatmapSaveData::ObstacleData*, obstacles, beatmap->obstacles->_size);
-  SAFEPTR_VLIST_ARG(BeatmapSaveData::WaypointData*, waypoints, beatmap->waypoints->_size);
+  auto colorNotes = ListW<BeatmapSaveData::ColorNoteData*>::New(beatmap->notes->_size);
+  auto bombNotes = ListW<BeatmapSaveData::BombNoteData*> ::New(beatmap->notes->_size);
+  auto sliders = ListW<BeatmapSaveData::SliderData*>::New(beatmap->sliders->_size);
+  auto obstacles = ListW<BeatmapSaveData::ObstacleData*>::New(beatmap->obstacles->_size);
+  auto waypoints = ListW<BeatmapSaveData::WaypointData*> ::New(beatmap->waypoints->_size);
 
-  SAFEPTR_VLIST(BeatmapSaveData::ColorBoostEventData*, colorBoosts);
-  SAFEPTR_VLIST(BeatmapSaveData::RotationEventData*, rotationEvents);
-  SAFEPTR_VLIST(BeatmapSaveData::BpmChangeEventData*, bpmChanges);
-  SAFEPTR_VLIST(BeatmapSaveData::BasicEventData*, basicEvents);
+  auto colorBoosts = ListW<BeatmapSaveData::ColorBoostEventData*>::New();
+  auto rotationEvents = ListW<BeatmapSaveData::RotationEventData*>::New();
+  auto bpmChanges = ListW<BeatmapSaveData::BpmChangeEventData*>::New();
+  auto basicEvents = ListW<BeatmapSaveData::BasicEventData*>::New();
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Sorting");
 
