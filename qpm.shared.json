@@ -81,17 +81,22 @@
     {
       "dependency": {
         "id": "paper",
-        "versionRange": "=3.3.1",
+        "versionRange": "=3.6.0",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/debug_libpaperlog.so",
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/debug_libpaperlog.so",
           "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.3.1/paperlog.qmod",
-          "branchName": "version/v3_3_1",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/paperlog.qmod",
+          "branchName": "version/v3_6_0",
+          "compileOptions": {
+            "systemIncludes": [
+              "shared/utfcpp"
+            ]
+          },
           "cmake": false
         }
       },
-      "version": "3.3.1"
+      "version": "3.6.0"
     },
     {
       "dependency": {
@@ -128,13 +133,13 @@
     {
       "dependency": {
         "id": "custom-types",
-        "versionRange": "=0.16.13",
+        "versionRange": "=0.16.17",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/libcustom-types.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/debug_libcustom-types.so",
+          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/libcustom-types.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/debug_libcustom-types.so",
           "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.13/CustomTypes.qmod",
-          "branchName": "version/v0_16_13",
+          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/CustomTypes.qmod",
+          "branchName": "version/v0_16_17",
           "compileOptions": {
             "cppFlags": [
               "-Wno-invalid-offsetof"
@@ -143,7 +148,7 @@
           "cmake": true
         }
       },
-      "version": "0.16.13"
+      "version": "0.16.17"
     },
     {
       "dependency": {
@@ -182,28 +187,28 @@
     {
       "dependency": {
         "id": "beatsaber-hook",
-        "versionRange": "=5.0.7",
+        "versionRange": "=5.0.9",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.7/libbeatsaber-hook_5_0_7.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.7/debug_libbeatsaber-hook_5_0_7.so",
-          "branchName": "version/v5_0_7",
+          "soLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.9/libbeatsaber-hook_5_0_9.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/beatsaber-hook/releases/download/v5.0.9/debug_libbeatsaber-hook_5_0_9.so",
+          "branchName": "version/v5_0_9",
           "cmake": true
         }
       },
-      "version": "5.0.7"
+      "version": "5.0.9"
     },
     {
       "dependency": {
         "id": "scotland2",
-        "versionRange": "=0.1.3",
+        "versionRange": "=0.1.4",
         "additionalData": {
-          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.3/libsl2.so",
-          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.3/debug_libsl2.so",
+          "soLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/libsl2.so",
+          "debugSoLink": "https://github.com/sc2ad/scotland2/releases/download/v0.1.4/debug_libsl2.so",
           "overrideSoName": "libsl2.so",
-          "branchName": "version/v0_1_3"
+          "branchName": "version/v0_1_4"
         }
       },
-      "version": "0.1.3"
+      "version": "0.1.4"
     },
     {
       "dependency": {
@@ -223,23 +228,6 @@
         }
       },
       "version": "10.0.0"
-    },
-    {
-      "dependency": {
-        "id": "kaleb",
-        "versionRange": "=0.1.7",
-        "additionalData": {
-          "headersOnly": true,
-          "branchName": "version/v0_1_7",
-          "compileOptions": {
-            "cppFlags": [
-              "-DKALEB_VERSION=\"0.1.7\""
-            ]
-          },
-          "cmake": false
-        }
-      },
-      "version": "0.1.7"
     }
   ]
 }
