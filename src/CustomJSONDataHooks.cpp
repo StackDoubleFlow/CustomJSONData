@@ -4,17 +4,15 @@
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
 
-#include "GlobalNamespace/DefaultEnvironmentEvents_BasicBeatmapEvent.hpp"
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
+#include "GlobalNamespace/BasicBeatmapEventData.hpp"
 #include "GlobalNamespace/ISortedList_1.hpp"
 #include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
 #include "GlobalNamespace/BeatmapCallbacksController.hpp"
 #include "GlobalNamespace/MultipleSortedListsEnumerator_1.hpp"
 #include "GlobalNamespace/BPMChangeBeatmapEventData.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_SpecialEventsFilter.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_BpmTimeProcessor.hpp"
 #include "GlobalNamespace/BeatmapEventTransitionType.hpp"
 #include "GlobalNamespace/BeatmapDataLoader.hpp"
 #include "GlobalNamespace/BeatmapDataMirrorTransform.hpp"
@@ -33,6 +31,8 @@
 #include "GlobalNamespace/LightRotationBaseData.hpp"
 #include "GlobalNamespace/BasicBeatmapObjectManager.hpp"
 #include "GlobalNamespace/CallbacksInTime.hpp"
+#include "GlobalNamespace/BeatmapData.hpp"
+#include "BeatmapSaveDataVersion3/BeatmapLightshowSaveData.hpp"
 
 #include "System/Comparison_1.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
@@ -42,8 +42,10 @@
 #include "System/Collections/Generic/LinkedListNode_1.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
 #include "System/Collections/Generic/IEnumerator_1.hpp"
+#include "System/Collections/Generic/InsertionBehavior.hpp"
 #include "System/Linq/Enumerable.hpp"
 #include "System/Version.hpp"
+#include "System/Diagnostics/Stopwatch.hpp"
 
 #include "GlobalNamespace/GameSongController.hpp"
 #include "UnityEngine/Resources.hpp"
@@ -68,14 +70,12 @@
 #include "sombrero/shared/linq_functional.hpp"
 
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
-#include "GlobalNamespace/BeatmapDataLoader_EventBoxGroupConvertor.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
 #include "GlobalNamespace/BeatmapCallbacksUpdater.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
 #include "GlobalNamespace/BeatmapDataStrobeFilterTransform.hpp"
-#include "GlobalNamespace/BeatmapDataStrobeFilterTransform_StrobeStreakData.hpp"
 #include "GlobalNamespace/LightColorBeatmapEventData.hpp"
 #include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
 #include "GlobalNamespace/EnvironmentIntensityReductionOptions.hpp"
@@ -92,6 +92,8 @@ using namespace BeatmapSaveDataVersion3;
 
 v3::CustomBeatmapSaveData* cachedSaveData;
 
+// essentially hook a method to then redirect the call to the "override func"
+// if that "override func" calls this func again, it calls the original method
 #define MAKE_HOOK_OVERRIDE_1PARAM(name, method, Base, Child, ParamT1, param1)                                          \
   void name##__override(Child* self, ParamT1 param1);                                                                  \
   thread_local bool name##_short_circuit =                                                                             \
@@ -109,17 +111,12 @@ v3::CustomBeatmapSaveData* cachedSaveData;
   }                                                                                                                    \
   void name##__override(Child* self, ParamT1 param1)
 
-// This is to prevent issues with string limits
-std::string to_utf8(std::u16string_view view) {
-  return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
-}
-
 static std::string GetVersionFromPath(std::string_view path) {
   // SongCore has a fallback so i guess i do too
-  static const std::string_view fallback = "2.0.0";
+  static std::string_view const fallback = "2.0.0";
 
   auto truncatedText = path.substr(0, 50);
-  static const std::regex versionRegex(R"("_?version"\s*:\s*"[0-9]+\.[0-9]+\.?[0-9]?")");
+  static std::regex const versionRegex(R"("_?version"\s*:\s*"[0-9]+\.[0-9]+\.?[0-9]?")");
   std::match_results<std::string_view::const_iterator> matches;
   if (std::regex_search(truncatedText.begin(), truncatedText.end(), matches, versionRegex)) {
     if (!matches.empty()) {
@@ -135,7 +132,7 @@ static std::string GetVersionFromPath(std::string_view path) {
 }
 
 MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapData*, BeatmapData* self) {
-  static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
+  static auto* CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
   if (self->klass == CustomBeatmapDataKlass) {
     return reinterpret_cast<CustomBeatmapData*>(self)->GetCopyOverride();
@@ -147,19 +144,18 @@ MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapD
 MAKE_PAPER_HOOK_MATCH(
     BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilteredCopy, BeatmapData*, BeatmapData* self,
     System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
-  static auto CustomBeatmapDataKlass = classof(CustomBeatmapData*);
+  static auto* CustomBeatmapDataKlass = classof(CustomBeatmapData*);
 
   if (self->klass == CustomBeatmapDataKlass) {
-    return reinterpret_cast<CustomBeatmapData*>(self)->GetFilteredCopyOverride([&](auto i) constexpr {
-      return processDataItem->Invoke(i);
-    });
+    return reinterpret_cast<CustomBeatmapData*>(self)->GetFilteredCopyOverride(
+        [&](auto i) constexpr { return processDataItem->Invoke(i); });
   }
 
   return BeatmapData_GetFilteredCopy(self, processDataItem);
 }
 
 static bool Approximately(float a, float b) {
-  return std::abs(b - a) < std::max((float)1E-06f * std::max(std::abs(a), std::abs(b)), (float)1E-45f * 8.0f);
+  return std::abs(b - a) < std::max(1E-06F * std::max(std::abs(a), std::abs(b)), 1E-45F * 8.0F);
 }
 
 MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
@@ -206,32 +202,38 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
   //        newBeatmap->InsertBeatmapEventDataInOrderOverride(il2cpp_utils::cast<BeatmapEventData>(node->item));
   //    }
 
-  auto customBeatmapData = il2cpp_utils::cast<CustomBeatmapData>(beatmapData);
+  auto* customBeatmapData = il2cpp_utils::cast<CustomBeatmapData>(beatmapData);
   bool flag = environmentIntensityReductionOptions->compressExpand ==
               EnvironmentIntensityReductionOptions::CompressExpandReductionType::RemoveWithStrobeFilter;
   bool flag2 = environmentIntensityReductionOptions->rotateRings ==
                EnvironmentIntensityReductionOptions::RotateRingsReductionType::RemoveWithStrobeFilter;
   std::unordered_map<int, BeatmapDataStrobeFilterTransform::StrobeStreakData*> dictionary(
-      { { BasicBeatmapEventType::Event0, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event1, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event2, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event3, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
-        { BasicBeatmapEventType::Event4, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() } });
+      { { BasicBeatmapEventType::Event0.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+        { BasicBeatmapEventType::Event1.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+        { BasicBeatmapEventType::Event2.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+        { BasicBeatmapEventType::Event3.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() },
+        { BasicBeatmapEventType::Event4.value__, BeatmapDataStrobeFilterTransform::StrobeStreakData::New_ctor() } });
 
-  auto newBeatmap = customBeatmapData->BaseCopy();
+  auto* newBeatmap = customBeatmapData->BaseCopy();
 
   for (auto const& c : customBeatmapData->customEventDatas) {
-    if (!c) continue;
+    if (!c) {
+      continue;
+    }
     newBeatmap->InsertCustomEventDataInOrder(c);
   }
 
   for (auto const& o : customBeatmapData->beatmapObjectDatas) {
-    if (!o) continue;
+    if (!o) {
+      continue;
+    }
     newBeatmap->AddBeatmapObjectDataInOrderOverride(o);
   }
 
   for (auto const& beatmapDataItem : customBeatmapData->beatmapEventDatas) {
-    if (!beatmapDataItem) continue;
+    if (!beatmapDataItem) {
+      continue;
+    }
 
     BasicBeatmapEventData* basicBeatmapEventData =
         il2cpp_utils::try_cast<BasicBeatmapEventData>(beatmapDataItem).value_or(nullptr);
@@ -260,20 +262,20 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
       }
 
       BeatmapDataStrobeFilterTransform::StrobeStreakData* strobeStreakData =
-          dictionary[basicBeatmapEventData->basicBeatmapEventType];
+          dictionary[basicBeatmapEventData->basicBeatmapEventType.value__];
       CRASH_UNLESS(strobeStreakData);
       if (strobeStreakData->isActive) {
-        if (basicBeatmapEventData->time - strobeStreakData->lastSwitchTime < 0.1f) {
+        if (basicBeatmapEventData->time - strobeStreakData->lastSwitchTime < 0.1F) {
           strobeStreakData->AddStrobeData(basicBeatmapEventData);
         } else {
           if (!Approximately(strobeStreakData->strobeStartTime, strobeStreakData->lastSwitchTime)) {
             int onEventDataValue =
                 BeatmapDataStrobeFilterTransform::GetOnEventDataValue(strobeStreakData->startColorType);
             auto* beatmapEventData2 = static_cast<BasicBeatmapEventData*>(basicBeatmapEventData->GetCopy());
-            beatmapEventData2->time = strobeStreakData->strobeStartTime;
+            beatmapEventData2->_time_k__BackingField = strobeStreakData->strobeStartTime;
             beatmapEventData2->value = onEventDataValue;
             newBeatmap->InsertBeatmapEventDataInOrderOverride(beatmapEventData2);
-            int value;
+            int value = 0;
             if (strobeStreakData->lastIsOn) {
               value = BeatmapDataStrobeFilterTransform::GetOnEventDataValue(strobeStreakData->lastColorType);
             } else {
@@ -281,7 +283,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
                   strobeStreakData->lastColorType);
             }
             auto* beatmapEventData3 = static_cast<BasicBeatmapEventData*>(basicBeatmapEventData->GetCopy());
-            beatmapEventData3->time = strobeStreakData->lastSwitchTime;
+            beatmapEventData3->_time_k__BackingField = strobeStreakData->lastSwitchTime;
             beatmapEventData3->value = value;
             newBeatmap->InsertBeatmapEventDataInOrderOverride(beatmapEventData3);
           } else {
@@ -296,12 +298,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
   }
 
   for (auto const& keyValuePair : dictionary) {
-    if (!keyValuePair.second) continue;
+    if (!keyValuePair.second) {
+      continue;
+    }
     if (keyValuePair.second->isActive) {
       newBeatmap->InsertBeatmapEventDataInOrderOverride(keyValuePair.second->originalBasicBeatmapEventData);
     }
   }
-  return newBeatmap->i_IReadonlyBeatmapData();
+  return newBeatmap->i___GlobalNamespace__IReadonlyBeatmapData();
 }
 
 // MappingExtensions depends on this method getting called
@@ -309,7 +313,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveData,
                       &BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData, BeatmapSaveData*,
                       BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData* beatmapSaveData) {
   return v3::CustomBeatmapSaveData::Convert2_6_0(
-      reinterpret_cast<CustomJSONData::v2::CustomBeatmapSaveData*>(beatmapSaveData));
+      il2cpp_utils::cast<CustomJSONData::v2::CustomBeatmapSaveData>(beatmapSaveData));
 }
 
 // This hook loads the json data (with custom data) into a BeatmapSaveData
@@ -339,13 +343,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
 
     auto version = GetVersionFromPath(contents);
 
-    v3::CustomBeatmapSaveData* saveData;
+    v3::CustomBeatmapSaveData* saveData = nullptr;
 
     if (semver::lte(std::string(version), "2.6.0")) {
       CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
 
-      saveData =
-          reinterpret_cast<v3::CustomBeatmapSaveData*>(BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData(
+      saveData = il2cpp_utils::cast<v3::CustomBeatmapSaveData>(
+          BeatmapSaveDataVersion3::BeatmapSaveData::ConvertBeatmapSaveData(
               v2::CustomBeatmapSaveData::Deserialize(sharedDoc)));
       saveData->isV2 = true;
     } else {
@@ -358,7 +362,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished reading beatmap data {}", fmt::ptr(saveData));
     auto stopTime = std::chrono::high_resolution_clock::now();
     CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-        "This took {}ms", (int)std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+        "This took {}ms",
+        static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count()));
 
     return saveData;
   } catch (std::exception const& e) {
@@ -369,7 +374,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_DeserializeFromJSONString,
 }
 
 MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, BeatmapData,
-                          CustomBeatmapData, BeatmapObjectData*, item) {
+                          CustomBeatmapData, GlobalNamespace::BeatmapObjectData*, item) {
   self->AddBeatmapObjectDataOverride(item);
 }
 
@@ -392,11 +397,11 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
                         classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>*), "InsertItem",
                         System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>*,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-  auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
+  auto* list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
 
-  auto node = list->Insert(item);
+  auto* node = list->Insert(item);
   // Remove to avoid exception
-  self->itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
+  self->_itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
 
   return node;
 }
@@ -404,9 +409,9 @@ MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
 MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem,
                         classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>*), "RemoveItem", void,
                         BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-  auto list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
+  auto* list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
   System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>* node = nullptr;
-  if (self->itemToNodeMap->TryGetValue(item, byref(node))) {
+  if (self->_itemToNodeMap->TryGetValue(item, byref(node))) {
     list->Remove(node);
   }
 }
@@ -415,7 +420,7 @@ BeatmapCallbacksController* beatmapCallbacksController;
 
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacksController::ManualUpdate, void,
                       BeatmapCallbacksController* self, float songTime) {
-  if (songTime == self->prevSongTime) {
+  if (songTime == self->_prevSongTime) {
     return BeatmapCallbacksController_ManualUpdate(self, songTime);
   }
 
@@ -430,8 +435,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacks
 
 inline float GetAheadTime(Il2CppObject* obj) {
 
-  static auto CustomNoteKlass = classof(CustomJSONData::CustomNoteData*);
-  static auto CustomObstacleKlass = classof(CustomJSONData::CustomObstacleData*);
+  static auto* CustomNoteKlass = classof(CustomJSONData::CustomNoteData*);
+  static auto* CustomObstacleKlass = classof(CustomJSONData::CustomObstacleData*);
 
   if (obj->klass == CustomNoteKlass) {
     return static_cast<CustomJSONData::CustomNoteData*>(obj)->aheadTimeNoodle;
@@ -459,38 +464,38 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
   }
   //
 
-  if (songTime == self->prevSongTime) {
+  if (songTime == self->_prevSongTime) {
     return;
   }
 
-  self->songTime = songTime;
-  self->processingCallbacks = true;
-  if (songTime > self->prevSongTime) {
-    auto enumerator = self->callbacksInTimes->GetEnumerator();
+  self->_songTime = songTime;
+  self->_processingCallbacks = true;
+  if (songTime > self->_prevSongTime) {
+    auto enumerator = self->_callbacksInTimes->GetEnumerator();
 
     while (enumerator.MoveNext()) {
       auto keyValuePair = enumerator.get_Current();
-      auto value = keyValuePair.get_Value();
+      auto* value = keyValuePair.get_Value();
 
       using NodePtr = System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>*;
 
-      auto firstNode = CustomEventCallbacks::firstNode ? (NodePtr)CustomEventCallbacks::firstNode : nullptr;
+      auto* firstNode = CustomEventCallbacks::firstNode ? (NodePtr)CustomEventCallbacks::firstNode : nullptr;
 
-      for (auto linkedListNode =
+      for (auto* linkedListNode =
                (value->lastProcessedNode != nullptr)
-                   ? CustomBeatmapData::LinkedListNode_1_get_Next(value->lastProcessedNode)
-                   : (firstNode ? firstNode : self->beatmapData->get_allBeatmapDataItems()->get_First());
-           linkedListNode != nullptr; linkedListNode = CustomBeatmapData::LinkedListNode_1_get_Next(linkedListNode)) {
-        auto value2 = linkedListNode->get_Value();
+                   ? CustomJSONData::LinkedListNode_1_get_Next(value->lastProcessedNode)
+                   : (firstNode ? firstNode : self->_beatmapData->get_allBeatmapDataItems()->get_First());
+           linkedListNode != nullptr; linkedListNode = CustomJSONData::LinkedListNode_1_get_Next(linkedListNode)) {
+        auto* value2 = linkedListNode->get_Value();
         if (value2->time - value->aheadTime - GetAheadTime(value2) > songTime) {
           break;
         }
         if (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapEvent ||
             /// TRANSPILE HERE
-            value2->type.value == 2 ||
+            value2->type.value__ == 2 ||
             /// TRANSPILE HERE
             (value2->type == BeatmapDataItem::BeatmapDataItemType::BeatmapObject &&
-             value2->time >= self->startFilterTime)) {
+             value2->time >= self->_startFilterTime)) {
           value->CallCallbacks(value2);
         }
         value->lastProcessedNode = linkedListNode;
@@ -498,14 +503,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
     }
     enumerator.Dispose();
   } else {
-    auto callbacksInTimesEnumerator = self->callbacksInTimes->GetEnumerator();
+    auto callbacksInTimesEnumerator = self->_callbacksInTimes->GetEnumerator();
 
     while (callbacksInTimesEnumerator.MoveNext()) {
       auto keyValuePair2 = callbacksInTimesEnumerator.get_Current();
-      auto value3 = keyValuePair2.get_Value();
-      auto linkedListNode2 = value3->lastProcessedNode;
+      auto* value3 = keyValuePair2.get_Value();
+      auto* linkedListNode2 = value3->lastProcessedNode;
       while (linkedListNode2 != nullptr) {
-        auto value4 = linkedListNode2->get_Value();
+        auto* value4 = linkedListNode2->get_Value();
         if (value4->time - value3->aheadTime <= songTime) {
           break;
         }
@@ -522,7 +527,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
         if (beatmapEventData->previousSameTypeEventData != nullptr) {
           value3->CallCallbacks(beatmapEventData->previousSameTypeEventData);
         } else {
-          auto def = beatmapEventData->GetDefault(beatmapEventData);
+          auto* def = beatmapEventData->GetDefault(beatmapEventData);
           if (def != nullptr) {
             value3->CallCallbacks(def);
           }
@@ -534,48 +539,51 @@ MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdateTranspile, &Beatmap
     callbacksInTimesEnumerator.Dispose();
   }
 
-  self->prevSongTime = songTime;
-  self->processingCallbacks = false;
+  self->_prevSongTime = songTime;
+  self->_processingCallbacks = false;
 }
 
 MAKE_PAPER_HOOK_MATCH(InsertDefaultEnvironmentEvents, &DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents,
                       void, BeatmapData* beatmapData, BeatmapEventDataBoxGroupLists* beatmapEventDataBoxGroupLists,
                       DefaultEnvironmentEvents* defaultEnvironmentEvents,
-                      EnvironmentLightGroups* environmentLightGroups) {
+                      IEnvironmentLightGroups* environmentLightGroups) {
   if (defaultEnvironmentEvents == nullptr || defaultEnvironmentEvents->get_isEmpty()) {
     // TRANSPILE HERE
-    beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(0.0f, BasicBeatmapEventType::Event0, 1, 1.0f));
-    beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(0.0f, BasicBeatmapEventType::Event4, 1, 1.0f));
+    beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(0.0F, BasicBeatmapEventType::Event0, 1, 1.0F));
+    beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(0.0F, BasicBeatmapEventType::Event4, 1, 1.0F));
     // END TRANSPILE HERE
     return;
   }
   if (defaultEnvironmentEvents->basicBeatmapEvents) {
-    for (auto basicBeatmapEvent : defaultEnvironmentEvents->basicBeatmapEvents) {
+    for (auto* basicBeatmapEvent : defaultEnvironmentEvents->basicBeatmapEvents) {
       // TRANSPILE HERE
       beatmapData->InsertBeatmapEventData(CustomBeatmapEventData::New_ctor(
-          0.0f, basicBeatmapEvent->eventType, basicBeatmapEvent->value, basicBeatmapEvent->floatValue));
+          0.0F, basicBeatmapEvent->eventType, basicBeatmapEvent->value, basicBeatmapEvent->floatValue));
       // END TRANSPILE HERE
     }
   }
   if (defaultEnvironmentEvents->lightGroupEvents) {
-    for (auto lightGroupEvent : defaultEnvironmentEvents->lightGroupEvents) {
-      LightGroupSO* dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->lightGroup->groupId);
-      if (dataForGroup && !dataForGroup->Equals(nullptr)) {
-        auto beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(
-            0.0f, dataForGroup->numberOfElements, lightGroupEvent);
+    for (auto* lightGroupEvent : defaultEnvironmentEvents->lightGroupEvents) {
+      auto* dataForGroup = environmentLightGroups->GetDataForGroup(lightGroupEvent->lightGroup->groupId);
+      if (dataForGroup && !reinterpret_cast<System::Object*>(dataForGroup)->Equals(nullptr)) {
+        auto* beatmapEventDataBoxGroup = BeatmapEventDataBoxGroupFactory::CreateSingleLightBeatmapEventDataBoxGroup(
+            0.0F, dataForGroup->numberOfElements, lightGroupEvent);
         beatmapEventDataBoxGroupLists->Insert(dataForGroup->groupId, beatmapEventDataBoxGroup);
       }
     }
   }
 }
 
+// TODO: Update
 MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::GetBeatmapDataFromBeatmapSaveData,
                       BeatmapData*, ::BeatmapSaveDataVersion3::BeatmapSaveData* beatmapSaveData,
-                      ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, float startBpm,
+                      ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, float_t startBpm,
                       bool loadingForDesignatedEnvironment, ::GlobalNamespace::EnvironmentKeywords* environmentKeywords,
-                      ::GlobalNamespace::EnvironmentLightGroups* environmentLightGroups,
+                      ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::DefaultEnvironmentEvents* defaultEnvironmentEvents,
-                      ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings) {
+                      ::BeatmapSaveDataVersion3::BeatmapLightshowSaveData* defaultLightshowEventsSaveData,
+                      ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings,
+                      ::System::Diagnostics::Stopwatch* stopwatch) {
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {} cached {}", fmt::ptr(beatmapSaveData),
                                           fmt::ptr(cachedSaveData));
@@ -584,31 +592,32 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   profile.startTimer();
 
   bool flag = loadingForDesignatedEnvironment ||
-              (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->get_isEmpty());
+              (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultEnvironmentEvents->isEmpty);
   bool flag2 = playerSpecificSettings == nullptr || playerSpecificSettings->GetEnvironmentEffectsFilterPreset(
                                                         beatmapDifficulty) != EnvironmentEffectsFilterPreset::NoEffects;
   bool flag3 = flag && flag2;
   CustomBeatmapData* beatmapData = CustomBeatmapData::New_ctor(4);
 
-  static auto CustomBeatmapSaveDataKlass = classof(v3::CustomBeatmapSaveData*);
+  static auto* CustomBeatmapSaveDataKlass = classof(v3::CustomBeatmapSaveData*);
 
-  if (beatmapSaveData->klass == CustomBeatmapSaveDataKlass) {
-    auto cBeatmapSaveData = reinterpret_cast<v3::CustomBeatmapSaveData*>(beatmapSaveData);
+  if (auto cBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData)) {
 
-    beatmapData->customData = ToJsonWrapper(cBeatmapSaveData->customData);
-    beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData->levelCustomData);
-    beatmapData->beatmapCustomData = ToJsonWrapper(cBeatmapSaveData->beatmapCustomData);
-    beatmapData->v2orEarlier = cBeatmapSaveData->isV2;
+    beatmapData->customData = ToJsonWrapper(cBeatmapSaveData.value()->customData);
+    beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData.value()->levelCustomData);
+    beatmapData->beatmapCustomData = ToJsonWrapper(cBeatmapSaveData.value()->beatmapCustomData);
+    beatmapData->v2orEarlier = cBeatmapSaveData.value()->isV2;
   }
 
-  beatmapData->InsertBeatmapEventDataOverride(CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(-100.0f, startBpm));
+  beatmapData->InsertBeatmapEventDataOverride(CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(-100.0F, startBpm));
 
   CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
-  if (beatmapSaveData->basicEventTypesWithKeywords->d && beatmapSaveData->basicEventTypesWithKeywords->d->items) {
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-        "Klass {}", il2cpp_utils::ClassStandardName(beatmapSaveData->basicEventTypesWithKeywords->d->items->klass));
-    for (auto basicEventTypesForKeyword : VList(beatmapSaveData->basicEventTypesWithKeywords->d)) {
-      if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) continue;
+  if (beatmapSaveData->basicEventTypesWithKeywords->data) {
+    for (auto* basicEventTypesForKeyword :
+         VList<BeatmapSaveData::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(
+             beatmapSaveData->basicEventTypesWithKeywords->data)) {
+      if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) {
+        continue;
+      }
 
       beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
     }
@@ -616,11 +625,11 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {} {}",
                                           fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d),
-                                          beatmapSaveData->basicEventTypesWithKeywords->d->size);
+                                          beatmapSaveData->basicEventTypesWithKeywords->d->_size);
 
   profile.mark("Converted special events");
 
-  auto bpmEvents = beatmapSaveData->bpmEvents;
+  ListW<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*> bpmEvents = beatmapSaveData->bpmEvents;
   BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
 
   auto const BeatToTime = [&bpmTimeProcessor](float beat) constexpr {
@@ -631,71 +640,70 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
   // TODO: Remove converter
   CppConverter<BeatmapObjectData*, BeatmapSaveData::BeatmapSaveDataItem*> objectConverter;
-  objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>([&BeatToTime](
-      v3::CustomBeatmapSaveData_ColorNoteData * data) constexpr {
-    auto noteData =
-        CreateCustomBasicNoteData(BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->get_layer()),
-                                  ConvertColorType(data->get_color()), data->get_cutDirection(), data->customData);
-    noteData->SetCutDirectionAngleOffset(data->get_angleOffset());
+  objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>(
+      [&BeatToTime](v3::CustomBeatmapSaveData_ColorNoteData* data) constexpr {
+        auto* noteData =
+            CreateCustomBasicNoteData(BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->get_layer()),
+                                      ConvertColorType(data->get_color()), data->get_cutDirection(), data->customData);
+        noteData->SetCutDirectionAngleOffset(data->get_angleOffset());
 
-    return noteData;
-  });
+        return noteData;
+      });
 
-  objectConverter.AddConverter<v3::CustomBeatmapSaveData_BombNoteData*>([&BeatToTime](
-      v3::CustomBeatmapSaveData_BombNoteData * data) constexpr {
-    auto b = CreateCustomBombNoteData(BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->get_layer()),
-                                      data->customData);
-    return b;
-  });
+  objectConverter.AddConverter<v3::CustomBeatmapSaveData_BombNoteData*>(
+      [&BeatToTime](v3::CustomBeatmapSaveData_BombNoteData* data) constexpr {
+        auto* b = CreateCustomBombNoteData(BeatToTime(data->b), data->get_line(),
+                                           ConvertNoteLineLayer(data->get_layer()), data->customData);
+        return b;
+      });
 
-  objectConverter.AddConverter<v3::CustomBeatmapSaveData_ObstacleData*>([&BeatToTime](
-      v3::CustomBeatmapSaveData_ObstacleData * data) constexpr {
-    float beat = BeatToTime(data->b);
-    auto obstacle = CustomObstacleData::New_ctor(beat, data->get_line(), GetNoteLineLayer(data->get_layer()),
-                                                 BeatToTime(data->b + data->get_duration()) - beat, data->get_width(),
-                                                 data->get_height());
+  objectConverter.AddConverter<v3::CustomBeatmapSaveData_ObstacleData*>(
+      [&BeatToTime](v3::CustomBeatmapSaveData_ObstacleData* data) constexpr {
+        float beat = BeatToTime(data->b);
+        auto* obstacle = CustomObstacleData::New_ctor(
+            beat, data->get_line(), BeatmapDataLoader::ObstacleConvertor::GetNoteLineLayer(data->get_layer()),
+            BeatToTime(data->b + data->get_duration()) - beat, data->get_width(), data->get_height());
 
-    obstacle->customData = data->customData->GetCopy();
+        obstacle->customData = data->customData->GetCopy();
 
-    return obstacle;
-  });
+        return obstacle;
+      });
 
-  objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>([&BeatToTime](
-      v3::CustomBeatmapSaveData_SliderData * data) constexpr {
-    return CustomSliderData_CreateCustomSliderData(
-        ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
-        ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_headLayer()),
-        data->get_headControlPointLengthMultiplier(), data->get_headCutDirection(), BeatToTime(data->get_tailBeat()),
-        data->get_tailLine(), ConvertNoteLineLayer(data->get_tailLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
-        data->get_tailControlPointLengthMultiplier(), data->get_tailCutDirection(), data->get_sliderMidAnchorMode(),
-        data->customData);
-  });
+  objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>(
+      [&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) constexpr {
+        return CustomSliderData_CreateCustomSliderData(
+            ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
+            ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_headLayer()),
+            data->get_headControlPointLengthMultiplier(), data->get_headCutDirection(),
+            BeatToTime(data->get_tailBeat()), data->get_tailLine(), ConvertNoteLineLayer(data->get_tailLayer()),
+            ConvertNoteLineLayer(data->get_tailLayer()), data->get_tailControlPointLengthMultiplier(),
+            data->get_tailCutDirection(), data->get_sliderMidAnchorMode(), data->customData);
+      });
 
-  objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>([&BeatToTime](
-      v3::CustomBeatmapSaveData_BurstSliderData * data) constexpr {
-    return CustomSliderData_CreateCustomBurstSliderData(
-        ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
-        ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
-        data->get_headCutDirection(), BeatToTime(data->get_tailBeat()), data->get_tailLine(),
-        ConvertNoteLineLayer(data->get_tailLayer()), ConvertNoteLineLayer(data->get_tailLayer()), NoteCutDirection::Any,
-        data->get_sliceCount(), data->get_squishAmount(), data->customData);
-  });
+  objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>(
+      [&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) constexpr {
+        return CustomSliderData_CreateCustomBurstSliderData(
+            ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
+            ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
+            data->get_headCutDirection(), BeatToTime(data->get_tailBeat()), data->get_tailLine(),
+            ConvertNoteLineLayer(data->get_tailLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
+            NoteCutDirection::Any, data->get_sliceCount(), data->get_squishAmount(), data->customData);
+      });
 
-  objectConverter.AddConverter<BeatmapSaveData::WaypointData*>([&BeatToTime](BeatmapSaveData::WaypointData *
-                                                                             data) constexpr {
+  objectConverter.AddConverter<BeatmapSaveData::WaypointData*>([&BeatToTime](
+                                                                   BeatmapSaveData::WaypointData* data) constexpr {
     return CustomJSONData::NewFast<WaypointData*>(BeatToTime(data->b), data->get_line(),
                                                   ConvertNoteLineLayer(data->get_layer()), data->get_offsetDirection());
   });
 
   auto addAllToVector = [](auto& vec, auto const& listPtr) constexpr {
-    VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(
-        reinterpret_cast<List<BeatmapSaveData::BeatmapSaveDataItem*>*>(listPtr));
+    VList<BeatmapSaveData::BeatmapSaveDataItem*> vList(listPtr);
 
     std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
   };
 
   auto addAllToVector2 = [](auto& vec, auto const& listPtr) constexpr {
-    VList<BeatmapSaveData::EventBoxGroup*> vList(reinterpret_cast<List<BeatmapSaveData::EventBoxGroup*>*>(listPtr));
+    VList<BeatmapSaveData::EventBoxGroup*> vList(listPtr);
 
     std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
   };
@@ -735,7 +743,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Waypoints {}", fmt::ptr(beatmapSaveData->waypoints));
   addAllToVector(beatmapDataObjectItems, beatmapSaveData->waypoints);
 
-  profile.mark("Grouped all beatmap objects size {}", beatmapDataObjectItems.size());
+  profile.mark("Grouped all beatmap objects size {}", !beatmapDataObjectItems.empty());
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Cleaning and sorting beatmap objects");
   cleanAndSort(beatmapDataObjectItems);
@@ -745,57 +753,58 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
       beatmapData->AddBeatmapObjectDataOverride(beatmapObjectData);
     }
   }
+  if (stopwatch != nullptr) {
+    stopwatch->Start();
+  }
 
   profile.mark("Processed and added beatmap objects");
   bpmTimeProcessor.Reset();
 
   CppConverter<BeatmapEventData*, BeatmapSaveData::BeatmapSaveDataItem*> eventConverter;
-  eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>([&BeatToTime](
-      BeatmapSaveData::BeatmapSaveData::BpmChangeEventData * data) constexpr {
-    return CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(BeatToTime(data->b), data->m);
-  });
+  eventConverter.AddConverter<BeatmapSaveData::BpmChangeEventData*>(
+      [&BeatToTime](BeatmapSaveData::BeatmapSaveData::BpmChangeEventData* data) constexpr {
+        return CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(BeatToTime(data->b), data->m);
+      });
 
-  eventConverter.AddConverter<BeatmapSaveData::RotationEventData*>([&BeatToTime](
-      BeatmapSaveData::BeatmapSaveData::RotationEventData * data) constexpr {
-    SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
-        data->get_executionTime() == BeatmapSaveData::ExecutionTime::Early
-            ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
-            : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
+  eventConverter.AddConverter<BeatmapSaveData::RotationEventData*>(
+      [&BeatToTime](BeatmapSaveData::BeatmapSaveData::RotationEventData* data) constexpr {
+        SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
+            data->get_executionTime() == BeatmapSaveData::ExecutionTime::Early
+                ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
+                : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
 
-    return CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(data->b), executionTime,
-                                                                   data->get_rotation());
-  });
+        return CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(data->b), executionTime,
+                                                                       data->get_rotation());
+      });
 
   // only for v3 maps
   auto specialEventsFilter = SafePtr(BeatmapDataLoader::SpecialEventsFilter::New_ctor(
       beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords));
-  if (flag3) {
-
+  if (flag3 || !defaultLightshowEventsSaveData->isEmpty) {
     eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>(
-        [&BeatToTime, &specialEventsFilter ](v3::CustomBeatmapSaveData_BasicEventData * data) constexpr {
-          if (!specialEventsFilter->IsEventValid(data->get_eventType())) {
-            return (CustomBeatmapEventData*)nullptr;
+        [&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
+          if (!specialEventsFilter->IsEventValid(data->eventType)) {
+            return static_cast<CustomBeatmapEventData*>(nullptr);
           }
 
-          auto event = CustomBeatmapEventData::New_ctor(BeatToTime(data->get_beat()),
-                                                        (GlobalNamespace::BasicBeatmapEventType)data->get_eventType(),
-                                                        data->get_value(), data->get_floatValue());
+          auto* event = CustomBeatmapEventData::New_ctor(BeatToTime(data->b), data->eventType.value__, data->value,
+                                                         data->floatValue);
 
           event->customData = ToJsonWrapper(data->customData);
 
           return event;
         });
 
-    eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>([&BeatToTime](
-        BeatmapSaveData::ColorBoostEventData * data) constexpr {
-      return CustomJSONData::NewFast<ColorBoostBeatmapEventData*>(BeatToTime(data->get_beat()), data->get_boost());
-    });
+    eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>(
+        [&BeatToTime](BeatmapSaveData::ColorBoostEventData* data) constexpr {
+          return CustomJSONData::NewFast<ColorBoostBeatmapEventData*>(BeatToTime(data->beat), data->boost);
+        });
   } else {
     eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>(
-        [](v3::CustomBeatmapSaveData_BasicEventData * data) constexpr { return nullptr; });
+        [](v3::CustomBeatmapSaveData_BasicEventData* /*data*/) constexpr { return nullptr; });
 
     eventConverter.AddConverter<BeatmapSaveData::ColorBoostEventData*>(
-        [](BeatmapSaveData::ColorBoostEventData * data) constexpr { return nullptr; });
+        [](BeatmapSaveData::ColorBoostEventData* /*data*/) constexpr { return nullptr; });
   }
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Doing event items");
@@ -804,12 +813,28 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
                                 beatmapSaveData->colorBoostBeatmapEvents->get_Count() +
                                 beatmapSaveData->rotationEvents->get_Count());
 
+  ListW<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventData*> list = beatmapSaveData->basicBeatmapEvents;
+  ListW<BeatmapSaveDataVersion3::BeatmapSaveData::ColorBoostEventData*> list2 =
+      beatmapSaveData->colorBoostBeatmapEvents;
+  if (!flag3) {
+    list = ((defaultLightshowEventsSaveData != nullptr) ? defaultLightshowEventsSaveData->basicBeatmapEvents : nullptr);
+    if (!list) {
+      list = ListW<BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventData*>::New();
+    }
+
+    list2 = ((defaultLightshowEventsSaveData != nullptr) ? defaultLightshowEventsSaveData->colorBoostBeatmapEvents
+                                                         : nullptr);
+    if (!list2) {
+      list2 = ListW<BeatmapSaveDataVersion3::BeatmapSaveData::ColorBoostEventData*>::New();
+    }
+  }
+
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("bpm events");
-  addAllToVector(beatmapDataEventItems, bpmEvents);
+  addAllToVector(beatmapDataEventItems, bpmEvents.getPtr());
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("basic events");
-  addAllToVector(beatmapDataEventItems, beatmapSaveData->basicBeatmapEvents);
+  addAllToVector(beatmapDataEventItems, list.getPtr());
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("color boost events");
-  addAllToVector(beatmapDataEventItems, beatmapSaveData->colorBoostBeatmapEvents);
+  addAllToVector(beatmapDataEventItems, list2.getPtr());
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events");
   addAllToVector(beatmapDataEventItems, beatmapSaveData->rotationEvents);
 
@@ -823,18 +848,38 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
       beatmapData->InsertBeatmapEventDataOverride(beatmapEventData);
     }
   }
+  bpmTimeProcessor.Reset();
 
   CJDLogger::Logger.fmtLog<LogLevel::INF>("Beatmap events {}", beatmapData->beatmapEventDatas.size());
 
   profile.mark("Processed and added beatmap events");
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("event groups");
-  auto bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<BeatmapDataLoader::BpmTimeProcessor*>(startBpm, bpmEvents);
+  auto* bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<BeatmapDataLoader::BpmTimeProcessor*>(startBpm, bpmEvents);
   bpmTimeProcessorIl2cpp->currentBpmChangesDataIdx = bpmTimeProcessor.currentBpmChangesDataIdx;
 
-  auto beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(
-      beatmapData, reinterpret_cast<IBeatToTimeConvertor*>(bpmTimeProcessorIl2cpp), false);
-  if (flag3) {
+  auto* beatmapEventDataBoxGroupLists = CustomJSONData::NewFast<BeatmapEventDataBoxGroupLists*>(
+      beatmapData, bpmTimeProcessorIl2cpp->i___GlobalNamespace__IBeatToTimeConvertor(), false);
+  if (flag3 || !defaultLightshowEventsSaveData->isEmpty) {
+
+    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::LightColorEventBoxGroup*> lightColorEventBoxGroups =
+        beatmapSaveData->lightColorEventBoxGroups;
+    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationEventBoxGroup*> lightRotationEventBoxGroups =
+        beatmapSaveData->lightRotationEventBoxGroups;
+    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationEventBoxGroup*> lightTranslationEventBoxGroups =
+        beatmapSaveData->lightTranslationEventBoxGroups;
+    BeatmapSaveDataVersion3::BeatmapSaveData::FxEventsCollection* fxEventsCollection =
+        beatmapSaveData->_fxEventsCollection;
+    ListW<BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup*> vfxEventBoxGroups =
+        beatmapSaveData->vfxEventBoxGroups;
+    if (!flag3) {
+      lightColorEventBoxGroups = defaultLightshowEventsSaveData->lightColorEventBoxGroups;
+      lightRotationEventBoxGroups = defaultLightshowEventsSaveData->lightRotationEventBoxGroups;
+      lightTranslationEventBoxGroups = defaultLightshowEventsSaveData->lightTranslationEventBoxGroups;
+      fxEventsCollection = defaultLightshowEventsSaveData->_fxEventsCollection;
+      vfxEventBoxGroups = defaultLightshowEventsSaveData->vfxEventBoxGroups;
+    }
+
     EventBoxGroupConvertor cppEventBoxConverter(environmentLightGroups);
 
     std::vector<BeatmapSaveData::EventBoxGroup*> eventBoxes;
@@ -851,35 +896,53 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 
     cleanAndSort(eventBoxes);
 
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Sorted events");
+
     profile.mark(fmt::format("Grouped beatmap event boxes {}", eventBoxes.size()));
 
     for (auto const& o : eventBoxes) {
-      auto beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
+      auto* beatmapEventDataBoxGroup = cppEventBoxConverter.Convert(o); // eventBoxGroupConvertor->Convert(o);
       if (beatmapEventDataBoxGroup != nullptr) {
         beatmapEventDataBoxGroupLists->Insert(o->g, beatmapEventDataBoxGroup);
       }
     }
 
-    profile.mark("Processed and added beatmap events boxes");
-  }
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("VFX box group");
 
-  if (!flag3) {
+    auto* vfxEventBoxGroupConvertor =
+        BeatmapDataLoader::VfxEventBoxGroupConvertor::New_ctor(environmentLightGroups, fxEventsCollection);
+
+    if (!vfxEventBoxGroups.empty()) {
+      for (auto const& fxEventBoxGroup : vfxEventBoxGroups) {
+        if (!fxEventBoxGroup) {
+          continue;
+        }
+
+        BeatmapEventDataBoxGroup* beatmapEventDataBoxGroup2 = vfxEventBoxGroupConvertor->Convert(fxEventBoxGroup);
+        if (beatmapEventDataBoxGroup2 != nullptr) {
+          beatmapEventDataBoxGroupLists->Insert(fxEventBoxGroup->groupId, beatmapEventDataBoxGroup2);
+        }
+      }
+    }
+
+    profile.mark("Processed and added beatmap events boxes");
+  } else {
     DefaultEnvironmentEventsFactory::InsertDefaultEnvironmentEvents(beatmapData, beatmapEventDataBoxGroupLists,
                                                                     defaultEnvironmentEvents, environmentLightGroups);
   }
 
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>("Custom events");
   bpmTimeProcessor.Reset();
   if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData)) {
     if (customBeatmapSaveData.value()->customEventsData) {
-      std::stable_sort(
-          customBeatmapSaveData.value()->customEventsData->begin(),
-          customBeatmapSaveData.value()->customEventsData->end(),
-          [](auto const& a, auto const& b) constexpr { return a.time < b.time; });
+      std::stable_sort(customBeatmapSaveData.value()->customEventsData->begin(),
+                       customBeatmapSaveData.value()->customEventsData->end(),
+                       [](auto const& a, auto const& b) constexpr { return a.time < b.time; });
 
       for (auto& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
         beatmapData->InsertCustomEventData(CustomEventData::New_ctor(
-            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), (void*)&customEventSaveData.type,
-            customEventSaveData.typeHash, (void*)const_cast<rapidjson::Value*>(customEventSaveData.data)));
+            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), static_cast<void*>(&customEventSaveData.type),
+            customEventSaveData.typeHash, static_cast<void*>(const_cast<rapidjson::Value*>(customEventSaveData.data))));
       }
 
       CJDLogger::Logger.fmtLog<LogLevel::INF>("Added {} custom events",
@@ -888,6 +951,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
     }
   }
 
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished! processing");
   // Figure out a way to rewrite this to not be stupid
   beatmapEventDataBoxGroupLists->SyncWithBeatmapData();
   profile.mark("Syncing event box groups");
@@ -906,7 +970,12 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished processing beatmap data");
   auto stopTime = std::chrono::high_resolution_clock::now();
   CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-      "This took {}ms", (int)std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count());
+      "This took {}ms",
+      static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count()));
+
+  if (stopwatch != nullptr) {
+    stopwatch->Stop();
+  }
 
   return beatmapData;
 }
@@ -915,7 +984,7 @@ MAKE_PAPER_HOOK_MATCH(GetBeatmapDataFromBeatmapSaveData, &BeatmapDataLoader::Get
 // GlobalNamespace::BeatmapDataBasicInfo*
 void BeatmapDataLoadedEvent(CustomJSONData::CustomLevelInfoSaveData* customInfoData, std::string const& filename,
                             BeatmapSaveDataVersion3::BeatmapSaveData* beatmapData,
-                            GlobalNamespace::BeatmapDataBasicInfo*) {
+                            GlobalNamespace::BeatmapDataBasicInfo* /*unused*/) {
   PAPER_IL2CPP_CATCH_HANDLER(
       using namespace Sombrero::Linq::Functional; if (!beatmapData) {
         CJDLogger::Logger.fmtLog<LogLevel::WRN>("Beatmap is null, no custom level data");

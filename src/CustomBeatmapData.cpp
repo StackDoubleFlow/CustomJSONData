@@ -18,28 +18,29 @@ DEFINE_TYPE(CustomJSONData, CustomWaypointData);
 DEFINE_TYPE(CustomJSONData, CustomSliderData);
 
 void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
-  static auto* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
-
+  static auto const* ctor = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", ".ctor", 1);
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, ctor, numberOfLines);)
 
   INVOKE_CTOR();
 
-  beatmapDataItemsPerTypeAndId->items->Add(csTypeOf(CustomEventData*),
-                                           reinterpret_cast<ISortedList_1<BeatmapDataItem*>*>(
-                                               SortedList_2<CustomEventData*, BeatmapDataItem*>::New_ctor(nullptr)));
+  ____beatmapDataItemsPerTypeAndId->_sortedListsDataProcessors
+      ->Add(csTypeOf(CustomEventData*), nullptr);
+  // _beatmapDataItemsPerTypeAndId->_items->Add(csTypeOf(CustomEventData*),
+  //                                            reinterpret_cast<ISortedList_1<BeatmapDataItem*>*>(
+  //                                                SortedList_2<CustomEventData*, BeatmapDataItem*>::New_ctor(nullptr)));
 }
 
 void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataOverride(
     GlobalNamespace::BeatmapObjectData* beatmapObjectData) {
-  static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1);
+  static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1);
 
   beatmapObjectDatas.emplace_back(beatmapObjectData);
-  PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
+  il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
 }
 
 void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataInOrderOverride(
     GlobalNamespace::BeatmapObjectData* beatmapObjectData) {
-  static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectDataInOrder", 1);
+  static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectDataInOrder", 1);
 
   beatmapObjectDatas.emplace_back(beatmapObjectData);
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
@@ -47,7 +48,7 @@ void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataInOrderOverride(
 
 void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataOverride(
     GlobalNamespace::BeatmapEventData* beatmapObjectData) {
-  static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
+  static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
 
   beatmapEventDatas.emplace_back(beatmapObjectData);
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
@@ -55,7 +56,7 @@ void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataOverride(
 
 void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataInOrderOverride(
     GlobalNamespace::BeatmapEventData* beatmapEventData) {
-  static auto* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventDataInOrder", 1);
+  static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventDataInOrder", 1);
 
   beatmapEventDatas.emplace_back(beatmapEventData);
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapEventData);)
@@ -63,7 +64,7 @@ void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataInOrderOverride(
 
 void CustomJSONData::CustomBeatmapData::InsertCustomEventData(CustomJSONData::CustomEventData* customEventData) {
   customEventDatas.emplace_back(customEventData);
-  auto *node = beatmapDataItemsPerTypeAndId->InsertItem(customEventData);
+  auto *node = _beatmapDataItemsPerTypeAndId->InsertItem(customEventData);
   if (updateAllBeatmapDataOnInsert) {
     InsertToAllBeatmapData(customEventData, node);
   }
@@ -85,7 +86,7 @@ System::Type* CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass* obj)
     return nullptr;
   }
 
-  static std::unordered_map<Il2CppClass*, System::Type*> typeMap;
+  static std::unordered_map<Il2CppClass*, Il2CppReflectionType*> typeMap;
 
   auto& typePtr = typeMap[obj];
 
@@ -106,7 +107,7 @@ System::Type* CustomJSONData::CustomBeatmapData::GetCustomType(Il2CppClass* obj)
     }
   }
 
-  return typePtr;
+  return reinterpret_cast<System::Type*>(typePtr);
 }
 
 CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy() {
@@ -132,16 +133,16 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time,
   il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, basicBeatmapEventType, value,
                                               floatValue);
   INVOKE_CTOR();
-  this->time = time;
+  this->_time_k__BackingField = time;
   this->basicBeatmapEventType = basicBeatmapEventType;
   this->value = value;
   this->floatValue = floatValue;
 }
 
 CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::GetCopy() {
-  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, (int)type, value, floatValue);
-  copy->previousSameTypeEventData = previousSameTypeEventData;
-  copy->nextSameTypeEventData = nextSameTypeEventData;
+  auto *copy = CustomJSONData::CustomBeatmapEventData::New_ctor(this->time, type.value__, this->value, this->floatValue);
+  copy->set_previousSameTypeEventData(previousSameTypeEventData);
+  copy->set_nextSameTypeEventData(nextSameTypeEventData);
   copy->type = type;
   copy->basicBeatmapEventType = basicBeatmapEventType;
   copy->subtypeIdentifier = subtypeIdentifier;
@@ -157,7 +158,7 @@ void CustomJSONData::CustomObstacleData::ctor(float time, int lineIndex, ::Globa
                                               float duration, int width, int height) {
   static auto const* NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 6));
   ObstacleData* instance = this;
-  il2cpp_utils::RunMethodThrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width,
+  il2cpp_utils::RunMethodRethrow<void, false>(instance, NoteData_Ctor, time, lineIndex, lineLayer, duration, width,
                                             height);
   INVOKE_CTOR();
   this->aheadTimeNoodle = 0;
@@ -185,7 +186,7 @@ void CustomJSONData::CustomSliderData::ctor(
     ::GlobalNamespace::SliderMidAnchorMode midAnchorMode, int sliceCount, float squishAmount) {
   static auto const* NoteData_Ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(SliderData*), ".ctor", 21));
   CustomSliderData* instance = this;
-  il2cpp_utils::RunMethodThrow<void, false>(
+  il2cpp_utils::RunMethodRethrow<void, false>(
       instance, NoteData_Ctor, sliderType, colorType, hasHeadNote, headTime, headLineIndex, headLineLayer,
       headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, headCutDirectionAngleOffset,
       hasTailNote, tailTime, tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier,

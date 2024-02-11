@@ -26,27 +26,41 @@
 #include "JSONWrapper.h"
 #include "CJDLogger.h"
 
-DECLARE_CLASS_CODEGEN(
-    CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData, DECLARE_FASTER_CTOR(ctor, int numberOfLines);
-    DECLARE_SIMPLE_DTOR(); DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
+// clang-format off
 
-    public
-    : void AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
+namespace CustomJSONData {
+    template <typename T> 
+    static constexpr System::Collections::Generic::LinkedListNode_1<T> *
+    LinkedListNode_1_get_Next(System::Collections::Generic::LinkedListNode_1<T> * self) {
+      if (self->next != nullptr && self->next != self->list->head) {
+        return self->next;
+      }
+      return nullptr;
+    }
+}
+
+DECLARE_CLASS_CODEGEN(
+    CustomJSONData, CustomBeatmapData, GlobalNamespace::BeatmapData, 
+    DECLARE_FASTER_CTOR(ctor, int numberOfLines);
+    DECLARE_SIMPLE_DTOR();
+
+DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
+
+    public:
+    void AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
     void AddBeatmapObjectDataInOrderOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
     void InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
     void InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
 
-    inline CustomBeatmapData *
-    GetCopyOverride() { return GetFilteredCopyOverride([](auto i) constexpr { return i; }); }
+    inline CustomBeatmapData* GetCopyOverride() { return GetFilteredCopyOverride([](auto i) constexpr { return i; }); }
 
     template <typename F>
-    CustomBeatmapData *
-    GetFilteredCopyOverride(F && filter) {
-      isCreatingFilteredCopy = true;
+    CustomBeatmapData * GetFilteredCopyOverride(F && filter) {
+      _isCreatingFilteredCopy = true;
 
       CustomBeatmapData* copy = BaseCopy();
 
-      auto linkedList = allBeatmapData->get_items();
+      auto linkedList = _allBeatmapData->get_items();
 
       for (auto node = linkedList->get_First(); node != nullptr; node = LinkedListNode_1_get_Next(node)) {
         auto beatmapDataItem = node->item;
@@ -70,7 +84,7 @@ DECLARE_CLASS_CODEGEN(
         }
       }
 
-      isCreatingFilteredCopy = false;
+      _isCreatingFilteredCopy = false;
 
       return copy;
     }
@@ -82,19 +96,12 @@ DECLARE_CLASS_CODEGEN(
     void InsertCustomEventData(CustomEventData* customEventData);
     void InsertCustomEventDataInOrder(CustomEventData* customEventData);
 
-    template <typename T> static constexpr System::Collections::Generic::LinkedListNode_1<T> *
-    LinkedListNode_1_get_Next(System::Collections::Generic::LinkedListNode_1<T> * self) {
-      if (self->next != nullptr && self->next != self->list->head) {
-        return self->next;
-      }
-      return nullptr;
-    }
+
 
     template <class T>
-    std::vector<T>
-        GetBeatmapItemsCpp(GlobalNamespace::BeatmapDataItem::BeatmapDataItemType type) {
+    std::vector<T> GetBeatmapItemsCpp(GlobalNamespace::BeatmapDataItem::BeatmapDataItemType type) {
           auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(
-              beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
+              _beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
 
           if (!list) return {};
 
@@ -113,11 +120,10 @@ DECLARE_CLASS_CODEGEN(
           return items;
         }
 
-    std::vector<GlobalNamespace::BeatmapDataItem*>
-        GetAllBeatmapItemsCpp() {
-          if (!allBeatmapData) return {};
+    std::vector<GlobalNamespace::BeatmapDataItem*> GetAllBeatmapItemsCpp() {
+          if (!_allBeatmapData) return {};
 
-          auto linkedItems = allBeatmapData->get_items();
+          auto linkedItems = _allBeatmapData->get_items();
 
           std::vector<GlobalNamespace::BeatmapDataItem*> items;
           items.reserve(linkedItems->get_Count());
@@ -132,16 +138,19 @@ DECLARE_CLASS_CODEGEN(
           return items;
         }
 
-    std::vector<GlobalNamespace::BeatmapObjectData*>
-        beatmapObjectDatas;
-    std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas; std::vector<CustomEventData*> customEventDatas;
+    std::vector<GlobalNamespace::BeatmapObjectData*> beatmapObjectDatas;
+    //
+    std::vector<GlobalNamespace::BeatmapEventData*> beatmapEventDatas;
+    //
+    std::vector<CustomEventData*> customEventDatas;
 
     DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
     // optional
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
-    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);)
+    DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
+  )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::BasicBeatmapEventData,
                       DECLARE_FASTER_CTOR(ctor, float time,
@@ -185,8 +194,7 @@ DECLARE_CLASS_CODEGEN(
     // Used for Noodle Extensions
     DECLARE_INSTANCE_FIELD(float, bpm); DECLARE_INSTANCE_FIELD(float, aheadTimeNoodle);)
 
-DECLARE_CLASS_CODEGEN(
-    CustomJSONData, CustomSliderData, GlobalNamespace::SliderData,
+DECLARE_CLASS_CODEGEN(CustomJSONData, CustomSliderData, GlobalNamespace::SliderData,
     DECLARE_FASTER_CTOR(
         ctor, GlobalNamespace::SliderData::Type sliderType, ::GlobalNamespace::ColorType colorType, bool hasHeadNote,
         float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
@@ -214,3 +222,5 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomWaypointData, GlobalNamespace::Waypo
                       // Used for Noodle Extensions
                       DECLARE_INSTANCE_FIELD(float, bpm);
 )
+
+// clang-format on

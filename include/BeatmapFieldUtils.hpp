@@ -5,14 +5,18 @@
 namespace CustomJSONData {
 
 inline v3::CustomDataOpt JSONObjectOrNull(v3::CustomDataOpt const& val) {
-  if (!val || !val->get().IsObject()) return std::nullopt;
+  if (!val || !val->get().IsObject()) {
+    return std::nullopt;
+  }
 
   return val;
 }
 inline JSONWrapper* JSONWrapperOrNull(v3::CustomDataOpt const& val) {
-  auto wrapper = JSONWrapper::New_ctor();
+  auto* wrapper = JSONWrapper::New_ctor();
 
-  if (!val || !val->get().IsObject()) return wrapper;
+  if (!val || !val->get().IsObject()) {
+    return wrapper;
+  }
 
   wrapper->value = val;
 
