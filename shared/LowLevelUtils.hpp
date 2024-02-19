@@ -16,7 +16,7 @@ concept CtorArgs = requires(T t, TArgs&&... args) {
 template <class T, class... TArgs>
 requires(CtorArgs<std::remove_pointer_t<T>, TArgs...>)
 constexpr T NewFast(TArgs&&... args) {
-  return il2cpp_utils::NewSpecific<T>(std::forward<TArgs>(args)...);
+  return il2cpp_utils::NewSpecificUnsafe<T>(std::forward<TArgs>(args)...);
 }
 
 // // Faster allocation with method cache
