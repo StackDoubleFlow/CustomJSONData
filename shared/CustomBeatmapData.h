@@ -101,7 +101,7 @@ DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
     template <class T>
     std::vector<T> GetBeatmapItemsCpp(GlobalNamespace::BeatmapDataItem::BeatmapDataItemType type) {
           auto* list = reinterpret_cast<GlobalNamespace::ISortedList_1<T>*>(
-              _beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type));
+              _beatmapDataItemsPerTypeAndId->GetList(GetCustomType(classof(T)), type.value__));
 
           if (!list) return {};
 
