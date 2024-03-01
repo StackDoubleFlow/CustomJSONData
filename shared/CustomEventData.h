@@ -76,7 +76,7 @@ struct CustomEventCallbackData {
       : callback(callback) {}
 };
 
-class __attribute__((visibility("default"))) CustomEventCallbacks {
+class __attribute__ ((visibility ("default"))) CustomEventCallbacks {
 public:
   static std::vector<CustomEventCallbackData> customEventCallbacks;
   // For Noodle
