@@ -48,6 +48,7 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
+  CJDLogger::Logger.fmtLog<LogLevel::INF>("CALLING CUSTOM CALLBACK!");
   PAPER_IL2CPP_CATCH_HANDLER(
       if (redirectEvent) { redirectEvent(controller, item); } else {
         static auto CustomEventDataKlass = classof(CustomEventData*);
@@ -70,8 +71,6 @@ void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
 void CustomEventCallbacks::AddCustomEventCallback(void (*callback)(GlobalNamespace::BeatmapCallbacksController*,
                                                                    CustomJSONData::CustomEventData*)) {
   customEventCallbacks.emplace_back(callback);
-  CJDLogger::Logger.fmtLog<LogLevel::INF>("Added custom event callback {}", fmt::ptr(callback));
-  CJDLogger::Logger.Backtrace(4);
 }
 
 void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController* callbackController) {
