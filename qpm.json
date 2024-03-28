@@ -4,7 +4,7 @@
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
-    "version": "0.20.0",
+    "version": "0.21.0",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
@@ -26,13 +26,13 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^5.0.0",
+      "versionRange": "5.0.9",
       "additionalData": {
       }
     },
     {
       "id": "bs-cordl",
-      "versionRange": "^3402.0.0",
+      "versionRange": "^3500.0.0",
       "additionalData": {}
     },
     {
@@ -44,7 +44,7 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.11.0",
+      "versionRange": "^0.12.0",
       "additionalData": {
         "includeQmod": true,
         "private": true

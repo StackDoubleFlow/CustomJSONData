@@ -4,6 +4,9 @@
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData.hpp"
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
+#include "GlobalNamespace/NoteCutDirection.hpp"
+#include "GlobalNamespace/SliderMidAnchorMode.hpp"
+#include "GlobalNamespace/NoteLineLayer.hpp"
 
 #include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
@@ -20,7 +23,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
         System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData*>*
             sliders,
         System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>*
-            waypoints,
+            waypoints,  
         System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData*>*
             obstacles,
         BeatmapSaveData::SpecialEventKeywordFiltersData* specialEventsKeywordFilters);
@@ -34,9 +37,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
     std::shared_ptr<rapidjson::Document> doc; std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::NoteData,
     DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer,
-                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteType type,
+                        BeatmapSaveDataVersion2_6_0AndEarlier::NoteType type,
                         GlobalNamespace::NoteCutDirection cutDirection);
 
     DECLARE_SIMPLE_DTOR();
@@ -45,8 +48,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, Beatma
     std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData,
-    DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ColorType colorType,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion2_6_0AndEarlier::SliderData,
+    DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion2_6_0AndEarlier::ColorType colorType,
                         float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
                         float headControlPointLengthMultiplier,
                         ::GlobalNamespace::NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
@@ -60,9 +63,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, Beat
             std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleData,
     DECLARE_FASTER_CTOR(ctor, float time, int lineIndex,
-                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleType type,
+                        BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType type,
                         float duration, int width);
 
                 DECLARE_SIMPLE_DTOR();
@@ -71,9 +74,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, Be
     std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, BeatmapSaveDataVersion2_6_0AndEarlier::EventData,
     DECLARE_FASTER_CTOR(ctor, float time,
-                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType type,
+                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapEventType type,
                         int value, float floatValue);
 
     DECLARE_SIMPLE_DTOR();

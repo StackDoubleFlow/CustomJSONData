@@ -6,7 +6,7 @@
     "info": {
       "name": "CustomJSONData",
       "id": "custom-json-data",
-      "version": "0.20.0",
+      "version": "0.21.0",
       "url": "https://github.com/StackDoubleFlow/CustomJSONData",
       "additionalData": {
         "overrideSoName": "libcustom-json-data.so",
@@ -28,12 +28,12 @@
     "dependencies": [
       {
         "id": "beatsaber-hook",
-        "versionRange": "^5.0.0",
+        "versionRange": "=5.0.9",
         "additionalData": {}
       },
       {
         "id": "bs-cordl",
-        "versionRange": "^3402.0.0",
+        "versionRange": "^3500.0.0",
         "additionalData": {}
       },
       {
@@ -45,7 +45,7 @@
       },
       {
         "id": "songloader",
-        "versionRange": "^0.11.0",
+        "versionRange": "^0.12.0",
         "additionalData": {
           "includeQmod": true,
           "private": true
@@ -81,22 +81,22 @@
     {
       "dependency": {
         "id": "paper",
-        "versionRange": "=3.6.0",
+        "versionRange": "=3.6.1",
         "additionalData": {
-          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/libpaperlog.so",
-          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/debug_libpaperlog.so",
+          "soLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.1/libpaperlog.so",
+          "debugSoLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.1/debug_libpaperlog.so",
           "overrideSoName": "libpaperlog.so",
-          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.0/paperlog.qmod",
-          "branchName": "version/v3_6_0",
+          "modLink": "https://github.com/Fernthedev/paperlog/releases/download/v3.6.1/paperlog.qmod",
+          "branchName": "version/v3_6_1",
           "compileOptions": {
             "systemIncludes": [
-              "shared/utfcpp"
+              "shared/utfcpp/source"
             ]
           },
           "cmake": false
         }
       },
-      "version": "3.6.0"
+      "version": "3.6.1"
     },
     {
       "dependency": {
@@ -111,35 +111,35 @@
     {
       "dependency": {
         "id": "songloader",
-        "versionRange": "=0.11.0",
+        "versionRange": "=0.12.0",
         "additionalData": {
           "overrideSoName": "libsongloader.so",
           "cmake": true
         }
       },
-      "version": "0.11.0"
+      "version": "0.12.0"
     },
     {
       "dependency": {
         "id": "sombrero",
-        "versionRange": "=0.1.37",
+        "versionRange": "=0.1.40",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version-v0.1.37"
+          "branchName": "version/v0_1_40"
         }
       },
-      "version": "0.1.37"
+      "version": "0.1.40"
     },
     {
       "dependency": {
         "id": "custom-types",
-        "versionRange": "=0.16.17",
+        "versionRange": "=0.16.18",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/libcustom-types.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/debug_libcustom-types.so",
+          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.18/libcustom-types.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.18/debug_libcustom-types.so",
           "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.17/CustomTypes.qmod",
-          "branchName": "version/v0_16_17",
+          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.16.18/CustomTypes.qmod",
+          "branchName": "version/v0_16_18",
           "compileOptions": {
             "cppFlags": [
               "-Wno-invalid-offsetof"
@@ -148,15 +148,15 @@
           "cmake": true
         }
       },
-      "version": "0.16.17"
+      "version": "0.16.18"
     },
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=3402.1.2",
+        "versionRange": "=3500.0.0",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v3402_1_2",
+          "branchName": "version/v3500_0_0",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -171,7 +171,7 @@
           }
         }
       },
-      "version": "3402.1.2"
+      "version": "3500.0.0"
     },
     {
       "dependency": {
