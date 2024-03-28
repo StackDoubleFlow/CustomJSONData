@@ -243,6 +243,8 @@ CustomJSONData::v3::Parser::DeserializeBurstSlider(rapidjson::Value const& val) 
   float squishAmount = NEJSON::ReadOptionalFloat(val, "s").value_or(0);
   CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
+  CJDLogger::GetLoggerOld().debug("DeserializeBurstSlider customData %d", data.has_value());
+
   auto* slider = CustomBeatmapSaveData_BurstSliderData::New_ctor(
       color, headBeat, headLine, headLayer, headCutDirection, tailBeat, tailLine, tailLayer, sliceCount, squishAmount);
 
