@@ -1,8 +1,6 @@
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 
-
-
 extern "C" void setup(CModInfo& info) {
   info = CustomJSONData::modInfo.to_c();
 }

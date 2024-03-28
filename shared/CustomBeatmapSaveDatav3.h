@@ -87,7 +87,7 @@ DECLARE_CLASS_CODEGEN(
     DECLARE_INSTANCE_FIELD(bool, isV2);
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, BeatmapSaveDataVersion3::BeatmapSaveData::ColorNoteData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, BeatmapSaveDataVersion3::ColorNoteData,
     DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer,
                         ::BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType color,
                         ::GlobalNamespace::NoteCutDirection cutDirection, int angleOffset);
@@ -97,7 +97,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, B
     DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, BeatmapSaveDataVersion3::BeatmapSaveData::BombNoteData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, BeatmapSaveDataVersion3::BombNoteData,
                       DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer);
                       DECLARE_SIMPLE_DTOR();
 
@@ -105,7 +105,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, Be
 DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion3::BeatmapSaveData::SliderData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion3::SliderData,
                       DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
                                           float headBeat, int headLine, int headLayer,
                                           float headControlPointLengthMultiplier,
@@ -116,7 +116,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_SliderData, Beat
                       DECLARE_SIMPLE_DTOR(); public
                       : DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);)
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData, BeatmapSaveDataVersion3::BeatmapSaveData::BurstSliderData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData, BeatmapSaveDataVersion3::BurstSliderData,
                       DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
                                           float headBeat, int headLine, int headLayer,
                                           ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat,
@@ -124,7 +124,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData,
                       DECLARE_SIMPLE_DTOR(); public
                       : DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);)
 
-DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion3::BeatmapSaveData::ObstacleData,
+DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion3::ObstacleData,
 DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer, float duration, int width, int height);
 
     DECLARE_SIMPLE_DTOR(); public
@@ -132,7 +132,7 @@ DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer, float duration, int w
 )
 
 DECLARE_CLASS_CODEGEN(
-    CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventData,
+    CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, BeatmapSaveDataVersion3::BasicEventData,
     DECLARE_FASTER_CTOR(ctor, float beat,
                         BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType eventType, int value,
                         float floatValue);
