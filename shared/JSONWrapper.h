@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <any>
 
-#include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
+#include "songcore/shared/CustomJSONData.hpp"
 #include "LowLevelUtils.hpp"
 
 // clang-format off
@@ -41,7 +41,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject,
     DECLARE_SIMPLE_DTOR();
 
                       public:
-    std::optional<std::reference_wrapper<const ValueUTF16>> value;
+    std::optional<std::reference_wrapper<const SongCore::CustomJSONData::ValueUTF16>> value;
     std::unordered_map<char, std::any> associatedData;
 
     DECLARE_INSTANCE_METHOD(JSONWrapperUTF16*, GetCopy);

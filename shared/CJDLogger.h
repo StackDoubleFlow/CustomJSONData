@@ -14,11 +14,6 @@ static modloader::ModInfo const modInfo{"CustomJSONData", VERSION, 1};
 
 class CJDLogger {
 public:
-  
-  static Logger& GetLoggerOld() {
-    static auto* logger = new class Logger(CustomJSONData::modInfo, LoggerOptions(false, true));
-    return *logger;
-  }
   // Register file log in main.cpp
   static constexpr auto Logger =
       Paper::ConstLoggerContext("CustomJSONData"); // Paper::Logger::WithContext<"CustomJSONData", false>();
@@ -37,7 +32,7 @@ public:
   } catch (::il2cpp_utils::RunMethodException const& exc) {                                                            \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught RunMethodException! what(): {}", exc.what());                    \
     Paper::Logger::WaitForFlush();                                                                                     \
-    ::Logger::get().error("Uncaught RunMethodException! what(): %s", exc.what());                                      \
+    CJDLogger::Logger.error("Uncaught RunMethodException! what(): {}", exc.what());                                    \
     exc.log_backtrace();                                                                                               \
     CJDLogger::Logger.Backtrace(100);                                                                                  \
     if (exc.ex) {                                                                                                      \
@@ -45,13 +40,13 @@ public:
     }                                                                                                                  \
     SAFE_ABORT();                                                                                                      \
   } catch (::il2cpp_utils::exceptions::StackTraceException const& exc) {                                               \
-    ::Logger::get().error("Uncaught StackTraceException! what(): %s", exc.what());                                     \
+    CJDLogger::Logger.error("Uncaught StackTraceException! what(): {}", exc.what());                                   \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught StackTraceException! what(): {}", exc.what());                   \
     exc.log_backtrace();                                                                                               \
     CJDLogger::Logger.Backtrace(100);                                                                                  \
     SAFE_ABORT();                                                                                                      \
   } catch (::std::exception const& exc) {                                                                              \
-    ::Logger::get().error("Uncaught C++ exception! type name: %s, what(): %s", typeid(exc).name(), exc.what());        \
+    CJDLogger::Logger.error("Uncaught C++ exception! type name: {}, what(): {}", typeid(exc).name(), exc.what());      \
     CJDLogger::Logger.fmtLog<LogLevel::ERR>("Uncaught C++ exception! type name: {}, what(): {}", typeid(exc).name(),   \
                                             exc.what());                                                               \
     Paper::Logger::WaitForFlush();                                                                                     \
@@ -61,7 +56,7 @@ public:
     CJDLogger::Logger.fmtLog<LogLevel::ERR>(                                                                           \
         "Uncaught, unknown C++ exception (not std::exception) with no known what() method!");                          \
     Paper::Logger::WaitForFlush();                                                                                     \
-    ::Logger::get().error("Uncaught, unknown C++ exception (not std::exception) with no known what() method!");        \
+    CJDLogger::Logger.error("Uncaught, unknown C++ exception (not std::exception) with no known what() method!");      \
     CJDLogger::Logger.Backtrace(100);                                                                                  \
     SAFE_ABORT();                                                                                                      \
   }
@@ -89,7 +84,28 @@ template <auto Func, class R, class... TArgs> struct PaperHookCatchWrapper<Func,
       return #name_;                                                                                                   \
     }                                                                                                                  \
     static MethodInfo const* getInfo() {                                                                               \
-      return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::methodInfo();                                           \
+      return ::il2cpp_utils::il2cpp_type_check::MetadataGetter<mPtr>::methodInfo();                                    \
+    }                                                                                                                  \
+    static funcType* trampoline() {                                                                                    \
+      return &name_;                                                                                                   \
+    }                                                                                                                  \
+    static inline retval (*name_)(__VA_ARGS__) = nullptr;                                                              \
+    static funcType hook() {                                                                                           \
+      return &::PaperHookCatchWrapper<&hook_##name_, funcType>::wrapper;                                               \
+    }                                                                                                                  \
+    static retval hook_##name_(__VA_ARGS__);                                                                           \
+  };                                                                                                                   \
+  retval Hook_##name_::hook_##name_(__VA_ARGS__)
+
+// Same as MAKE_PAPER_HOOK_MATCH, but for manual MethodInfo* usage.
+#define MAKE_PAPER_HOOK_FIND(name_, infoGet, retval, ...)                                                              \
+  struct Hook_##name_ {                                                                                                \
+    using funcType = retval (*)(__VA_ARGS__);                                                                          \
+    constexpr static char const* name() {                                                                              \
+      return #name_;                                                                                                   \
+    }                                                                                                                  \
+    static MethodInfo const* getInfo() {                                                                               \
+      return infoGet;                                                                                                  \
     }                                                                                                                  \
     static funcType* trampoline() {                                                                                    \
       return &name_;                                                                                                   \

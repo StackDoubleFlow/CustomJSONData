@@ -1,27 +1,28 @@
 {
   "configurations": [
     {
-      "name": "Quest",
       "defines": [
+        "MOD_ID=\"custom-json-data\"",
+        "VERSION=\"0.1.0\"",
         "__GNUC__",
-        "__aarch64__",
-        "VERSION=\"0.3.0\""
+        "__aarch64__"
       ],
       "includePath": [
-        "${workspaceFolder}/",
-        "${workspaceFolder}/include",
-        "${workspaceFolder}/shared",
-        "${workspaceFolder}/extern",
-        "${workspaceFolder}/extern/codegen/include",
-        "${workspaceFolder}/extern/libil2cpp/il2cpp/libil2cpp",
-        "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include",
-        "${ANDROID_NDK_HOME}/sources/cxx-stl/llvm-libc++/include",
-        "${ANDROID_NDK_HOME}/sources/cxx-stl/llvm-libc++abi/include"
+        "${workspaceFolder}/extern/includes/libil2cpp/il2cpp/libil2cpp", 
+        "${workspaceFolder}/extern/includes/codegen/include", 
+        "${workspaceFolder}/extern/includes", 
+        "${workspaceFolder}/include", 
+        "${workspaceFolder}/shared", 
+        "${workspaceFolder}",
+        
+        "D:\DevTools\android-ndk-r27\android-ndk-r27-canary/**",
+        "${default}"
       ],
-      "compilerPath": "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++",
-      "cStandard": "gnu17",
-      "cppStandard": "gnu++20",
-      "intelliSenseMode": "clang-x64"
+      "name": "Quest",
+      "cStandard": "c11",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "clang-x64",
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json"
     }
   ],
   "version": 4

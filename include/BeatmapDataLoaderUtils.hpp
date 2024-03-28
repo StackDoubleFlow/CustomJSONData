@@ -21,11 +21,13 @@
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
 #include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
-#include "GlobalNamespace/BeatmapEventDataBoxGroupFactory.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
 #include "GlobalNamespace/EnvironmentLightGroups.hpp"
 #include "GlobalNamespace/IndexFilter.hpp"
 #include "GlobalNamespace/LightGroupSO.hpp"
+#include "GlobalNamespace/ILightGroup.hpp"
+#include "GlobalNamespace/PlayerSpecificSettings.hpp"
+#include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
@@ -111,7 +113,7 @@ constexpr auto CustomSliderData_CreateCustomBurstSliderData(
     NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, NoteCutDirection tailCutDirection,
     int sliceCount, float squishAmount, JSONWrapper* customData) {
   auto* slider =
-      CustomSliderData::New_ctor(SliderData::Type(SliderData::Type::Burst), colorType, false, headTime, headLineIndex,
+      CustomSliderData::New_ctor(GlobalNamespace::SliderData::Type::Burst, colorType, false, headTime, headLineIndex,
                                  headLineLayer, headBeforeJumpLineLayer, 0.0F, headCutDirection, 0.0F, false, tailTime,
                                  tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0F, tailCutDirection, 0.0F,
                                  SliderMidAnchorMode(SliderMidAnchorMode::Straight), sliceCount, squishAmount);
@@ -120,14 +122,14 @@ constexpr auto CustomSliderData_CreateCustomBurstSliderData(
   return slider;
 }
 
-constexpr auto CustomSliderData_CreateCustomSliderData(
+auto CustomSliderData_CreateCustomSliderData(
     ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
     NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier, NoteCutDirection headCutDirection,
     float tailTime, int tailLineIndex, NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer,
     float tailControlPointLengthMultiplier, NoteCutDirection tailCutDirection, SliderMidAnchorMode midAnchorMode,
     JSONWrapper* customData) {
   auto* slider = CustomSliderData::New_ctor(
-      SliderData::Type(SliderData::Type::Normal), colorType, false, headTime, headLineIndex, headLineLayer,
+      GlobalNamespace::SliderData::Type::Normal, colorType, false, headTime, headLineIndex, headLineLayer,
       headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0F, false, tailTime, tailLineIndex,
       tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection, 0.0F, midAnchorMode,
       0, 1.0F);
@@ -157,51 +159,108 @@ constexpr NoteLineLayer GetNoteLineLayer(int lineLayer) {
   }
 }
 
-constexpr ColorType ConvertColorType(BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType noteType) {
-  if (noteType == BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType::ColorA) {
+constexpr ColorType ConvertColorType(BeatmapSaveDataVersion2_6_0AndEarlier::ColorType colorType) {
+  if (colorType == BeatmapSaveDataVersion2_6_0AndEarlier::ColorType::ColorA) {
     return ColorType::ColorA;
   }
-  if (noteType != BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType::ColorB) {
+  if (colorType != BeatmapSaveDataVersion2_6_0AndEarlier::ColorType::ColorB) {
     return ColorType::None;
   }
   return ColorType::ColorB;
 }
 
-constexpr EnvironmentColorType
-ConvertColorType(BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType environmentColorType) {
+constexpr ColorType ConvertColorType(BeatmapSaveDataCommon::NoteColorType noteType) {
+  if (noteType == BeatmapSaveDataCommon::NoteColorType::ColorA) {
+    return ColorType::ColorA;
+  }
+  if (noteType != BeatmapSaveDataCommon::NoteColorType::ColorB) {
+    return ColorType::None;
+  }
+  return ColorType::ColorB;
+}
+
+constexpr GlobalNamespace::NoteCutDirection ConvertCutDirection(BeatmapSaveDataCommon::NoteCutDirection noteCutDirection) {
+  GlobalNamespace::NoteCutDirection noteCutDirection2;
+	switch (noteCutDirection)
+	{
+	case BeatmapSaveDataCommon::NoteCutDirection::Up:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Up;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::Down:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Down;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::Left:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Left;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::Right:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Right;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::UpLeft:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::UpLeft;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::UpRight:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::UpRight;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::DownLeft:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::DownLeft;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::DownRight:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::DownRight;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::Any:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Any;
+		break;
+	case BeatmapSaveDataCommon::NoteCutDirection::None:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::None;
+		break;
+	default:
+		noteCutDirection2 = GlobalNamespace::NoteCutDirection::Any;
+		break;
+	}
+	return noteCutDirection2;
+}
+
+constexpr EnvironmentColorType ConvertColorType(BeatmapSaveDataCommon::EnvironmentColorType environmentColorType) {
   switch (environmentColorType) {
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color0:
+  case BeatmapSaveDataCommon::EnvironmentColorType::Color0:
     return EnvironmentColorType::Color0;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::Color1:
+  case BeatmapSaveDataCommon::EnvironmentColorType::Color1:
     return EnvironmentColorType::Color1;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EnvironmentColorType::ColorWhite:
+  case BeatmapSaveDataCommon::EnvironmentColorType::ColorWhite:
     return EnvironmentColorType::ColorW;
   default:
     return EnvironmentColorType::Color0;
   }
 }
 
-constexpr BeatmapEventTransitionType
-ConvertBeatmapEventTransitionType(BeatmapSaveDataVersion3::BeatmapSaveData::TransitionType transitionType) {
+constexpr BeatmapEventTransitionType ConvertBeatmapEventTransitionType(BeatmapSaveDataVersion3::TransitionType transitionType) {
   switch (transitionType) {
-  case BeatmapSaveDataVersion3::BeatmapSaveData::TransitionType::Instant:
+  case BeatmapSaveDataVersion3::TransitionType::Instant:
     return BeatmapEventTransitionType::Instant;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::TransitionType::Interpolate:
+  case BeatmapSaveDataVersion3::TransitionType::Interpolate:
     return BeatmapEventTransitionType::Interpolate;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::TransitionType::Extend:
+  case BeatmapSaveDataVersion3::TransitionType::Extend:
     return BeatmapEventTransitionType::Extend;
   default:
     return BeatmapEventTransitionType::Instant;
   }
 }
 
-constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis axis) {
+constexpr EaseType ConvertBeatmapEventTransitionTypeToEaseType(BeatmapSaveDataVersion3::TransitionType transitionType) {
+  if (transitionType != BeatmapSaveDataVersion3::TransitionType::Interpolate) {
+    return EaseType::None;
+	}
+  return EaseType::Linear;
+}
+
+
+constexpr LightAxis ConvertAxis(BeatmapSaveDataCommon::Axis axis) {
   switch (axis) {
-  case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::X:
+  case BeatmapSaveDataCommon::Axis::X:
     return LightAxis::X;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Y:
+  case BeatmapSaveDataCommon::Axis::Y:
     return LightAxis::Y;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::Axis::Z:
+  case BeatmapSaveDataCommon::Axis::Z:
     return LightAxis::Z;
   default:
     return LightAxis::Z;
@@ -209,63 +268,63 @@ constexpr LightAxis ConvertAxis(BeatmapSaveDataVersion3::BeatmapSaveData::Axis a
 }
 
 // BeatmapDataLoader.ConverEaseType
-constexpr EaseType ConvertEaseType(BeatmapSaveDataVersion3::BeatmapSaveData::EaseType easeType) {
+constexpr EaseType ConvertEaseType(BeatmapSaveDataCommon::EaseType easeType) {
   switch (easeType) {
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::None:
+  case BeatmapSaveDataCommon::EaseType::None:
     return EaseType::None;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::Linear:
+  case BeatmapSaveDataCommon::EaseType::Linear:
     return EaseType::Linear;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InQuad:
+  case BeatmapSaveDataCommon::EaseType::InQuad:
     return EaseType::InQuad;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutQuad:
+  case BeatmapSaveDataCommon::EaseType::OutQuad:
     return EaseType::OutQuad;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuad:
+  case BeatmapSaveDataCommon::EaseType::InOutQuad:
     return EaseType::InOutQuad;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InSine:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutSine:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutSine:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InCubic:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutCubic:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutCubic:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InQuart:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutQuart:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuart:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InQuint:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutQuint:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutQuint:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InExpo:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutExpo:
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutExpo:
+  case BeatmapSaveDataCommon::EaseType::InSine:
+  case BeatmapSaveDataCommon::EaseType::OutSine:
+  case BeatmapSaveDataCommon::EaseType::InOutSine:
+  case BeatmapSaveDataCommon::EaseType::InCubic:
+  case BeatmapSaveDataCommon::EaseType::OutCubic:
+  case BeatmapSaveDataCommon::EaseType::InOutCubic:
+  case BeatmapSaveDataCommon::EaseType::InQuart:
+  case BeatmapSaveDataCommon::EaseType::OutQuart:
+  case BeatmapSaveDataCommon::EaseType::InOutQuart:
+  case BeatmapSaveDataCommon::EaseType::InQuint:
+  case BeatmapSaveDataCommon::EaseType::OutQuint:
+  case BeatmapSaveDataCommon::EaseType::InOutQuint:
+  case BeatmapSaveDataCommon::EaseType::InExpo:
+  case BeatmapSaveDataCommon::EaseType::OutExpo:
+  case BeatmapSaveDataCommon::EaseType::InOutExpo:
     break;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InCirc:
+  case BeatmapSaveDataCommon::EaseType::InCirc:
     return EaseType::InCirc;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutCirc:
+  case BeatmapSaveDataCommon::EaseType::OutCirc:
     return EaseType::OutCirc;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutCirc:
+  case BeatmapSaveDataCommon::EaseType::InOutCirc:
     return EaseType::InOutCirc;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InBack:
+  case BeatmapSaveDataCommon::EaseType::InBack:
     return EaseType::InBack;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutBack:
+  case BeatmapSaveDataCommon::EaseType::OutBack:
     return EaseType::OutBack;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutBack:
+  case BeatmapSaveDataCommon::EaseType::InOutBack:
     return EaseType::InOutBack;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InElastic:
+  case BeatmapSaveDataCommon::EaseType::InElastic:
     return EaseType::InElastic;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutElastic:
+  case BeatmapSaveDataCommon::EaseType::OutElastic:
     return EaseType::OutElastic;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutElastic:
+  case BeatmapSaveDataCommon::EaseType::InOutElastic:
     return EaseType::InOutElastic;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InBounce:
+  case BeatmapSaveDataCommon::EaseType::InBounce:
     return EaseType::InBounce;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::OutBounce:
+  case BeatmapSaveDataCommon::EaseType::OutBounce:
     return EaseType::OutBounce;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::InOutBounce:
+  case BeatmapSaveDataCommon::EaseType::InOutBounce:
     return EaseType::InOutBounce;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutBack:
+  case BeatmapSaveDataCommon::EaseType::BeatSaberInOutBack:
     return EaseType::BeatSaberInOutBack;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutElastic:
+  case BeatmapSaveDataCommon::EaseType::BeatSaberInOutElastic:
     return EaseType::BeatSaberInOutElastic;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::EaseType::BeatSaberInOutBounce:
+  case BeatmapSaveDataCommon::EaseType::BeatSaberInOutBounce:
     return EaseType::BeatSaberInOutBounce;
   }
 
@@ -287,24 +346,37 @@ constexpr NoteLineLayer ConvertNoteLineLayer(int layer) {
 }
 
 // BeatmapDataLoader.ConvertSliderType
-constexpr SliderData::Type ConvertSliderType(BeatmapSaveDataVersion3::BeatmapSaveData::SliderType sliderType) {
-  if (sliderType == BeatmapSaveDataVersion3::BeatmapSaveData::SliderType::Normal) {
-    return SliderData::Type::Normal;
+constexpr GlobalNamespace::SliderData::Type ConvertSliderType(BeatmapSaveDataVersion3::SliderType sliderType) {
+  if (sliderType == BeatmapSaveDataVersion3::SliderType::Normal) {
+    return GlobalNamespace::SliderData::Type::Normal;
   }
-  if (sliderType != BeatmapSaveDataVersion3::BeatmapSaveData::SliderType::Burst) {
-    return SliderData::Type::Normal;
+  if (sliderType != BeatmapSaveDataVersion3::SliderType::Burst) {
+    return GlobalNamespace::SliderData::Type::Normal;
   }
-  return SliderData::Type::Burst;
+  return GlobalNamespace::SliderData::Type::Burst;
+}
+
+constexpr SliderMidAnchorMode ConvertSliderMidAnchorMode(BeatmapSaveDataCommon::SliderMidAnchorMode mode) {
+  switch (mode) {
+  case BeatmapSaveDataCommon::SliderMidAnchorMode::Straight:
+    return SliderMidAnchorMode::Straight;
+  case BeatmapSaveDataCommon::SliderMidAnchorMode::Clockwise:
+    return SliderMidAnchorMode::Clockwise;
+  case BeatmapSaveDataCommon::SliderMidAnchorMode::CounterClockwise:
+    return SliderMidAnchorMode::CounterClockwise;
+  default:
+    return SliderMidAnchorMode::Straight;
+  }
 }
 
 constexpr LightRotationDirection ConvertRotationOrientation(
-    BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData::RotationDirection rotationDirection) {
+    BeatmapSaveDataCommon::RotationDirection rotationDirection) {
   switch (rotationDirection) {
-  case BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData::RotationDirection::Automatic:
+  case BeatmapSaveDataCommon::RotationDirection::Automatic:
     return LightRotationDirection::Automatic;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData::RotationDirection::Clockwise:
+  case BeatmapSaveDataCommon::RotationDirection::Clockwise:
     return LightRotationDirection::Clockwise;
-  case BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData::RotationDirection::Counterclockwise:
+  case BeatmapSaveDataCommon::RotationDirection::Counterclockwise:
     return LightRotationDirection::Counterclockwise;
   default:
     return LightRotationDirection::Automatic;
@@ -358,7 +430,7 @@ struct BpmTimeProcessor {
   int currentBpmChangesDataIdx = 0;
 
   BpmTimeProcessor(float startBpm,
-                   VList<BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*> bpmEventsSaveData) {
+                   VList<BeatmapSaveDataVersion3::BpmChangeEventData*> bpmEventsSaveData) {
     bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->beat == 0.0F;
     if (hasBpm) {
       startBpm = bpmEventsSaveData[0]->bpm;
@@ -397,15 +469,15 @@ struct BpmTimeProcessor {
   }
 };
 
-constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter* indexFilter, int groupSize) {
+constexpr GlobalNamespace::IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveDataVersion3::IndexFilter* indexFilter, int groupSize) {
   int num =
       (indexFilter->get_chunks() == 0)
           ? 1
           : static_cast<int>(std::ceil(static_cast<float>(groupSize) / static_cast<float>(indexFilter->get_chunks())));
   int num2 = std::ceil(static_cast<float>(groupSize) / static_cast<float>(num));
   auto type = indexFilter->get_type();
-  if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::Division) {
-    if (type != BeatmapSaveDataVersion3::BeatmapSaveData::IndexFilter::IndexFilterType::StepAndOffset) {
+  if (type != BeatmapSaveDataCommon::IndexFilterType::Division) {
+    if (type != BeatmapSaveDataCommon::IndexFilterType::StepAndOffset) {
       return nullptr;
     }
     int param = indexFilter->get_param0();
@@ -417,16 +489,16 @@ constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter
     }
     int count = (param2 == 0) ? 1 : static_cast<int>(std::ceil(static_cast<float>(num3) / static_cast<float>(param2)));
     if (indexFilter->get_reversed()) {
-      return CustomJSONData::NewFast<IndexFilter*>(
+      return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
           num2 - 1 - param, -param2, count, groupSize,
-          IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+          GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
           indexFilter->get_limit(),
-          IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+          GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
     }
-    return CustomJSONData::NewFast<IndexFilter*>(
-        param, param2, count, groupSize, IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__),
+    return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
+        param, param2, count, groupSize, GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__),
         indexFilter->get_seed(), num, indexFilter->get_limit(),
-        IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+        GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
   }
 
   int param3 = indexFilter->get_param0();
@@ -434,74 +506,75 @@ constexpr IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveData::IndexFilter
   int num4 = std::ceil(static_cast<float>(num2) / static_cast<float>(param3));
   if (indexFilter->get_reversed()) {
     int num5 = num2 - num4 * param4 - 1;
-    return CustomJSONData::NewFast<IndexFilter*>(
+    return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
         num5, std::max(0, num5 - num4 + 1), groupSize,
-        IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+        GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
         indexFilter->get_limit(),
-        IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+        GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
   }
   int num6 = num4 * param4;
-  return CustomJSONData::NewFast<IndexFilter*>(
+  return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
       num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
-      IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
+      GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(), num,
       indexFilter->get_limit(),
-      IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+      GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
 }
 
-constexpr BeatmapEventDataBox::DistributionParamType
-DistributionParamType_Convert(BeatmapSaveData::EventBox::DistributionParamType distributionParamType) {
-  if (distributionParamType == BeatmapSaveDataVersion3::BeatmapSaveData::EventBox::DistributionParamType::Wave) {
-    return BeatmapEventDataBox::DistributionParamType::Wave;
+constexpr GlobalNamespace::BeatmapEventDataBox::DistributionParamType
+DistributionParamType_Convert(BeatmapSaveDataCommon::DistributionParamType distributionParamType) {
+  if (distributionParamType == BeatmapSaveDataCommon::DistributionParamType::Wave) {
+    return GlobalNamespace::BeatmapEventDataBox::DistributionParamType::Wave;
   }
-  if (distributionParamType != BeatmapSaveDataVersion3::BeatmapSaveData::EventBox::DistributionParamType::Step) {
+  if (distributionParamType != BeatmapSaveDataCommon::DistributionParamType::Step) {
     throw std::runtime_error("distributionParamType error!");
   }
-  return BeatmapEventDataBox::DistributionParamType::Step;
+  return GlobalNamespace::BeatmapEventDataBox::DistributionParamType::Step;
 }
 
-constexpr LightColorBaseData* LightColorBaseData_Convert(BeatmapSaveData::LightColorBaseData* saveData) {
-  return CustomJSONData::NewFast<LightColorBaseData*>(
+constexpr GlobalNamespace::LightColorBaseData* LightColorBaseData_Convert(BeatmapSaveDataVersion3::LightColorBaseData* saveData) {
+  return CustomJSONData::NewFast<GlobalNamespace::LightColorBaseData*>(
       BeatmapSaveDataItem_GetBeat(saveData),
-      ConvertBeatmapEventTransitionType(LightColorBaseData_GetTransitionType(saveData)),
+      (LightColorBaseData_GetTransitionType(saveData) == BeatmapSaveDataVersion3::TransitionType::Extend),
+      ConvertBeatmapEventTransitionTypeToEaseType(LightColorBaseData_GetTransitionType(saveData)),
       ConvertColorType(LightColorBaseData_GetColorType(saveData)), LightColorBaseData_GetBrightness(saveData),
       LightColorBaseData_GetStrobeFrequency(saveData),
       saveData->strobeBrightness,
       saveData->strobeFade);
 }
 
-constexpr LightRotationBaseData* LightRotationBaseData_Convert(BeatmapSaveData::LightRotationBaseData* saveData) {
-  return CustomJSONData::NewFast<LightRotationBaseData*>(
+constexpr GlobalNamespace::LightRotationBaseData* LightRotationBaseData_Convert(BeatmapSaveDataVersion3::LightRotationBaseData* saveData) {
+  return CustomJSONData::NewFast<GlobalNamespace::LightRotationBaseData*>(
       saveData->b, saveData->get_usePreviousEventRotationValue(), ConvertEaseType(saveData->e),
       LightRotationBaseData_GetRotation(saveData), LightRotationBaseData_GetLoopsCount(saveData),
       ConvertRotationOrientation(saveData->o));
 }
 
-constexpr LightTranslationBaseData*
-LightTranslationBaseData_Convert(BeatmapSaveData::LightTranslationBaseData* saveData) {
-  return CustomJSONData::NewFast<LightTranslationBaseData*>(
+constexpr GlobalNamespace::LightTranslationBaseData*
+LightTranslationBaseData_Convert(BeatmapSaveDataVersion3::LightTranslationBaseData* saveData) {
+  return CustomJSONData::NewFast<GlobalNamespace::LightTranslationBaseData*>(
       saveData->b, saveData->get_usePreviousEventTranslationValue(), ConvertEaseType(saveData->e), saveData->t);
 }
 
 struct EventBoxGroupConvertor {
   explicit EventBoxGroupConvertor(IEnvironmentLightGroups* lightGroups) : lightGroups(lightGroups) {
 
-    dataConvertor.AddConverter<BeatmapSaveData::LightColorEventBox*>([](BeatmapSaveData::LightColorEventBox* saveData,
+    dataConvertor.AddConverter<BeatmapSaveDataVersion3::LightColorEventBox*>([](BeatmapSaveDataVersion3::LightColorEventBox* saveData,
                                                                         GlobalNamespace::ILightGroup* lightGroupData) {
       auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
       auto* saveDataList = reinterpret_cast<
-          System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>*>(
+          System::Collections::Generic::List_1<BeatmapSaveDataVersion3::LightColorBaseData*>*>(
           saveData->e);
-      auto list = VList<LightColorBaseData*>::New();
+      auto list = VList<GlobalNamespace::LightColorBaseData*>::New();
       list->EnsureCapacity(saveDataList->get_Count());
 
-      for (auto* saveData2 : VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorBaseData*>(saveDataList)) {
+      for (auto* saveData2 : VList<BeatmapSaveDataVersion3::LightColorBaseData*>(saveDataList)) {
         list.push_back(LightColorBaseData_Convert(saveData2));
       }
 
       auto beatDistributionParamType = DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
       auto brightnessDistributionParamType =
           DistributionParamType_Convert(saveData->get_brightnessDistributionParamType());
-      return CustomJSONData::NewFast<LightColorBeatmapEventDataBox*>(
+      return CustomJSONData::NewFast<GlobalNamespace::LightColorBeatmapEventDataBox*>(
           indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
           saveData->get_brightnessDistributionParam(), brightnessDistributionParamType,
           saveData->get_brightnessDistributionShouldAffectFirstBaseEvent(),
@@ -509,18 +582,18 @@ struct EventBoxGroupConvertor {
           reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightColorBaseData*>*>(list.convert()));
     });
 
-    dataConvertor.AddConverter<BeatmapSaveData::LightRotationEventBox*>(
-        [](BeatmapSaveData::LightRotationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
+    dataConvertor.AddConverter<BeatmapSaveDataVersion3::LightRotationEventBox*>(
+        [](BeatmapSaveDataVersion3::LightRotationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
           auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
           auto* collection = reinterpret_cast<System::Collections::Generic::List_1<
-              ::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>*>(
+              BeatmapSaveDataVersion3::LightRotationBaseData*>*>(
               saveData->get_lightRotationBaseDataList());
 
-          auto list = VList<LightRotationBaseData*>::New();
+          auto list = VList<GlobalNamespace::LightRotationBaseData*>::New();
           list->EnsureCapacity(collection->get_Count());
 
           for (auto* saveData2 :
-               VList<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationBaseData*>(collection)) {
+               VList<BeatmapSaveDataVersion3::LightRotationBaseData*>(collection)) {
             list.push_back(LightRotationBaseData_Convert(saveData2));
           }
 
@@ -528,26 +601,26 @@ struct EventBoxGroupConvertor {
               DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
           auto rotationDistributionParamType =
               DistributionParamType_Convert(saveData->get_rotationDistributionParamType());
-          return CustomJSONData::NewFast<LightRotationBeatmapEventDataBox*>(
+          return CustomJSONData::NewFast<GlobalNamespace::LightRotationBeatmapEventDataBox*>(
               indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
               ConvertAxis(saveData->a), saveData->get_flipRotation(), saveData->get_rotationDistributionParam(),
               rotationDistributionParamType, saveData->get_rotationDistributionShouldAffectFirstBaseEvent(),
               saveData->get_rotationDistributionEaseType().value__,
               reinterpret_cast<IReadOnlyList_1<::GlobalNamespace::LightRotationBaseData*>*>(list.convert()));
         });
-    dataConvertor.AddConverter<BeatmapSaveData::LightTranslationEventBox*>(
-        [](BeatmapSaveData::LightTranslationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
+    dataConvertor.AddConverter<BeatmapSaveDataVersion3::LightTranslationEventBox*>(
+        [](BeatmapSaveDataVersion3::LightTranslationEventBox* saveData, GlobalNamespace::ILightGroup* lightGroupData) {
           auto* indexFilter = IndexFilterConvertor_Convert(saveData->f, lightGroupData->numberOfElements);
 
           auto* collection = reinterpret_cast<System::Collections::Generic::List_1<
-              ::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>*>(
+              BeatmapSaveDataVersion3::LightTranslationBaseData*>*>(
               saveData->get_lightTranslationBaseDataList());
 
-          auto list = VList<LightTranslationBaseData*>::New();
+          auto list = VList<GlobalNamespace::LightTranslationBaseData*>::New();
           list->EnsureCapacity(collection->get_Count());
 
           for (auto* saveData2 :
-               VList<BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationBaseData*>(collection)) {
+               VList<BeatmapSaveDataVersion3::LightTranslationBaseData*>(collection)) {
             list.push_back(LightTranslationBaseData_Convert(saveData2));
           }
 
@@ -555,7 +628,7 @@ struct EventBoxGroupConvertor {
               DistributionParamType_Convert(EventBox_GetBeatDistributionParamType(saveData));
           auto gapDistributionParamType = DistributionParamType_Convert(saveData->get_gapDistributionParamType());
 
-          return CustomJSONData::NewFast<LightTranslationBeatmapEventDataBox*>(
+          return CustomJSONData::NewFast<GlobalNamespace::LightTranslationBeatmapEventDataBox*>(
               indexFilter, EventBox_GetBeatDistributionParam(saveData), beatDistributionParamType,
               ConvertAxis(saveData->a), saveData->get_flipTranslation(), saveData->get_gapDistributionParam(),
               gapDistributionParamType, saveData->get_gapDistributionShouldAffectFirstBaseEvent(),
@@ -565,7 +638,7 @@ struct EventBoxGroupConvertor {
   }
 
   BeatmapEventDataBoxGroup*
-  Convert(BeatmapSaveDataVersion3::BeatmapSaveData::EventBoxGroup* eventBoxGroupSaveData) const {
+  Convert(BeatmapSaveDataVersion3::EventBoxGroup* eventBoxGroupSaveData) const {
     auto* dataForGroup = this->lightGroups->GetDataForGroup(eventBoxGroupSaveData->get_groupId());
     if (dataForGroup == nullptr) {
       return nullptr;
@@ -577,24 +650,24 @@ struct EventBoxGroupConvertor {
     }
 
     auto* collection =
-        reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>*>(
+        reinterpret_cast<System::Collections::Generic::List_1<BeatmapSaveDataVersion3::EventBox*>*>(
             eventBoxGroupSaveData->get_baseEventBoxes());
-    auto list = VList<BeatmapEventDataBox*>::New();
+    auto list = VList<GlobalNamespace::BeatmapEventDataBox*>::New();
     list->EnsureCapacity(collection->get_Count());
 
-    for (auto* item : VList<BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*>(collection)) {
+    for (auto* item : VList<BeatmapSaveDataVersion3::EventBox*>(collection)) {
       auto* beatmapEventDataBox = dataConvertor.ProcessItem(item, dataForGroup);
       if (beatmapEventDataBox != nullptr) {
         list.push_back(beatmapEventDataBox);
       }
     }
 
-    return CustomJSONData::NewFast<BeatmapEventDataBoxGroup*>(
+    return CustomJSONData::NewFast<GlobalNamespace::BeatmapEventDataBoxGroup*>(
         eventBoxGroupSaveData->b,
-        reinterpret_cast<IReadOnlyCollection_1<::GlobalNamespace::BeatmapEventDataBox*>*>(list.convert()));
+        reinterpret_cast<IReadOnlyCollection_1<GlobalNamespace::BeatmapEventDataBox*>*>(list.convert()));
   }
 
-  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::BeatmapSaveData::EventBox*, GlobalNamespace::ILightGroup*>
+  CppConverter<BeatmapEventDataBox*, BeatmapSaveDataVersion3::EventBox*, GlobalNamespace::ILightGroup*>
       dataConvertor;
 
   IEnvironmentLightGroups* lightGroups;

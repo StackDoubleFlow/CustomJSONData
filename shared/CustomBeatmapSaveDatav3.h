@@ -2,16 +2,45 @@
 
 #include "custom-types/shared/macros.hpp"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+
+#include "BeatmapSaveDataVersion3/ColorNoteData.hpp"
+#include "BeatmapSaveDataVersion3/BurstSliderData.hpp"
+#include "BeatmapSaveDataVersion3/BombNoteData.hpp"
+#include "BeatmapSaveDataVersion3/BurstSliderData.hpp"
+#include "BeatmapSaveDataVersion3/SliderData.hpp"
+#include "BeatmapSaveDataVersion3/SliderType.hpp"
+#include "BeatmapSaveDataVersion3/ObstacleData.hpp"
+#include "BeatmapSaveDataVersion3/WaypointData.hpp"
+#include "BeatmapSaveDataVersion3/BasicEventData.hpp"
+#include "BeatmapSaveDataVersion3/BpmChangeEventData.hpp"
 #include "BeatmapSaveDataVersion3/BeatmapSaveData.hpp"
+#include "BeatmapSaveDataVersion3/BeatmapSaveDataItem.hpp"
+#include "BeatmapSaveDataVersion3/LightColorBaseData.hpp"
+#include "BeatmapSaveDataVersion3/IndexFilter.hpp"
+#include "BeatmapSaveDataVersion3/EventBox.hpp"
+#include "BeatmapSaveDataVersion3/LightRotationEventBox.hpp"
+#include "BeatmapSaveDataVersion3/LightTranslationEventBox.hpp"
+#include "BeatmapSaveDataVersion3/LightColorEventBox.hpp"
+#include "BeatmapSaveDataVersion3/LightRotationBaseData.hpp"
+#include "BeatmapSaveDataVersion3/LightColorBaseData.hpp"
+#include "BeatmapSaveDataVersion3/LightTranslationBaseData.hpp"
+#include "BeatmapSaveDataVersion3/IntFxEventBaseData.hpp"
+#include "BeatmapSaveDataVersion3/FloatFxEventBaseData.hpp"
+#include "BeatmapSaveDataVersion3/FxEventsCollection.hpp"
+#include "BeatmapSaveDataVersion3/FxEventBox.hpp"
+#include "BeatmapSaveDataVersion3/FxEventBoxGroup.hpp"
+#include "BeatmapSaveDataVersion3/FxEventType.hpp"
+#include "BeatmapSaveDataVersion3/ColorBoostEventData.hpp"
+#include "BeatmapSaveDataVersion3/RotationEventData.hpp"
+#include "BeatmapSaveDataVersion3/RotationEventData.hpp"
+
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 
 #include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
 #include "CJDLogger.h"
 #include "JSONWrapper.h"
-#include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
-#include "GlobalNamespace/IDifficultyBeatmap.hpp"
-#include "GlobalNamespace/CustomDifficultyBeatmap.hpp"
+#include "songcore/shared/CustomJSONData.hpp"
 
 namespace CustomJSONData::v2 {
 class CustomBeatmapSaveData;
@@ -38,7 +67,7 @@ static inline auto const customData = "customData";
 
 namespace CustomJSONData::v3 {
 using CustomDataOpt = std::optional<std::reference_wrapper<rapidjson::Value const>>;
-using CustomDataOptUTF16 = std::optional<std::reference_wrapper<ValueUTF16 const>>;
+using CustomDataOptUTF16 = std::optional<std::reference_wrapper<SongCore::CustomJSONData::ValueUTF16 const>>;
 
 } // namespace CustomJSONData::v3
 
@@ -47,31 +76,31 @@ DECLARE_CLASS_CODEGEN(
     CustomJSONData::v3, CustomBeatmapSaveData, BeatmapSaveDataVersion3::BeatmapSaveData,
     DECLARE_FASTER_CTOR(
         ctor,
-        System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BpmChangeEventData*>*
+        System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BpmChangeEventData*>*
             bpmEvents,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::RotationEventData*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::RotationEventData*>*
             rotationEvents,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::ColorNoteData*>* colorNotes,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BombNoteData*>* bombNotes,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::ObstacleData*>* obstacles,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::SliderData*>* sliders,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BurstSliderData*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::ColorNoteData*>* colorNotes,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BombNoteData*>* bombNotes,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::ObstacleData*>* obstacles,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::SliderData*>* sliders,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BurstSliderData*>*
             burstSliders,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::WaypointData*>* waypoints,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventData*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::WaypointData*>* waypoints,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BasicEventData*>*
             basicBeatmapEvents,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::ColorBoostEventData*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::ColorBoostEventData*>*
             colorBoostBeatmapEvents,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightColorEventBoxGroup*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::LightColorEventBoxGroup*>*
             lightColorEventBoxGroups,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::LightRotationEventBoxGroup*>*
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::LightRotationEventBoxGroup*>*
             lightRotationEventBoxGroups,
         ::System::Collections::Generic::List_1<
-            ::BeatmapSaveDataVersion3::BeatmapSaveData::LightTranslationEventBoxGroup*>* lightTranslationEventBoxGroups,
-        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BeatmapSaveData::FxEventBoxGroup*>*
+            ::BeatmapSaveDataVersion3::LightTranslationEventBoxGroup*>* lightTranslationEventBoxGroups,
+        ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::FxEventBoxGroup*>*
             lightFxEventBoxGroups,
-        BeatmapSaveData::FxEventsCollection* eventsCollection,
-        ::BeatmapSaveDataVersion3::BeatmapSaveData::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
+        BeatmapSaveDataVersion3::FxEventsCollection* eventsCollection,
+        BeatmapSaveDataCommon::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
         bool useNormalEventsAsCompatibleEvents);
 
     DECLARE_SIMPLE_DTOR();
@@ -89,8 +118,8 @@ DECLARE_CLASS_CODEGEN(
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_ColorNoteData, BeatmapSaveDataVersion3::ColorNoteData,
     DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer,
-                        ::BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType color,
-                        ::GlobalNamespace::NoteCutDirection cutDirection, int angleOffset);
+                        BeatmapSaveDataCommon::NoteColorType color,
+                        BeatmapSaveDataCommon::NoteCutDirection cutDirection, int angleOffset);
     DECLARE_SIMPLE_DTOR();
 
     public:
@@ -102,24 +131,24 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BombNoteData, Be
                       DECLARE_SIMPLE_DTOR();
 
                       public:
-DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion3::SliderData,
-                      DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
+                      DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataCommon::NoteColorType colorType,
                                           float headBeat, int headLine, int headLayer,
                                           float headControlPointLengthMultiplier,
-                                          ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat,
+                                          BeatmapSaveDataCommon::NoteCutDirection headCutDirection, float tailBeat,
                                           int tailLine, int tailLayer, float tailControlPointLengthMultiplier,
-                                          ::GlobalNamespace::NoteCutDirection tailCutDirection,
-                                          ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode);
+                                          BeatmapSaveDataCommon::NoteCutDirection tailCutDirection,
+                                          BeatmapSaveDataCommon::SliderMidAnchorMode sliderMidAnchorMode);
                       DECLARE_SIMPLE_DTOR(); public
                       : DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);)
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v3, CustomBeatmapSaveData_BurstSliderData, BeatmapSaveDataVersion3::BurstSliderData,
-                      DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion3::BeatmapSaveData::NoteColorType colorType,
+                      DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataCommon::NoteColorType colorType,
                                           float headBeat, int headLine, int headLayer,
-                                          ::GlobalNamespace::NoteCutDirection headCutDirection, float tailBeat,
+                                          BeatmapSaveDataCommon::NoteCutDirection headCutDirection, float tailBeat,
                                           int tailLine, int tailLayer, int sliceCount, float squishAmount);
                       DECLARE_SIMPLE_DTOR(); public
                       : DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);)
@@ -134,7 +163,7 @@ DECLARE_FASTER_CTOR(ctor, float beat, int line, int layer, float duration, int w
 DECLARE_CLASS_CODEGEN(
     CustomJSONData::v3, CustomBeatmapSaveData_BasicEventData, BeatmapSaveDataVersion3::BasicEventData,
     DECLARE_FASTER_CTOR(ctor, float beat,
-                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::BeatmapEventType eventType, int value,
+                        BeatmapSaveDataCommon::BeatmapEventType eventType, int value,
                         float floatValue);
 
     DECLARE_SIMPLE_DTOR();
@@ -156,15 +185,3 @@ CustomBeatmapSaveData_ColorNoteData* DeserializeColorNote(rapidjson::Value const
 
 extern UnorderedEventCallback<v3::CustomBeatmapSaveData*> ParsedEvent;
 } // namespace CustomJSONData::v3::Parser
-
-namespace CustomJSONData {
-inline static std::optional<v3::CustomBeatmapSaveData*>
-GetBeatmapSaveData(GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap) {
-  auto customDifficultyBeatmap = il2cpp_utils::try_cast<GlobalNamespace::CustomDifficultyBeatmap>(difficultyBeatmap);
-  if (!customDifficultyBeatmap) {
-    return std::nullopt;
-  }
-
-  return il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(customDifficultyBeatmap.value()->beatmapSaveData);
-}
-} // namespace CustomJSONData
