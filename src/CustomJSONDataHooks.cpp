@@ -889,19 +889,17 @@ MAKE_PAPER_HOOK_MATCH(InsertDefaultEvents, &DefaultEnvironmentEventsFactory::Ins
 }
 
 void CustomJSONData::InstallHooks() {
-  auto logger = Paper::ConstLoggerContext("CJDHooks");
-
   // Install hooks
   // Stupid workaround because stupid NE
-  INSTALL_HOOK_ORIG(logger, BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v2)
-  INSTALL_HOOK_ORIG(logger, BeatmapCallbacksController_ManualUpdateTranspile);
-  INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_InsertItem);
-  INSTALL_HOOK_ORIG(logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
-  INSTALL_HOOK_ORIG(logger, BeatmapData_GetFilteredCopy);
-  INSTALL_HOOK_ORIG(logger, BeatmapData_GetCopy);
-  INSTALL_HOOK_ORIG(logger, BeatmapDataStrobeFilterTransform_CreateTransformedData);
-  INSTALL_HOOK_ORIG(logger, InsertDefaultEvents);
-  INSTALL_HOOK(logger, BeatmapCallbacksController_Dispose);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v2)
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapCallbacksController_ManualUpdateTranspile);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_InsertItem);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetFilteredCopy);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetCopy);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapDataStrobeFilterTransform_CreateTransformedData);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, InsertDefaultEvents);
+  INSTALL_HOOK(CJDLogger::Logger, BeatmapCallbacksController_Dispose);
 
   il2cpp_functions::Class_Init(classof(BeatmapData*));
   custom_types::Register::AutoRegister();
