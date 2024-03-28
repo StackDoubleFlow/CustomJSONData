@@ -2,11 +2,30 @@
 
 #include "custom-types/shared/macros.hpp"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/SpecialEventKeywordFiltersData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/SpecialEventsForKeyword.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/NoteData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/SliderData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/EventData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/ObstacleData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/WaypointData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/ObstacleType.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/ColorType.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/NoteType.hpp"
+
+#include "BeatmapSaveDataCommon/BeatmapEventType.hpp"
+#include "BeatmapSaveDataCommon/NoteCutDirection.hpp"
+#include "BeatmapSaveDataCommon/SliderMidAnchorMode.hpp"
+#include "BeatmapSaveDataCommon/NoteLineLayer.hpp"
+#include "BeatmapSaveDataCommon/OffsetDirection.hpp"
+#include "BeatmapSaveDataCommon/Axis.hpp"
+#include "BeatmapSaveDataCommon/BasicEventTypesWithKeywords.hpp"
+#include "BeatmapSaveDataCommon/ExecutionTime.hpp"
+#include "BeatmapSaveDataCommon/BasicEventTypesWithKeywords.hpp"
+
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
-#include "GlobalNamespace/NoteCutDirection.hpp"
-#include "GlobalNamespace/SliderMidAnchorMode.hpp"
-#include "GlobalNamespace/NoteLineLayer.hpp"
 
 #include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
@@ -17,16 +36,16 @@
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData,
     DECLARE_FASTER_CTOR(
         ctor,
-        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::EventData*>*
+        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*>*
             events,
-        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::NoteData*>* notes,
-        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::SliderData*>*
+        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::NoteData*>* notes,
+        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::SliderData*>*
             sliders,
-        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::WaypointData*>*
+        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::WaypointData*>*
             waypoints,  
-        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData::ObstacleData*>*
+        System::Collections::Generic::List_1<BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleData*>*
             obstacles,
-        BeatmapSaveData::SpecialEventKeywordFiltersData* specialEventsKeywordFilters);
+        BeatmapSaveDataVersion2_6_0AndEarlier::SpecialEventKeywordFiltersData* specialEventsKeywordFilters);
 
     DECLARE_SIMPLE_DTOR();
 
@@ -38,9 +57,9 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::NoteData,
-    DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, GlobalNamespace::NoteLineLayer lineLayer,
+    DECLARE_FASTER_CTOR(ctor, float time, int lineIndex, BeatmapSaveDataCommon::NoteLineLayer lineLayer,
                         BeatmapSaveDataVersion2_6_0AndEarlier::NoteType type,
-                        GlobalNamespace::NoteCutDirection cutDirection);
+                        BeatmapSaveDataCommon::NoteCutDirection cutDirection);
 
     DECLARE_SIMPLE_DTOR();
 
@@ -50,12 +69,12 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, Beatma
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion2_6_0AndEarlier::SliderData,
     DECLARE_FASTER_CTOR(ctor, BeatmapSaveDataVersion2_6_0AndEarlier::ColorType colorType,
-                        float headTime, int headLineIndex, ::GlobalNamespace::NoteLineLayer headLineLayer,
+                        float headTime, int headLineIndex, BeatmapSaveDataCommon::NoteLineLayer headLineLayer,
                         float headControlPointLengthMultiplier,
-                        ::GlobalNamespace::NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
-                        ::GlobalNamespace::NoteLineLayer tailLineLayer, float tailControlPointLengthMultiplier,
-                        ::GlobalNamespace::NoteCutDirection tailCutDirection,
-                        ::GlobalNamespace::SliderMidAnchorMode sliderMidAnchorMode);
+                        BeatmapSaveDataCommon::NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
+                        BeatmapSaveDataCommon::NoteLineLayer tailLineLayer, float tailControlPointLengthMultiplier,
+                        BeatmapSaveDataCommon::NoteCutDirection tailCutDirection,
+                        BeatmapSaveDataCommon::SliderMidAnchorMode sliderMidAnchorMode);
 
             DECLARE_SIMPLE_DTOR();
 
@@ -76,7 +95,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, Be
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, BeatmapSaveDataVersion2_6_0AndEarlier::EventData,
     DECLARE_FASTER_CTOR(ctor, float time,
-                        BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapEventType type,
+                        BeatmapSaveDataCommon::BeatmapEventType type,
                         int value, float floatValue);
 
     DECLARE_SIMPLE_DTOR();
