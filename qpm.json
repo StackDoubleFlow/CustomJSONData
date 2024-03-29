@@ -19,7 +19,7 @@
   "workspace": {
     "scripts": {
       "build": [
-        "pwsh ./build.ps1"
+        "pwsh ./scripts/build.ps1"
       ]
     }
   },
