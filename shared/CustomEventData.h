@@ -1,5 +1,7 @@
 #pragma once
 
+#include "_config.hpp"
+
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "custom-types/shared/macros.hpp"
 
@@ -76,7 +78,7 @@ struct CustomEventCallbackData {
       : callback(callback) {}
 };
 
-class __attribute__ ((visibility ("default"))) CustomEventCallbacks {
+class CJD_MOD_EXPORT CustomEventCallbacks {
 public:
   static std::vector<CustomEventCallbackData> customEventCallbacks;
   // For Noodle
