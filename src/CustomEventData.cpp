@@ -41,9 +41,10 @@ CustomEventData* CustomEventData::GetCopy() {
 
 void CustomBeatmapDataCallbackWrapper::ctor() {
   INVOKE_CTOR();
-  static auto const* ctor = CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataCallbackWrapper*), ".ctor", 3));
+  static auto const* ctor =
+      CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataCallbackWrapper*), ".ctor", 3));
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow<void, false>(this, ctor, 0.0F, csTypeOf(CustomEventData*),
-                                                            ArrayW<int>((il2cpp_array_size_t)0));)
+                                                                         ArrayW<int>((il2cpp_array_size_t)0));)
   redirectEvent = nullptr;
 }
 
@@ -68,12 +69,13 @@ void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
       })
 }
 
-void CustomEventCallbacks::AddCustomEventCallback(void (*callback)(GlobalNamespace::BeatmapCallbacksController*,
-                                                                   CustomJSONData::CustomEventData*)) {
+void CJD_MOD_EXPORT CustomEventCallbacks::AddCustomEventCallback(
+    void (*callback)(GlobalNamespace::BeatmapCallbacksController*, CustomJSONData::CustomEventData*)) {
   customEventCallbacks.emplace_back(callback);
 }
 
-void CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController* callbackController) {
+void CJD_MOD_EXPORT
+CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksController* callbackController) {
   CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTER CUSTOM CALLBACK!");
   auto* wrapper = CustomBeatmapDataCallbackWrapper::New_ctor();
   wrapper->controller = callbackController;
