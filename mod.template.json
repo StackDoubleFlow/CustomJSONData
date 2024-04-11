@@ -7,8 +7,10 @@
   "packageId": "com.beatgames.beatsaber",
   "packageVersion": "1.28.0_4124311467",
   "description": "Funny maps go brrr",
-  "modFiles": [],
   "dependencies": [],
+  "modFiles": [
+    "${binary}"
+  ],
   "libraryFiles": [],
   "fileCopies": [],
   "copyExtensions": []
