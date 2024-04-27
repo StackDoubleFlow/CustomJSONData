@@ -186,12 +186,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
 
   auto* newBeatmap = customBeatmapData->BaseCopy();
 
-  for (auto const& c : customBeatmapData->customEventDatas) {
-    if (!c) {
-      continue;
-    }
-    newBeatmap->InsertCustomEventDataInOrder(c);
-  }
+
 
   for (auto const& o : customBeatmapData->beatmapObjectDatas) {
     if (!o) {
