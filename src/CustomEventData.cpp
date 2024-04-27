@@ -18,8 +18,8 @@ using namespace GlobalNamespace;
 DEFINE_TYPE(CustomJSONData, CustomEventData)
 DEFINE_TYPE(CustomJSONData, CustomBeatmapDataCallbackWrapper)
 
-std::vector<CustomEventCallbackData> CustomEventCallbacks::customEventCallbacks;
-SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>>
+CJD_MOD_EXPORT std::vector<CustomEventCallbackData> CustomEventCallbacks::customEventCallbacks;
+CJD_MOD_EXPORT SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>>
     CustomEventCallbacks::firstNode;
 
 void CustomEventData::ctor(float time, void* type, size_t typeHash, void* data) {
@@ -41,30 +41,38 @@ CustomEventData* CustomEventData::GetCopy() {
 
 void CustomBeatmapDataCallbackWrapper::ctor() {
   INVOKE_CTOR();
-  static auto const* ctor =
-      CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataCallbackWrapper*), ".ctor", 3));
-  PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow<void, false>(this, ctor, 0.0F, csTypeOf(CustomEventData*),
-                                                                         ArrayW<int>((il2cpp_array_size_t)0));)
+  reinterpret_cast<BeatmapDataCallbackWrapper*>(this)->_ctor(0.0F, csTypeOf(CustomEventData*),
+                                                             ArrayW<int>((il2cpp_array_size_t)0));
+
   redirectEvent = nullptr;
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
   CJDLogger::Logger.fmtLog<LogLevel::INF>("CALLING CUSTOM CALLBACK!");
-  PAPER_IL2CPP_CATCH_HANDLER(
-      if (redirectEvent) { redirectEvent(controller, item); } else {
-        static auto CustomEventDataKlass = classof(CustomEventData*);
-        CRASH_UNLESS(item->klass == CustomEventDataKlass);
+  static auto CustomEventDataKlass = classof(CustomEventData*);
+  CRASH_UNLESS(item->klass == CustomEventDataKlass);
 
-        for (auto const& customEvents : CustomEventCallbacks::customEventCallbacks) {
-          try {
-            customEvents.callback(controller, static_cast<CustomEventData*>(item));
-          } catch (std::exception const& e) {
-            CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}", fmt::ptr(customEvents.callback));
-            throw e;
-          } catch (...) {
-            CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}", fmt::ptr(customEvents.callback));
-            throw;
-          }
+  PAPER_IL2CPP_CATCH_HANDLER(
+      //
+      if (redirectEvent) {
+        redirectEvent(controller, item);
+        return;
+      }
+      //
+  )
+
+  PAPER_IL2CPP_CATCH_HANDLER(
+      //
+      auto castedItem = il2cpp_utils::cast<CustomEventData>(item);
+      for (auto const& customEvents : CustomEventCallbacks::customEventCallbacks) {
+        try {
+          customEvents.callback(controller, castedItem);
+        } catch (std::exception const& e) {
+          CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}", fmt::ptr(customEvents.callback));
+          throw e;
+        } catch (...) {
+          CJDLogger::Logger.fmtLog<LogLevel::ERR>("Caught exception in callback {}", fmt::ptr(customEvents.callback));
+          throw;
         }
       })
 }
@@ -79,6 +87,11 @@ CustomEventCallbacks::RegisterCallbacks(GlobalNamespace::BeatmapCallbacksControl
   CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTER CUSTOM CALLBACK!");
   auto* wrapper = CustomBeatmapDataCallbackWrapper::New_ctor();
   wrapper->controller = callbackController;
-  callbackController->_callbacksInTimes->get_Item(0)->AddCallback(wrapper);
+
+  // register it
+  // AddBeatmapCallback<T>
+  // do this to avoid using delegates
+  auto callbacksInTime = callbackController->_callbacksInTimes->get_Item(0);
+  callbacksInTime->AddCallback(wrapper);
   CJDLogger::Logger.fmtLog<LogLevel::INF>("REGISTERED CUSTOM CALLBACK!");
 }
