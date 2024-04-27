@@ -118,8 +118,13 @@ CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy()
   if (this->customData) {
     copy->customData = this->customData->GetCopy();
   }
-  copy->beatmapCustomData = beatmapCustomData;
-  copy->levelCustomData = levelCustomData;
+  if (copy->beatmapCustomData) {
+    copy->beatmapCustomData = this->beatmapCustomData->GetCopy();
+  }
+  if (copy->levelCustomData) {
+    copy->levelCustomData = this->levelCustomData->GetCopy();
+  }
+
   copy->v2orEarlier = v2orEarlier;
 
   return copy;
