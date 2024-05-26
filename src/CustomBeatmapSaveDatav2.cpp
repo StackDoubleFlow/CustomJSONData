@@ -96,25 +96,26 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
   VList<BeatmapSaveData::EventData*> list(size);
   for (auto originalEventData : VList(beatmapSaveData->events)) {
     auto* eventData = reinterpret_cast<CustomBeatmapSaveData_EventData*>(originalEventData);
-    CustomBeatmapSaveData_EventData* newData = nullptr;
+    auto customData = CustomJSONData::JSONObjectOrNull(eventData->customData);
+    
     if (eventData->type == BeatmapSaveData::BeatmapEventType::Event10) {
-      newData = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(
+      eventData = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(
           eventData->time, BeatmapSaveData::BeatmapEventType::BpmChange, eventData->value, eventData->floatValue));
     }
 
     if (static_cast<int>(eventData->type) == BeatmapSaveData::BeatmapEventType::BpmChange) {
       if (eventData->value != 0) {
-        newData = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type,
+        eventData = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type,
                                                                          eventData->value, (float)eventData->value));
       }
     } else {
-      newData = CRASH_UNLESS(
+      eventData = CRASH_UNLESS(
           CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type, eventData->value, 1.0f));
     }
 
-    if (newData) newData->customData = CustomJSONData::JSONObjectOrNull(eventData->customData);
+    eventData->customData = customData;
 
-    list.push_back(newData ? newData : eventData);
+    list.push_back(eventData);
   }
 
   beatmapSaveData->events = list;
