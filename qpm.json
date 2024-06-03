@@ -18,10 +18,13 @@
   },
   "workspace": {
     "scripts": {
-      "build": [
-        "pwsh ./scripts/build.ps1"
-      ]
-    }
+      "build": ["pwsh ./scripts/build.ps1"]
+    },
+    "qmodIncludeDirs": [
+      "./build",
+      "./extern/libs"
+    ],
+    "qmodOutput": "CustomJSONData.qmod"
   },
   "dependencies": [
     {
