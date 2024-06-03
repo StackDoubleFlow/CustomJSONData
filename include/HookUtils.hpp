@@ -33,7 +33,7 @@ template <typename T> constexpr void cleanAndSort(std::vector<T>& vec) {
   std::stable_sort(vec.begin(), vec.end(), TimeCompare<typename std::vector<T>::const_reference>);
 };
 
-std::optional<std::shared_ptr<rapidjson::Document>> parseDocument(std::string_view stringData) {
+static std::optional<std::shared_ptr<rapidjson::Document>> parseDocument(std::string_view stringData) {
   auto sharedDoc = std::make_shared<rapidjson::Document>();
   rapidjson::Document& doc = *sharedDoc;
   rapidjson::ParseResult result = doc.Parse(stringData.data());
