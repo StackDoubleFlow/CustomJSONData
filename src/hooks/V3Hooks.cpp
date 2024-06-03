@@ -1,4 +1,5 @@
 #include "CustomJSONDataHooks.h"
+#include "HookUtils.hpp"
 
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/zzzz__EventData_def.hpp"
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
@@ -26,12 +27,16 @@
 #include "GlobalNamespace/CallbacksInTime.hpp"
 #include "GlobalNamespace/IReadonlyBeatmapData.hpp"
 #include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
+#include "GlobalNamespace/EnvironmentKeywords.hpp"
+#include "GlobalNamespace/IEnvironmentLightGroups.hpp"
+#include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 
 #include "System/Action.hpp"
 
 #include "UnityEngine/JsonUtility.hpp"
 
 #include "System/Reflection/MemberInfo.hpp"
+#include "System/String.hpp"
 #include "System/Collections/Generic/InsertionBehavior.hpp"
 
 #include "beatsaber-hook/shared/utils/typedefs-list.hpp"
@@ -66,6 +71,12 @@
 #include <chrono>
 #include <codecvt>
 #include <locale>
+
+using namespace System;
+using namespace System::Collections::Generic;
+using namespace GlobalNamespace;
+using namespace CustomJSONData;
+using namespace BeatmapSaveDataVersion3;
 
 // clang-format on
 MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3,
