@@ -110,7 +110,9 @@ DECLARE_CLASS_CODEGEN(
     static CustomBeatmapSaveData* Convert2_6_0(CustomJSONData::v2::CustomBeatmapSaveData * beatmap);
 
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
-    std::shared_ptr<rapidjson::Document> doc; CustomDataOpt customData; CustomDataOptUTF16 beatmapCustomData;
+    std::shared_ptr<rapidjson::Document> doc;
+DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+    CustomDataOptUTF16 beatmapCustomData;
     CustomDataOptUTF16 levelCustomData;
 
     DECLARE_INSTANCE_FIELD(bool, isV2);
@@ -169,7 +171,7 @@ DECLARE_CLASS_CODEGEN(
     DECLARE_SIMPLE_DTOR();
 
     public:
-    CustomDataOpt customData;
+    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 // clang-format on

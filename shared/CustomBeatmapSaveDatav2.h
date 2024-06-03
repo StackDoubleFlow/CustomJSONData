@@ -27,6 +27,8 @@
 
 #include "GlobalNamespace/StandardLevelInfoSaveData.hpp"
 
+#include "JSONWrapper.h"
+
 #include "LowLevelUtils.hpp"
 #include "CustomEventData.h"
 #include "CJDLogger.h"
@@ -53,7 +55,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
         static CustomBeatmapSaveData * Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc);
 
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
-    std::shared_ptr<rapidjson::Document> doc; std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+    std::shared_ptr<rapidjson::Document> doc; 
+DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::NoteData,
@@ -64,7 +67,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, Beatma
     DECLARE_SIMPLE_DTOR();
 
                             public:
-    std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+            DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion2_6_0AndEarlier::SliderData,
@@ -79,7 +82,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, Beat
             DECLARE_SIMPLE_DTOR();
 
             public:
-            std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+            DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleData,
@@ -90,7 +93,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, Be
                 DECLARE_SIMPLE_DTOR();
 
                 public:
-    std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, BeatmapSaveDataVersion2_6_0AndEarlier::EventData,
@@ -101,7 +104,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, Beatm
     DECLARE_SIMPLE_DTOR();
 
                     public:
-    std::optional<std::reference_wrapper<const rapidjson::Value>> customData;
+    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
 )
 
 // clang-format on

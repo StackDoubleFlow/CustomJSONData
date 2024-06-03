@@ -23,7 +23,10 @@
         "build": [
           "pwsh ./scripts/build.ps1"
         ]
-      }
+      },
+      "qmodIncludeDirs": [],
+      "qmodIncludeFiles": [],
+      "qmodOutput": null
     },
     "dependencies": [
       {
@@ -33,7 +36,7 @@
       },
       {
         "id": "bs-cordl",
-        "versionRange": "^3500.0.0",
+        "versionRange": "^3602.0.0",
         "additionalData": {}
       },
       {
@@ -45,7 +48,7 @@
       },
       {
         "id": "songcore",
-        "versionRange": "^1.1.4",
+        "versionRange": "^1.1.10",
         "additionalData": {
           "includeQmod": true,
           "private": true
@@ -101,23 +104,24 @@
     {
       "dependency": {
         "id": "libil2cpp",
-        "versionRange": "=0.3.1",
+        "versionRange": "=0.3.2",
         "additionalData": {
-          "headersOnly": true
+          "headersOnly": true,
+          "cmake": false
         }
       },
-      "version": "0.3.1"
+      "version": "0.3.2"
     },
     {
       "dependency": {
         "id": "custom-types",
-        "versionRange": "=0.17.6",
+        "versionRange": "=0.17.7",
         "additionalData": {
-          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.6/libcustom-types.so",
-          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.6/debug_libcustom-types.so",
+          "soLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.7/libcustom-types.so",
+          "debugSoLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.7/debug_libcustom-types.so",
           "overrideSoName": "libcustom-types.so",
-          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.6/CustomTypes.qmod",
-          "branchName": "version/v0_17_6",
+          "modLink": "https://github.com/QuestPackageManager/Il2CppQuestTypePatching/releases/download/v0.17.7/CustomTypes.qmod",
+          "branchName": "version/v0_17_7",
           "compileOptions": {
             "cppFlags": [
               "-Wno-invalid-offsetof"
@@ -126,7 +130,7 @@
           "cmake": true
         }
       },
-      "version": "0.17.6"
+      "version": "0.17.7"
     },
     {
       "dependency": {
@@ -142,10 +146,10 @@
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=3500.0.0",
+        "versionRange": "=3602.0.0",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v3500_0_0",
+          "branchName": "version/v3602_0_0",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -160,7 +164,7 @@
           }
         }
       },
-      "version": "3500.0.0"
+      "version": "3602.0.0"
     },
     {
       "dependency": {
@@ -176,16 +180,16 @@
     {
       "dependency": {
         "id": "songcore",
-        "versionRange": "=1.1.4",
+        "versionRange": "=1.1.11",
         "additionalData": {
-          "soLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.4/libsongcore.so",
-          "debugSoLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.4/debug_libsongcore.so",
+          "soLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.11/libsongcore.so",
+          "debugSoLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.11/debug_libsongcore.so",
           "overrideSoName": "libsongcore.so",
-          "modLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.4/SongCore.qmod",
-          "branchName": "version/v1_1_4"
+          "modLink": "https://github.com/raineio/Quest-SongCore/releases/download/v1.1.11/SongCore.qmod",
+          "branchName": "version/v1_1_11"
         }
       },
-      "version": "1.1.4"
+      "version": "1.1.11"
     },
     {
       "dependency": {
