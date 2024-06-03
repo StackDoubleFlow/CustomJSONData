@@ -8,6 +8,8 @@ namespace CustomJSONData {
 
 void InstallHooks();
 
+void InstallBeatmapHooks();
+
 namespace v2 {
 void InstallHooks();
 }

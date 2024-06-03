@@ -92,28 +92,6 @@ using namespace BeatmapSaveDataVersion4;
   void name##__override(Child* self, ParamT1 param1)
 
 
-MAKE_PAPER_HOOK_MATCH(BeatmapData_GetCopy, &CustomBeatmapData::GetCopy, BeatmapData*, BeatmapData* self) {
-  static auto* CustomBeatmapDataKlass = classof(CustomBeatmapData*);
-
-  if (self->klass == CustomBeatmapDataKlass) {
-    return reinterpret_cast<CustomBeatmapData*>(self)->GetCopyOverride();
-  }
-
-  return BeatmapData_GetCopy(self);
-}
-
-MAKE_PAPER_HOOK_MATCH(
-    BeatmapData_GetFilteredCopy, &CustomBeatmapData::GetFilteredCopy, BeatmapData*, BeatmapData* self,
-    System::Func_2<::GlobalNamespace::BeatmapDataItem*, ::GlobalNamespace::BeatmapDataItem*>* processDataItem) {
-  static auto* CustomBeatmapDataKlass = classof(CustomBeatmapData*);
-
-  if (self->klass == CustomBeatmapDataKlass) {
-    return reinterpret_cast<CustomBeatmapData*>(self)->GetFilteredCopyOverride(
-        [&](auto i) constexpr { return processDataItem->Invoke(i); });
-  }
-
-  return BeatmapData_GetFilteredCopy(self, processDataItem);
-}
 
 constexpr bool Approximately(float a, float b) {
   return std::abs(b - a) < std::max(1E-06F * std::max(std::abs(a), std::abs(b)), 1E-45F * 8.0F);
@@ -386,29 +364,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataStrobeFilterTransform_CreateTransformedData,
 
 
 
-MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_InsertItem,
-                        classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>*), "InsertItem",
-                        System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>*,
-                        BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-  auto* list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
-
-  auto* node = list->Insert(item);
-  // Remove to avoid exception
-  self->_itemToNodeMap->TryInsert(item, node, InsertionBehavior::OverwriteExisting);
-
-  return node;
-}
-
-MAKE_HOOK_FIND_INSTANCE(CustomBeatmapDataSortedListForTypes_RemoveItem,
-                        classof(BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>*), "RemoveItem", void,
-                        BeatmapDataSortedListForTypeAndIds_1<BeatmapDataItem*>* self, BeatmapDataItem* item) {
-  auto* list = self->GetList(CustomBeatmapData::GetCustomType(item), item->get_subtypeGroupIdentifier());
-  System::Collections::Generic::LinkedListNode_1<BeatmapDataItem*>* node = nullptr;
-  if (self->_itemToNodeMap->TryGetValue(item, byref(node))) {
-    list->Remove(node);
-  }
-}
-
 BeatmapCallbacksController* beatmapCallbacksController;
 
 MAKE_PAPER_HOOK_MATCH(BeatmapCallbacksController_ManualUpdate, &BeatmapCallbacksController::ManualUpdate, void,
@@ -639,14 +594,11 @@ void CustomJSONData::InstallHooks() {
 
   // Stupid workaround because stupid NE
   INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapCallbacksController_ManualUpdateTranspile);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_InsertItem);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetFilteredCopy);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetCopy);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapDataStrobeFilterTransform_CreateTransformedData);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, InsertDefaultEvents);
   INSTALL_HOOK(CJDLogger::Logger, BeatmapCallbacksController_Dispose);
 
   v2::InstallHooks();
   v3::InstallHooks();
+  InstallBeatmapHooks();
 }
