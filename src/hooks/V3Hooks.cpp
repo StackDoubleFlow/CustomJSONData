@@ -77,6 +77,7 @@ using namespace System::Collections::Generic;
 using namespace GlobalNamespace;
 using namespace CustomJSONData;
 using namespace BeatmapSaveDataVersion3;
+using namespace BeatmapSaveDataVersion4;
 
 // clang-format on
 MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3,
