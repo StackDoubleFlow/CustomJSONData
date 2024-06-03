@@ -70,8 +70,10 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}
           qpm-rust s build
-          qpm-rust restore
-          qpm-rust qmod build
+
+      - name: Create Qmod
+        run: |
+          qpm-rust qmod zip
 
       - name: Get Library Name
         id: libname
