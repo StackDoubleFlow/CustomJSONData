@@ -1,3 +1,5 @@
+return
+
 $mod = "./mod.json"
 
 if (-not (Test-Path -Path $mod)) {

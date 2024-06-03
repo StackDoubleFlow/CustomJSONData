@@ -56,9 +56,9 @@ $modFiles = $modJson.modFiles
 
 foreach ($fileName in $modFiles) {
     if ($useDebug -eq $true) {
-        & adb push build/debug/$fileName /sdcard/Android/data/com.beatgames.beatsaber/files/mods/$fileName
+        & adb push build/debug/$fileName /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/$fileName
     } else {
-        & adb push build/$fileName /sdcard/Android/data/com.beatgames.beatsaber/files/mods/$fileName
+        & adb push build/$fileName /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/$fileName
     }
 }
 
@@ -66,5 +66,6 @@ foreach ($fileName in $modFiles) {
 
 if ($log -eq $true) {
     & adb logcat -c
-    & $PSScriptRoot/start-logging.ps1 -self:$self -all:$all -custom:$custom -file:$file
+    & adb logcat > log.log
+    # & $PSScriptRoot/start-logging.ps1 -self:$self -all:$all -custom:$custom -file:$file
 }
