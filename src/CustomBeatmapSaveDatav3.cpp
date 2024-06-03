@@ -287,7 +287,7 @@ auto DeserializeBasicEvent(rapidjson::Value const& val) {
   CustomDataOpt data = NEJSON::ReadOptionalValue(val, Constants::customData);
 
   auto* event = CustomBeatmapSaveData_BasicEventData::New_ctor(beat, eventType, value, floatValue);
-  event->customData = CustomJSONData::JSONObjectOrNull(data);
+  event->customData = CustomJSONData::JSONWrapperOrNull(data);
   return event;
 }
 
@@ -714,7 +714,7 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       lightTranslationEventBoxGroups, vfxEventBoxGroups.getPtr(), fxEventsCollection,
       BeatmapSaveDataCommon::BasicEventTypesWithKeywords::New_ctor(basicEventTypesForKeyword.getPtr()),useNormalEventsAsCompatibleEvents);
 
-  beatmap->customData = CustomJSONData::JSONObjectOrNull(dataOpt);
+  beatmap->customData = CustomJSONData::JSONWrapperOrNull(dataOpt);
   beatmap->doc = sharedDoc;
   beatmap->customEventsData = customEvents;
 
@@ -783,13 +783,13 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
     if (n->type == BeatmapSaveDataVersion2_6_0AndEarlier::NoteType::Bomb) {
       auto* newNote = CustomBeatmapSaveData_BombNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__);
-      newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
+      newNote->customData = customN->customData->GetCopy();
 
       bombNotes.push_back(newNote);
     } else {
       auto* newNote = CustomBeatmapSaveData_ColorNoteData::New_ctor(n->time, n->lineIndex, n->lineLayer.value__,
                                                                     GetNoteColorType(n->type), n->cutDirection, 0);
-      newNote->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
+      newNote->customData = customN->customData->GetCopy();
       colorNotes.push_back(newNote);
     }
   }
@@ -804,7 +804,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         CustomBeatmapSaveData_ObstacleData::New_ctor(n->time, n->lineIndex, GetLayerForObstacleType(n->type),
                                                      n->duration, n->width, GetHeightForObstacleType(n->type));
 
-    obstacle->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
+    obstacle->customData = customN->customData->GetCopy();
 
     obstacles.push_back(obstacle);
   }
@@ -820,7 +820,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
         static_cast<int>(n->tailLineLayer.value__), n->tailControlPointLengthMultiplier, n->tailCutDirection,
         n->sliderMidAnchorMode);
 
-    slider->customData = CustomJSONData::JSONWrapperOrNull(customN->customData);
+    slider->customData = customN->customData->GetCopy();
 
     sliders.push_back(slider);
   }
@@ -866,7 +866,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
       continue;
     default:
       auto* event = v3::CustomBeatmapSaveData_BasicEventData::New_ctor(n->time, n->type, n->value, n->floatValue);
-      event->customData = customN->customData;
+      event->customData = customN->customData->GetCopy();
       basicEvents.push_back(event);
       continue;
     }
@@ -904,7 +904,7 @@ CustomBeatmapSaveData* CustomBeatmapSaveData::Convert2_6_0(CustomJSONData::v2::C
 
   v3beatmap->customEventsData = beatmap->customEventsData;
   v3beatmap->doc = beatmap->doc;
-  v3beatmap->customData = beatmap->customData;
+  v3beatmap->customData = beatmap->customData->GetCopy();
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>(
       "beatmap eventkeywords {} vs our {} and finally items {}", fmt::ptr(v3beatmap->basicEventTypesWithKeywords->d),

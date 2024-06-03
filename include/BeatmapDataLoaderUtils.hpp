@@ -1,5 +1,11 @@
 #pragma once
 
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/EventData.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/ColorType.hpp"
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/ObstacleType.hpp"
+#include "BeatmapDataLoaderVersion2_6_0AndEarlier/BeatmapDataLoader.hpp"
+
+#include "BeatmapSaveDataCommon/NoteLineLayer.hpp"
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
@@ -138,7 +144,8 @@ auto CustomSliderData_CreateCustomSliderData(
   return slider;
 }
 
-template <typename T> constexpr bool TimeCompare(T const a, T const b) {
+template <typename T>
+constexpr bool TimeCompare(T const a, T const b) {
   return (BeatmapSaveDataItem_GetBeat(a) < BeatmapSaveDataItem_GetBeat(b));
 }
 
@@ -179,7 +186,30 @@ constexpr ColorType ConvertColorType(BeatmapSaveDataCommon::NoteColorType noteTy
   return ColorType::ColorB;
 }
 
-constexpr GlobalNamespace::NoteCutDirection ConvertCutDirection(BeatmapSaveDataCommon::NoteCutDirection noteCutDirection) {
+constexpr BasicBeatmapEventType ConvertBasicBeatmapEventType(BeatmapSaveDataCommon::BeatmapEventType beatmapEventType) {
+  return beatmapEventType.value__;
+}
+
+constexpr int GetHeightForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType obstacleType) {
+  if (obstacleType != BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType::Top) {
+    return 5;
+  }
+  return 3;
+}
+
+constexpr int SpawnRotationForEventValue(int index) {
+  if (index >= 0 &&
+      index <
+          BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::BasicEventConverter::getStaticF__spawnRotations()
+              .size()) {
+    return BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::BasicEventConverter::getStaticF__spawnRotations()
+        [index];
+  }
+  return 0.0f;
+}
+
+constexpr GlobalNamespace::NoteCutDirection
+ConvertNoteCutDirection(BeatmapSaveDataCommon::NoteCutDirection noteCutDirection) {
   GlobalNamespace::NoteCutDirection noteCutDirection2;
 	switch (noteCutDirection)
 	{
@@ -332,17 +362,41 @@ constexpr EaseType ConvertEaseType(BeatmapSaveDataCommon::EaseType easeType) {
 }
 
 // BeatmapDataLoader.ConvertNoteLineLayer
-constexpr NoteLineLayer ConvertNoteLineLayer(int layer) {
+constexpr NoteLineLayer ConvertNoteLineLayer(BeatmapSaveDataCommon::NoteLineLayer layer) {
   switch (layer) {
-  case 0:
+  case BeatmapSaveDataCommon::NoteLineLayer::Base:
     return NoteLineLayer::Base;
-  case 1:
+  case BeatmapSaveDataCommon::NoteLineLayer::Upper:
     return NoteLineLayer::Upper;
-  case 2:
+  case BeatmapSaveDataCommon::NoteLineLayer::Top:
     return NoteLineLayer::Top;
   default:
     return NoteLineLayer::Base;
   }
+}
+
+constexpr OffsetDirection ConvertOffsetDirection(BeatmapSaveDataCommon::OffsetDirection offsetDirection) {
+  switch (offsetDirection) {
+  case BeatmapSaveDataCommon::OffsetDirection::Up:
+    return OffsetDirection::Up;
+  case BeatmapSaveDataCommon::OffsetDirection::Down:
+    return OffsetDirection::Down;
+  case BeatmapSaveDataCommon::OffsetDirection::Left:
+    return OffsetDirection::Left;
+  case BeatmapSaveDataCommon::OffsetDirection::Right:
+    return OffsetDirection::Right;
+  case BeatmapSaveDataCommon::OffsetDirection::UpLeft:
+    return OffsetDirection::UpLeft;
+  case BeatmapSaveDataCommon::OffsetDirection::UpRight:
+    return OffsetDirection::UpRight;
+  case BeatmapSaveDataCommon::OffsetDirection::DownLeft:
+    return OffsetDirection::DownLeft;
+  case BeatmapSaveDataCommon::OffsetDirection::DownRight:
+    return OffsetDirection::DownRight;
+  case BeatmapSaveDataCommon::OffsetDirection::None:
+    return OffsetDirection::None;
+  }
+  return OffsetDirection::None;
 }
 
 // BeatmapDataLoader.ConvertSliderType
@@ -429,6 +483,29 @@ struct BpmTimeProcessor {
   std::vector<BpmChangeData> bpmChangeDataList{};
   int currentBpmChangesDataIdx = 0;
 
+  // clang-format off
+/* 
+		bool flag = bpmEventsSaveData.Count > 0 && bpmEventsSaveData[0].beat == 0f && bpmEventsSaveData[0].bpm > 0f;
+		if (flag)
+		{
+			startBpm = bpmEventsSaveData[0].bpm;
+		}
+		this._bpmChangeDataList = new List<BpmTimeProcessor.BpmChangeData>
+		{
+			new BpmTimeProcessor.BpmChangeData(0f, 0f, startBpm)
+		};
+		for (int i = flag ? 1 : 0; i < bpmEventsSaveData.Count; i++)
+		{
+			List<BpmTimeProcessor.BpmChangeData> bpmChangeDataList = this._bpmChangeDataList;
+			int index = bpmChangeDataList.Count - 1;
+			BpmTimeProcessor.BpmChangeData prevBpmChangeData = bpmChangeDataList[index];
+			float beat = bpmEventsSaveData[i].beat;
+			float bpm = bpmEventsSaveData[i].bpm;
+			float bpmChangeStartTime = BpmTimeProcessor.CalculateTime(prevBpmChangeData, beat);
+			this._bpmChangeDataList.Add(new BpmTimeProcessor.BpmChangeData(bpmChangeStartTime, beat, bpm));
+		}
+*/
+  // clang-format on
   BpmTimeProcessor(float startBpm,
                    VList<BeatmapSaveDataVersion3::BpmChangeEventData*> bpmEventsSaveData) {
     bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->beat == 0.0F;
@@ -439,19 +516,91 @@ struct BpmTimeProcessor {
     bpmChangeDataList.reserve(bpmEventsSaveData.size());
 
     for (int i = hasBpm ? 1 : 0; i < bpmEventsSaveData.size(); i++) {
-      auto const& bpmChangeData = this->bpmChangeDataList.back();
+      auto bpmChangeDataList = this->bpmChangeDataList;
+      auto const& prevBpmChangeData = bpmChangeDataList.back();
       float beat = bpmEventsSaveData[i]->beat;
       float bpm = bpmEventsSaveData[i]->bpm;
-      float bpmChangeStartTime =
-          bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
+      float bpmChangeStartTime = CalculateTime(prevBpmChangeData, beat);
       bpmChangeDataList.emplace_back(bpmChangeStartTime, beat, bpm);
     }
+  }
+
+// clang-format off
+/* 
+		EventData[] array = (from e in events
+		where e.type == BeatmapEventType.BpmChange
+		select e).ToArray<EventData>();
+		bool flag = array.Length != 0 && array[0].time == 0f && array[0].floatValue > 0f;
+		if (flag)
+		{
+			startBpm = array[0].floatValue;
+		}
+		this._bpmChangeDataList = new List<BpmTimeProcessor.BpmChangeData>
+		{
+			new BpmTimeProcessor.BpmChangeData(0f, 0f, startBpm)
+		};
+		for (int i = flag ? 1 : 0; i < array.Length; i++)
+		{
+			List<BpmTimeProcessor.BpmChangeData> bpmChangeDataList = this._bpmChangeDataList;
+			int index = bpmChangeDataList.Count - 1;
+			BpmTimeProcessor.BpmChangeData prevBpmChangeData = bpmChangeDataList[index];
+			float time = array[i].time;
+			float floatValue = array[i].floatValue;
+			float bpmChangeStartTime = BpmTimeProcessor.CalculateTime(prevBpmChangeData, time);
+			this._bpmChangeDataList.Add(new BpmTimeProcessor.BpmChangeData(bpmChangeStartTime, time, floatValue));
+		}
+*/
+  // clang-format on
+  BpmTimeProcessor(float startBpm, VList<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> events) {
+    std::vector<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> array;
+    array.reserve(events.size());
+    
+    for (auto&& e : events) {
+      if (e->type != BeatmapSaveDataCommon::BeatmapEventType::BpmChange) continue;
+      array.emplace_back(e);
+    }
+    bool flag = array.size() != 0 && array[0]->time == 0.0f && array[0]->floatValue > 0.0f;
+    if (flag) {
+      startBpm = array[0]->floatValue;
+    }
+    this->bpmChangeDataList = { BpmChangeData(0.0F, 0.0F, startBpm) };
+
+    for (int i = flag ? 1 : 0; i < array.size(); i++) {
+      auto bpmChangeDataList = this->bpmChangeDataList;
+      auto const& prevBpmChangeData = bpmChangeDataList.back();
+      float time = array[i]->time;
+      float floatValue = array[i]->floatValue;
+      float bpmChangeStartTime = CalculateTime(prevBpmChangeData, time);
+      this->bpmChangeDataList.emplace_back(BpmChangeData(bpmChangeStartTime, time, floatValue));
+    }
+  }
+
+  float CalculateTime(BpmChangeData prevBpmChangeData, float beat) {
+    return prevBpmChangeData.bpmChangeStartTime +
+           (beat - prevBpmChangeData.bpmChangeStartBpmTime) / prevBpmChangeData.bpm * 60.0f;
   }
 
   constexpr void Reset() {
     currentBpmChangesDataIdx = 0;
   }
 
+  // clang-format off
+/* 
+		while (this.currentBpmChangesDataIdx > 0)
+		{
+			if (this._bpmChangeDataList[this.currentBpmChangesDataIdx].bpmChangeStartBpmTime < beat)
+			{
+				break;
+			}
+			this.currentBpmChangesDataIdx--;
+		}
+		while (this.currentBpmChangesDataIdx < this._bpmChangeDataList.Count - 1 && this._bpmChangeDataList[this.currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat)
+		{
+			this.currentBpmChangesDataIdx++;
+		}
+		return BpmTimeProcessor.CalculateTime(this._bpmChangeDataList[this.currentBpmChangesDataIdx], beat);
+*/
+  // clang-format on
   [[nodiscard]] constexpr float ConvertBeatToTime(float beat) {
 
     while (this->currentBpmChangesDataIdx > 0) {
@@ -465,7 +614,7 @@ struct BpmTimeProcessor {
       currentBpmChangesDataIdx++;
     }
     auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
-    return bpmChangeData.bpmChangeStartTime + (beat - bpmChangeData.bpmChangeStartBpmTime) / bpmChangeData.bpm * 60.0F;
+    return CalculateTime(bpmChangeData, beat);
   }
 };
 
