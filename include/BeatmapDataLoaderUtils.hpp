@@ -74,7 +74,7 @@ inline JSONWrapperUTF16* ToJsonWrapper(v3::CustomDataOptUTF16 const& val) {
   return wrapper;
 }
 
-constexpr CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
+static CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                     ColorType colorType, NoteCutDirection cutDirection,
                                                     JSONWrapper* customData) {
   auto* b = CustomNoteData::New_ctor(time, lineIndex, NoteLineLayer(noteLineLayer), NoteLineLayer(noteLineLayer),
@@ -87,7 +87,7 @@ constexpr CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, N
   return b;
 }
 
-constexpr CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
+static CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                    JSONWrapper* customData) {
   auto* b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, noteLineLayer,
                                      NoteData::GameplayType(NoteData::GameplayType::Bomb),
@@ -99,7 +99,7 @@ constexpr CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, No
   return b;
 }
 
-constexpr CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
+static CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
                                                     NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType,
                                                     NoteCutDirection cutDirection, float cutSfxVolumeMultiplier,
                                                     JSONWrapper* customData) {
@@ -113,7 +113,7 @@ constexpr CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, N
   return b;
 }
 
-constexpr auto CustomSliderData_CreateCustomBurstSliderData(
+static auto CustomSliderData_CreateCustomBurstSliderData(
     ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
     NoteLineLayer headBeforeJumpLineLayer, NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
     NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, NoteCutDirection tailCutDirection,
@@ -128,7 +128,7 @@ constexpr auto CustomSliderData_CreateCustomBurstSliderData(
   return slider;
 }
 
-auto CustomSliderData_CreateCustomSliderData(
+static auto CustomSliderData_CreateCustomSliderData(
     ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
     NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier, NoteCutDirection headCutDirection,
     float tailTime, int tailLineIndex, NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer,
