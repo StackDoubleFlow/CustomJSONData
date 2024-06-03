@@ -261,9 +261,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   CustomBeatmapData* beatmapData = CustomBeatmapData::New_ctor(4);
 
   if (auto cBeatmapSaveData = il2cpp_utils::try_cast<v3::CustomBeatmapSaveData>(beatmapSaveData)) {
-    beatmapData->customData = cBeatmapSaveData.value()->customData->GetCopy();
-    beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData.value()->levelCustomData);
-    beatmapData->beatmapCustomData = ToJsonWrapper(cBeatmapSaveData.value()->beatmapCustomData);
+    beatmapData->customData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->customData);
+    beatmapData->levelCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->levelCustomData);
+    beatmapData->beatmapCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->beatmapCustomData);
     beatmapData->v2orEarlier = cBeatmapSaveData.value()->isV2;
   }
 
@@ -306,7 +306,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>(
       [&BeatToTime](v3::CustomBeatmapSaveData_ColorNoteData* data) {
         CJDLogger::Logger.fmtLog<LogLevel::DBG>("CJDCONVERTER customData copy 3 {}",
-                                                data->customData->value.has_value());
+                                                data->customData.has_value());
         auto* noteData = CreateCustomBasicNoteData(
             BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->layer),
             ConvertColorType(data->get_color()), ConvertNoteCutDirection(data->get_cutDirection()), data->customData);
@@ -329,14 +329,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
             BeatmapDataLoaderVersion3::BeatmapDataLoader::ObstacleConverter::GetNoteLineLayer(data->get_layer()),
             BeatToTime(data->b + data->get_duration()) - beat, data->get_width(), data->get_height());
 
-        obstacle->customData = data->customData->GetCopy();
+        obstacle->customData = CustomJSONData::JSONWrapperOrNull(data->customData);
 
         return obstacle;
       });
 
   objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>(
       [&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("CJDCONVERTER customData copy {}", data->customData->value.has_value());
         return CustomSliderData_CreateCustomSliderData(
             ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
             ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_headLayer()),
@@ -349,8 +348,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
 
   objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>(
       [&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("CJDCONVERTER customData copy 2 {}",
-                                                data->customData->value.has_value());
         return CustomSliderData_CreateCustomBurstSliderData(
             ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
             ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
@@ -436,7 +433,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
           auto* event = CustomBeatmapEventData::New_ctor(BeatToTime(data->b), data->eventType.value__, data->value,
                                                          data->floatValue);
 
-          event->customData = data->customData->GetCopy();
+          event->customData = CustomJSONData::JSONWrapperOrNull(data->customData);
 
           return event;
         });
