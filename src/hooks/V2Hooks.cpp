@@ -221,7 +221,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveDataPreV2_5_0Inline,
         originalEventData->time, originalEventData->type, originalEventData->value, originalEventData->floatValue);
 
     auto const customEventData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData_EventData>(originalEventData);
-    auto customData = customEventData.has_value() ? customEventData.value()->customData : JSONWrapper::New_ctor();
+    auto customData = customEventData.has_value() ? customEventData.value()->customData : std::nullopt;
 
     newEventData->customData = customData;
 
@@ -384,9 +384,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   auto beatmapData = CustomBeatmapData::New_ctor(4);
 
   if (auto cBeatmapSaveData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData>(beatmapSaveData)) {
-    beatmapData->customData = cBeatmapSaveData.value()->customData->GetCopy();
-    beatmapData->levelCustomData = ToJsonWrapper(cBeatmapSaveData.value()->levelCustomData);
-    beatmapData->beatmapCustomData = ToJsonWrapper(cBeatmapSaveData.value()->beatmapCustomData);
+    beatmapData->customData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->customData);
+    beatmapData->levelCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->levelCustomData);
+    beatmapData->beatmapCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->beatmapCustomData);
     beatmapData->v2orEarlier = true;
   }
 
@@ -436,14 +436,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
                     o->type)),
             num2 - num, o->width, GetHeightForObstacleType(o->type));
 
-        obstacle->customData = o->customData->GetCopy();
+        obstacle->customData = CustomJSONData::JSONWrapperOrNull(o->customData);
 
         return obstacle;
       });
 
   objectConverter.AddConverter<v2::CustomBeatmapSaveData_SliderData*>(
       [&BeatToTime](v2::CustomBeatmapSaveData_SliderData* data) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("CJDCONVERTER customData copy {}", data->customData->value.has_value());
         return CustomSliderData_CreateCustomSliderData(
             ConvertColorType(data->colorType), BeatToTime(data->time), data->headLineIndex,
             ConvertNoteLineLayer(data->headLineLayer), ConvertNoteLineLayer(data->headLineLayer),
@@ -517,7 +516,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
     auto event = CustomBeatmapEventData::New_ctor(BeatToTime(e->time), ConvertBasicBeatmapEventType(e->type), e->value,
                                                   e->floatValue);
 
-    event->customData = e->customData;
+    event->customData = CustomJSONData::JSONWrapperOrNull(e->customData);
 
     return event;
   };

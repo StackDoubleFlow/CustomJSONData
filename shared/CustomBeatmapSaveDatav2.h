@@ -61,7 +61,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
 
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc; 
-DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+    CustomDataOpt customData;
     CustomDataOptUTF16 beatmapCustomData;
     CustomDataOptUTF16 levelCustomData;
 )
@@ -74,7 +74,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, Beatma
     DECLARE_SIMPLE_DTOR();
 
                             public:
-            DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+                CustomDataOpt customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, BeatmapSaveDataVersion2_6_0AndEarlier::SliderData,
@@ -89,7 +89,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_SliderData, Beat
             DECLARE_SIMPLE_DTOR();
 
             public:
-            DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+                CustomDataOpt customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleData,
@@ -100,7 +100,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_ObstacleData, Be
                 DECLARE_SIMPLE_DTOR();
 
                 public:
-    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+        CustomDataOpt customData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, BeatmapSaveDataVersion2_6_0AndEarlier::EventData,
@@ -111,7 +111,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_EventData, Beatm
     DECLARE_SIMPLE_DTOR();
 
                     public:
-    DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+        CustomDataOpt customData;
 )
 
 // clang-format on

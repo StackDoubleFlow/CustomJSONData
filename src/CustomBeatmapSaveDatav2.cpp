@@ -113,7 +113,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
     }
 
     if (newData) {
-      newData->customData = eventData->customData->GetCopy();
+      newData->customData = eventData->customData;
     }
 
     list.push_back(newData ? newData : eventData);
@@ -130,10 +130,6 @@ inline decltype(CustomJSONData::JSONWrapper::value) GetCustomData(rapidjson::Val
   }
 
   return std::nullopt;
-}
-
-inline CustomJSONData::JSONWrapper* GetCustomDataWrapper(rapidjson::Value const& doc) {
-  return CustomJSONData::JSONWrapperOrNull(GetCustomData(doc));
 }
 
 CustomJSONData::v2::CustomBeatmapSaveData*
@@ -162,7 +158,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
 
       auto customDataIt = note_json.FindMember("_customData");
       if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
-        note->customData = CustomJSONData::JSONWrapperOrNull(customDataIt->value);
+        note->customData = customDataIt->value;
       }
       notes.push_back(note);
     }
@@ -201,7 +197,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       auto* slider = CRASH_UNLESS(CustomBeatmapSaveData_SliderData::New_ctor(
           colorType, time, headLineIndex, noteLineLayer, headControlPointLengthMultiplier, noteCutDirection, tailTime,
           tailLineIndex, tailLineLayer, tailControlPointLengthMultiplier, tailCutDirection, sliderMidAnchorMode));
-      slider->customData = GetCustomDataWrapper(slider_json);
+      slider->customData = GetCustomData(slider_json);
 
       sliders.push_back(slider);
     }
@@ -229,7 +225,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       auto* obstacle =
           CRASH_UNLESS(CustomBeatmapSaveData_ObstacleData::New_ctor(time, lineIndex, type, duration, width));
 
-      obstacle->customData = GetCustomDataWrapper(obstacle_json);
+      obstacle->customData = GetCustomData(obstacle_json);
 
       obstacles.push_back(obstacle);
     }
@@ -261,7 +257,7 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       }
 
       auto* event = CRASH_UNLESS(CustomBeatmapSaveData_EventData::New_ctor(time, type, value, floatValue));
-      event->customData = GetCustomDataWrapper(event_json);
+      event->customData = GetCustomData(event_json);
 
       events.push_back(event);
     }
@@ -336,8 +332,8 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
   auto customDataIt = doc.FindMember("_customData");
   if (customDataIt->value.IsObject()) {
-    saveData->customData = CustomJSONData::JSONWrapperOrNull(customDataIt->value);
-    rapidjson::Value const& customData = *saveData->customData->value;
+    rapidjson::Value const& customData = customDataIt->value;
+    saveData->customData = customData;
 
     auto customEventsIt = customData.FindMember("_customEvents");
     if (customEventsIt != customData.MemberEnd() && customEventsIt->value.IsArray()) {
