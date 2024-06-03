@@ -9,7 +9,9 @@
   "packageVersion": "1.22.0",
   "description": "Funny maps go brrr",
   "dependencies": [],
-  "modFiles": [],
+  "modFiles": [
+    "${binary}"
+  ],
   "libraryFiles": [],
   "fileCopies": []
 }
