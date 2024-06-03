@@ -956,15 +956,10 @@ std::optional<v2::CustomBeatmapSaveData*> ParseBeatmapSaveDataJson_v2(StringW st
 
     auto version = GetVersionFromPath(contents);
 
-    v2::CustomBeatmapSaveData* saveData = nullptr;
+    v2::CustomBeatmapSaveData* saveData = v2::CustomBeatmapSaveData::Deserialize(*sharedDoc);
 
-    if (semver::lte(std::string(version), "2.6.0")) {
-      CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing 2.0.0 beatmap");
 
-      saveData = il2cpp_utils::cast<v2::CustomBeatmapSaveData>(v2::CustomBeatmapSaveData::Deserialize(*sharedDoc));
-    } else {
-      return std::nullopt;
-    }
 
     // cachedSaveData = saveData;
 

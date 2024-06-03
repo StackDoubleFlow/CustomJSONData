@@ -35,6 +35,11 @@
 
 // clang-format off
 
+namespace CustomJSONData::v2 {
+using CustomDataOpt = std::optional<std::reference_wrapper<rapidjson::Value const>>;
+using CustomDataOptUTF16 = std::optional<std::reference_wrapper<SongCore::CustomJSONData::ValueUTF16 const>>;
+
+} // namespace CustomJSONData::v3
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveData,
     DECLARE_FASTER_CTOR(
         ctor,
@@ -57,6 +62,8 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc; 
 DECLARE_INSTANCE_FIELD(JSONWrapper*, customData);
+    CustomDataOptUTF16 beatmapCustomData;
+    CustomDataOptUTF16 levelCustomData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::NoteData,
