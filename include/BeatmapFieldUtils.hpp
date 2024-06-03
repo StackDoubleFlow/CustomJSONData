@@ -2,18 +2,38 @@
 
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
 #include "CustomBeatmapSaveDatav3.h"
+#include "JSONWrapper.h"
 
 namespace CustomJSONData {
 
-inline v3::CustomDataOpt JSONObjectOrNull(v3::CustomDataOpt const& val) {
+static v3::CustomDataOpt JSONObjectOrNull(v3::CustomDataOpt const& val) {
   if (!val || !val->get().IsObject()) {
     return std::nullopt;
   }
 
   return val;
 }
-inline JSONWrapper* JSONWrapperOrNull(v3::CustomDataOpt const& val) {
+static JSONWrapper* JSONWrapperOrNull(v3::CustomDataOpt const& val) {
   auto* wrapper = JSONWrapper::New_ctor();
+
+  if (!val || !val->get().IsObject()) {
+    return wrapper;
+  }
+
+  wrapper->value = val;
+
+  return wrapper;
+}
+
+static v3::CustomDataOptUTF16 JSONObjectOrNull(v3::CustomDataOptUTF16 const& val) {
+  if (!val || !val->get().IsObject()) {
+    return std::nullopt;
+  }
+
+  return val;
+}
+static JSONWrapperUTF16* JSONWrapperOrNull(v3::CustomDataOptUTF16 const& val) {
+  auto* wrapper = JSONWrapperUTF16::New_ctor();
 
   if (!val || !val->get().IsObject()) {
     return wrapper;
