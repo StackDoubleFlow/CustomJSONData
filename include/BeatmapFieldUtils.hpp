@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
 #include "CustomBeatmapSaveDatav3.h"
 
 namespace CustomJSONData {
@@ -23,13 +24,28 @@ inline JSONWrapper* JSONWrapperOrNull(v3::CustomDataOpt const& val) {
   return wrapper;
 }
 
-constexpr auto& 
-BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion3::BeatmapSaveDataItem * item) {
+constexpr float BeatmapSaveDataItem_GetBeat(GlobalNamespace::BeatmapDataItem const* item) {
+  if (!item) return 0;
+  return const_cast<GlobalNamespace::BeatmapDataItem*>(item)->time;
+}
+
+constexpr float
+BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveDataItem const* const item) {
+  if (!item) return 0;
+
+  return const_cast < BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveDataItem*>(item)->time;
+}
+
+constexpr float BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion3::BeatmapSaveDataItem const* const item) {
+  if (!item) return 0;
+
   return item->b;
 }
 
-constexpr auto& 
-BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion3::LightColorBaseData * item) {
+
+constexpr float BeatmapSaveDataItem_GetBeat(BeatmapSaveDataVersion3::LightColorBaseData const* const item) {
+  if (!item) return 0;
+
   return item->b;
 }
 
