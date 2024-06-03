@@ -24,7 +24,7 @@
       "./build",
       "./extern/libs"
     ],
-    "qmodOutput": "CustomJSONData.qmod"
+    "qmodOutput": "custom-json-data.qmod"
   },
   "dependencies": [
     {
