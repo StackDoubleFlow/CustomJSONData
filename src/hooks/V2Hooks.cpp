@@ -216,27 +216,26 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveDataPreV2_5_0Inline,
   std::vector<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> events;
   events.reserve(self->events->_size);
 
-  for (auto const& eventData : VList<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*>(self->events)) {
+  for (auto const& originalEventData : VList<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*>(self->events)) {
+    auto newEventData = v2::CustomBeatmapSaveData_EventData::New_ctor(
+        originalEventData->time, originalEventData->type, originalEventData->value, originalEventData->floatValue);
 
-    v2::CustomBeatmapSaveData_EventData* newEventData;
+    auto const customEventData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData_EventData>(originalEventData);
+    auto customData = customEventData.has_value() ? customEventData.value()->customData : JSONWrapper::New_ctor();
 
-    if (eventData->type == BeatmapSaveDataCommon::BeatmapEventType::Event10) {
-      newEventData = v2::CustomBeatmapSaveData_EventData::New_ctor(
-          eventData->time, BeatmapSaveDataCommon::BeatmapEventType::BpmChange, eventData->value, eventData->floatValue);
+    newEventData->customData = customData;
+
+    if (newEventData->_type == BeatmapSaveDataCommon::BeatmapEventType::Event10) {
+      newEventData->_type = BeatmapSaveDataCommon::BeatmapEventType::BpmChange;
     }
-    if (eventData->type == BeatmapSaveDataCommon::BeatmapEventType::BpmChange) {
-      if (eventData->value != 0) {
-        newEventData = v2::CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type, eventData->value,
-                                                                     (float)eventData->value);
+
+    if (newEventData->_type == BeatmapSaveDataCommon::BeatmapEventType::BpmChange) {
+      if (newEventData->_value != 0) {
+        newEventData->_floatValue = (float)newEventData->_value;
       }
     } else {
-      newEventData =
-          v2::CustomBeatmapSaveData_EventData::New_ctor(eventData->time, eventData->type, eventData->value, 1.0f);
+      newEventData->_floatValue = 1.0f;
     }
-
-    auto const customEventData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData_EventData>(eventData);
-    auto customData = customEventData.has_value() ? customEventData.value()->customData : JSONWrapper::New_ctor();
-    newEventData->customData = customData;
 
     events.emplace_back(newEventData);
   }
