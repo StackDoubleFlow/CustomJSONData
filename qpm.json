@@ -18,7 +18,10 @@
   },
   "workspace": {
     "scripts": {
-      "build": ["pwsh ./scripts/build.ps1"]
+      "build": ["pwsh ./scripts/build.ps1"],
+      "copy": ["pwsh ./scripts/copy.ps1"],
+      "log": ["pwsh ./scripts/copy.ps1 -log"],
+      "ndk-stack": ["pwsh ./scripts/ndk-stack.ps1"]
     },
     "qmodIncludeDirs": [
       "./build",
