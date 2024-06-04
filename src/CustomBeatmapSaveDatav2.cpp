@@ -328,7 +328,9 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parse root");
   auto* saveData = CRASH_UNLESS(
       CustomBeatmapSaveData::New_ctor(events, notes, sliders, waypoints, obstacles, specialEventsKeywordFilters));
+
   saveData->doc = sharedDoc;
+  
   saveData->customEventsData = std::make_shared<std::vector<CustomJSONData::CustomEventSaveData>>();
   auto customDataIt = doc.FindMember("_customData");
   if (customDataIt->value.IsObject()) {
@@ -379,15 +381,8 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
     saveData->_version = nullptr;
   }
 
-  // Below taken straight from BeatmapSaveData.DeserializeFromJSONString
+
   CJDLogger::Logger.fmtLog<LogLevel::INF>("v2 Version {}", static_cast<std::string>(saveData->version ?: "null"));
-  if (saveData->version && !static_cast<std::string>(saveData->version).empty()) {
-    if (semver::lt(static_cast<std::string>(saveData->version), "2.5.0")) {
-      ::ConvertBeatmapSaveDataPreV2_5_0(saveData);
-    }
-  } else {
-    ::ConvertBeatmapSaveDataPreV2_5_0(saveData);
-  }
 
   return saveData;
 }
