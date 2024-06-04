@@ -124,7 +124,51 @@ MAKE_PAPER_HOOK_MATCH(
   return BeatmapData_GetFilteredCopy(self, processDataItem);
 }
 
+// essentially hook a method to then redirect the call to the "override func"
+// if that "override func" calls this func again, it calls the original method
+#define MAKE_HOOK_OVERRIDE_1PARAM(name, method, Base, Child, ParamT1, param1)                                          \
+  void name##__override(Child* self, ParamT1 param1);                                                                  \
+  thread_local bool name##_short_circuit =                                                                             \
+      false; /* This is done to ensure that the overriden method does not recursively call itself */                   \
+  MAKE_HOOK_MATCH(name, method, void, Base* self, ParamT1 param1) {                                                    \
+    auto cast = il2cpp_utils::try_cast<Child>(self);                                                                   \
+    if (cast && !name##_short_circuit) {                                                                               \
+      name##_short_circuit = true;                                                                                     \
+      name##__override(*cast, param1);                                                                                 \
+      name##_short_circuit = false;                                                                                    \
+      return;                                                                                                          \
+    } else {                                                                                                           \
+      return name(self, param1);                                                                                       \
+    }                                                                                                                  \
+  }                                                                                                                    \
+  void name##__override(Child* self, ParamT1 param1)
+
+MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, BeatmapData,
+                          CustomBeatmapData, BeatmapObjectData*, item) {
+  self->AddBeatmapObjectDataOverride(item);
+}
+
+MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectDataInOrder, &BeatmapData::AddBeatmapObjectDataInOrder, BeatmapData,
+                          CustomBeatmapData, BeatmapObjectData*, item) {
+  self->AddBeatmapObjectDataInOrderOverride(item);
+}
+
+MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, BeatmapData,
+                          CustomBeatmapData, BeatmapEventData*, item) {
+  self->InsertBeatmapEventDataOverride(item);
+}
+
+MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventDataInOrder, &BeatmapData::InsertBeatmapEventDataInOrder, BeatmapData,
+                          CustomBeatmapData, BeatmapEventData*, item) {
+  self->InsertBeatmapEventDataInOrderOverride(item);
+}
+
 void CustomJSONData::InstallBeatmapHooks() {
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectData);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectDataInOrder);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomInsertBeatmapEventData);
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomInsertBeatmapEventDataInOrder);
+  
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_InsertItem);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetFilteredCopy);

@@ -1,9 +1,6 @@
 #include "CustomJSONDataHooks.h"
 #include "HookUtils.hpp"
 
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/zzzz__EventData_def.hpp"
-#include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
-#include "BeatmapDataLoaderVersion2_6_0AndEarlier/BeatmapDataLoader.hpp"
 
 #include "BeatmapDataLoaderVersion3/BeatmapDataLoader.hpp"
 #include "BeatmapSaveDataVersion3/BeatmapSaveDataItem.hpp"
@@ -19,25 +16,17 @@
 #include "GlobalNamespace/DefaultEnvironmentEvents.hpp"
 #include "GlobalNamespace/BeatmapObjectData.hpp"
 #include "GlobalNamespace/NoteData.hpp"
-#include "GlobalNamespace/BeatmapDataSortedListForTypeAndIds_1.hpp"
-#include "GlobalNamespace/BasicBeatmapEventDataProcessor.hpp"
-#include "GlobalNamespace/BeatmapDataStrobeFilterTransform.hpp"
 #include "GlobalNamespace/LightColorBeatmapEventData.hpp"
-#include "GlobalNamespace/EnvironmentIntensityReductionOptions.hpp"
 #include "GlobalNamespace/CallbacksInTime.hpp"
 #include "GlobalNamespace/IReadonlyBeatmapData.hpp"
-#include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/IEnvironmentLightGroups.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 
-#include "System/Action.hpp"
 
 #include "UnityEngine/JsonUtility.hpp"
 
-#include "System/Reflection/MemberInfo.hpp"
 #include "System/String.hpp"
-#include "System/Collections/Generic/InsertionBehavior.hpp"
 
 #include "beatsaber-hook/shared/utils/typedefs-list.hpp"
 #include "beatsaber-hook/shared/utils/hooking.hpp"
@@ -49,16 +38,10 @@
 
 #include "paper/shared/Profiler.hpp"
 
-#include "sombrero/shared/linq_functional.hpp"
-#include "sombrero/shared/Vector2Utils.hpp"
-#include "sombrero/shared/Vector3Utils.hpp"
 
 #include "custom-types/shared/register.hpp"
 
-#include "songcore/shared/CustomJSONData.hpp"
 
-#include "JSONWrapper.h"
-#include "CustomBeatmapSaveDatav2.h"
 #include "CustomBeatmapSaveDatav3.h"
 #include "CustomBeatmapData.h"
 #include "BeatmapFieldUtils.hpp"
@@ -66,11 +49,6 @@
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 #include "VList.h"
-
-#include <regex>
-#include <chrono>
-#include <codecvt>
-#include <locale>
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -246,6 +224,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
                       ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings,
                       ::System::Diagnostics::Stopwatch* stopwatch) {
+  CJDLogger::Logger.Backtrace(100);
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Parsing save data {}", fmt::ptr(beatmapSaveData));
   auto startTime = std::chrono::high_resolution_clock::now();
@@ -293,9 +272,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       startBpm, bpmEvents->i___System__Collections__Generic__IReadOnlyList_1_T_());
 
   auto const BeatToTime = [&bpmTimeProcessor](float beat) constexpr {
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Start BeatToTime");
     auto time = bpmTimeProcessor.ConvertBeatToTime(beat);
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("Stop BeatToTime");
     return time;
   };
 
@@ -305,8 +282,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   CppConverter<GlobalNamespace::BeatmapObjectData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> objectConverter;
   objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>(
       [&BeatToTime](v3::CustomBeatmapSaveData_ColorNoteData* data) {
-        CJDLogger::Logger.fmtLog<LogLevel::DBG>("CJDCONVERTER customData copy 3 {}",
-                                                data->customData.has_value());
         auto* noteData = CreateCustomBasicNoteData(
             BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->layer),
             ConvertColorType(data->get_color()), ConvertNoteCutDirection(data->get_cutDirection()), data->customData);
