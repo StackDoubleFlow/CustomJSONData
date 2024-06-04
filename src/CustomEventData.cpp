@@ -64,6 +64,7 @@ void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
       //
   )
 
+  // should never get to this point
   if (item->klass != CustomEventDataKlass) {
     CJDLogger::Logger.debug("Invokiong item {} time {}", il2cpp_utils::ClassStandardName(item->klass), item->time);
     return;
