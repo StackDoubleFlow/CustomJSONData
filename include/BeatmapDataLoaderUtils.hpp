@@ -561,7 +561,7 @@ struct BpmTimeProcessor {
     }
   }
 
-  float CalculateTime(BpmChangeData prevBpmChangeData, float beat) {
+  constexpr float CalculateTime(BpmChangeData const& prevBpmChangeData, float beat) {
     return prevBpmChangeData.bpmChangeStartTime +
            (beat - prevBpmChangeData.bpmChangeStartBpmTime) / prevBpmChangeData.bpm * 60.0f;
   }
