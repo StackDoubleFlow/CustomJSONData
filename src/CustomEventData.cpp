@@ -49,7 +49,6 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
-  CJDLogger::Logger.fmtLog<LogLevel::INF>("CALLING CUSTOM CALLBACK! {}", il2cpp_utils::ClassStandardName(item->klass, true));
   static auto CustomEventDataKlass = classof(CustomEventData*);
   // CRASH_UNLESS(item->klass == CustomEventDataKlass);
 
