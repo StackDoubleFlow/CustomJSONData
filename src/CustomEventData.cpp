@@ -2,6 +2,7 @@
 #include <utility>
 #include "CustomEventData.h"
 
+#include "CJDLogger.h"
 #include "GlobalNamespace/BasicBeatmapEventData.hpp"
 
 #include "CustomJSONDataHooks.h"
@@ -48,9 +49,11 @@ void CustomBeatmapDataCallbackWrapper::ctor() {
 }
 
 void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
-  CJDLogger::Logger.fmtLog<LogLevel::INF>("CALLING CUSTOM CALLBACK!");
+  CJDLogger::Logger.fmtLog<LogLevel::INF>("CALLING CUSTOM CALLBACK! {}", il2cpp_utils::ClassStandardName(item->klass, true));
   static auto CustomEventDataKlass = classof(CustomEventData*);
-  CRASH_UNLESS(item->klass == CustomEventDataKlass);
+  // CRASH_UNLESS(item->klass == CustomEventDataKlass);
+
+
 
   PAPER_IL2CPP_CATCH_HANDLER(
       //
@@ -60,6 +63,11 @@ void CustomBeatmapDataCallbackWrapper::CallCallback(BeatmapDataItem* item) {
       }
       //
   )
+
+  if (item->klass != CustomEventDataKlass) {
+    CJDLogger::Logger.debug("Invokiong item {} time {}", il2cpp_utils::ClassStandardName(item->klass), item->time);
+    return;
+  }
 
   PAPER_IL2CPP_CATCH_HANDLER(
       //
