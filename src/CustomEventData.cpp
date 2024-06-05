@@ -23,20 +23,26 @@ CJD_MOD_EXPORT std::vector<CustomEventCallbackData> CustomEventCallbacks::custom
 CJD_MOD_EXPORT SafePtr<System::Collections::Generic::LinkedListNode_1<GlobalNamespace::BeatmapDataItem*>>
     CustomEventCallbacks::firstNode;
 
-void CustomEventData::ctor(float time, void* type, size_t typeHash, void* data) {
+void CustomEventData::ctor(float time) {
   INVOKE_CTOR();
   static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapDataItem*), ".ctor", 4);
   il2cpp_utils::RunMethodRethrow(this, ctor, time, 0, 0, BeatmapDataItemType(2));
   BeatmapDataItem::_time_k__BackingField = time;
   BeatmapDataItem::type = 2;
-  this->typeHash = typeHash;
-  this->type = *static_cast<decltype(this->type)*>(type);
-  this->data = static_cast<decltype(this->data)>(data);
+}
+CustomEventData* CustomEventData::New(float time, std::string_view type, size_t typeHash, rapidjson::Value const* data) {
+  auto event = CustomEventData::New_ctor(time);
   CRASH_UNLESS(data);
+
+  event->typeHash = typeHash;
+  event->type = type;
+  event->data = data;
+
+  return event;
 }
 
 CustomEventData* CustomEventData::GetCopy() {
-  auto* copy = CustomJSONData::CustomEventData::New_ctor(this->time, (void*)&this->type, typeHash, (void*)this->data);
+  auto* copy = CustomJSONData::CustomEventData::New(this->time, this->type, typeHash, this->data);
   return copy;
 }
 

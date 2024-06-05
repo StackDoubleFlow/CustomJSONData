@@ -516,6 +516,24 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   }
 
   bpmTimeProcessor.Reset();
+  if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData>(beatmapSaveData)) {
+    if (customBeatmapSaveData.value()->customEventsData) {
+      std::stable_sort(customBeatmapSaveData.value()->customEventsData->begin(),
+                       customBeatmapSaveData.value()->customEventsData->end(),
+                       [](auto const& a, auto const& b) constexpr { return a.time < b.time; });
+
+      for (auto const& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
+        beatmapData->InsertCustomEventData(
+            CustomEventData::New(bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), customEventSaveData.type,
+                                 customEventSaveData.typeHash, customEventSaveData.data));
+      }
+
+      CJDLogger::Logger.fmtLog<LogLevel::INF>("Added {} custom events",
+                                              customBeatmapSaveData.value()->customEventsData->size());
+    }
+  }
+
+  bpmTimeProcessor.Reset();
   {
     CJDLogger::Logger.info("Lightshow time {} || {} != nullptr", flag3, fmt::ptr(defaultLightshowSaveData));
     if (!flag3 && defaultLightshowSaveData != nullptr) {
