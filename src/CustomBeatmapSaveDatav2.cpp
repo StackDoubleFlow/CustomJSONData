@@ -123,7 +123,7 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
 }
 
 
-inline decltype(CustomJSONData::JSONWrapper::value) GetCustomData(rapidjson::Value const& doc) {
+static decltype(CustomJSONData::JSONWrapper::value) GetCustomData(rapidjson::Value const& doc) {
   auto customDataIt = doc.FindMember("_customData");
   if (customDataIt != doc.MemberEnd() && customDataIt->value.IsObject()) {
     return customDataIt->value;
@@ -156,10 +156,8 @@ CustomJSONData::v2::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
       auto* note =
           CRASH_UNLESS(CustomBeatmapSaveData_NoteData::New_ctor(time, lineIndex, lineLayer, type, cutDirection));
 
-      auto customDataIt = note_json.FindMember("_customData");
-      if (customDataIt != note_json.MemberEnd() && customDataIt->value.IsObject()) {
-        note->customData = customDataIt->value;
-      }
+      note->customData = GetCustomData(note_json);
+      
       notes.push_back(note);
     }
   }
