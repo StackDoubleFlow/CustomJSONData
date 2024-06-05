@@ -512,10 +512,10 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
                        customBeatmapSaveData.value()->customEventsData->end(),
                        [](auto const& a, auto const& b) constexpr { return a.time < b.time; });
 
-      for (auto& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
-        beatmapData->InsertCustomEventData(CustomEventData::New_ctor(
-            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), static_cast<void*>(&customEventSaveData.type),
-            customEventSaveData.typeHash, static_cast<void*>(const_cast<rapidjson::Value*>(customEventSaveData.data))));
+      for (auto const& customEventSaveData : *customBeatmapSaveData.value()->customEventsData) {
+        beatmapData->InsertCustomEventData(CustomEventData::New(
+            bpmTimeProcessor.ConvertBeatToTime(customEventSaveData.time), customEventSaveData.type,
+            customEventSaveData.typeHash, customEventSaveData.data));
       }
 
       CJDLogger::Logger.fmtLog<LogLevel::INF>("Added {} custom events",
