@@ -65,6 +65,15 @@ constexpr bool TimeCompare(BeatmapSaveDataVersion2_6_0AndEarlier::SliderData* co
   return (a->_headTime < b->_headTime);
 }
 
+static CustomDataOpt GetCustomData(rapidjson::Value const& doc) {
+  auto customDataIt = doc.FindMember(Constants::customData);
+  if (customDataIt != doc.MemberEnd() && customDataIt->value.IsObject()) {
+    return customDataIt->value;
+  }
+
+  return std::nullopt;
+}
+
 void CustomBeatmapSaveData::ctor(
     System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::BpmChangeEventData*>* bpmEvents,
     ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::RotationEventData*>*
@@ -150,14 +159,7 @@ void CustomJSONData::v3::CustomBeatmapSaveData_BasicEventData::ctor(
   il2cpp_utils::RunMethodRethrow(this, ctor, time, type, value, floatValue);
 }
 
-inline CustomDataOpt GetCustomData(rapidjson::Value const& doc) {
-  auto customDataIt = doc.FindMember(Constants::customData);
-  if (customDataIt != doc.MemberEnd() && customDataIt->value.IsObject()) {
-    return customDataIt->value;
-  }
 
-  return std::nullopt;
-}
 
 CustomBeatmapSaveData_ColorNoteData* CustomJSONData::v3::Parser::DeserializeColorNote(rapidjson::Value const& val) {
   float beat = NEJSON::ReadOptionalFloat(val, Constants::beat).value_or(0);
