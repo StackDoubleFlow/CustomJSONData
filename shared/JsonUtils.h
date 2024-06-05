@@ -227,10 +227,7 @@ static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::st
   return std::nullopt;
 }
 
-inline std::string ToStringJSONValue(rapidjson::Value const& json) {
-#if DEBUGB == 1
-  return;
-#endif
+static std::string ToStringJSONValue(rapidjson::Value const& json) {
   using namespace rapidjson;
 
   StringBuffer sb;
