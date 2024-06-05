@@ -227,4 +227,16 @@ static std::optional<T> ReadOptionalType(rapidjson::Value const& object, std::st
   return std::nullopt;
 }
 
+inline std::string ToStringJSONValue(rapidjson::Value const& json) {
+#if DEBUGB == 1
+  return;
+#endif
+  using namespace rapidjson;
+
+  StringBuffer sb;
+  PrettyWriter<StringBuffer> writer(sb);
+  json.Accept(writer);
+  return sb.GetString();
+}
+
 } // namespace NEJSON
