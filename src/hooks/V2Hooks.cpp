@@ -350,6 +350,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   bool flag = loadingForDesignatedEnvironment || defaultLightshowSaveData == nullptr;
   bool flag2 = playerSpecificSettings == nullptr || playerSpecificSettings->GetEnvironmentEffectsFilterPreset(
                                                         beatmapDifficulty) != EnvironmentEffectsFilterPreset::NoEffects;
+  CJDLogger::Logger.info("flag1 {} || {} == nullptr", loadingForDesignatedEnvironment,
+                         fmt::ptr(defaultLightshowSaveData));
+
+  CJDLogger::Logger.info("flag2 {} == nullptr || {} != EnvironmentEffectsFilterPreset::NoEffects",
+                         fmt::ptr(playerSpecificSettings),
+                         playerSpecificSettings->GetEnvironmentEffectsFilterPreset(beatmapDifficulty).value__);
+
   bool flag3 = flag && flag2;
   auto beatmapData = CustomBeatmapData::New_ctor(4);
 
@@ -363,7 +370,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   // auto bpmTimeProcessor = GlobalNamespace::BpmTimeProcessor::New_ctor(startBpm,
   // fancyCast2(beatmapSaveData->events));
 
-  ListW<::BeatmapSaveDataVersion2_6_0AndEarlier::EventData* > bpmEvents = beatmapSaveData->events;
+  ListW<::BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> bpmEvents = beatmapSaveData->events;
   CustomJSONData::BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
   CJDLogger::Logger.info("BPM Events {}", bpmTimeProcessor.bpmChangeDataList.size());
 
@@ -510,12 +517,15 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
 
   bpmTimeProcessor.Reset();
   {
+    CJDLogger::Logger.info("Lightshow time {} || {} != nullptr", flag3, fmt::ptr(defaultLightshowSaveData));
     if (!flag3 && defaultLightshowSaveData != nullptr) {
       auto bpmTimeProcessor2 = GlobalNamespace::BpmTimeProcessor::New_ctor(startBpm, fancyCast2(bpmEvents));
 
       BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(
           beatmapData, defaultLightshowSaveData, bpmTimeProcessor2, environmentKeywords, environmentLightGroups);
     } else {
+      CJDLogger::Logger.info("Inserting default environment events flag1 {} flag2 {} flag3 {}", flag, flag2, flag3);
+
       DefaultEnvironmentEventsFactory::InsertDefaultEvents(beatmapData);
     }
   }
