@@ -40,6 +40,7 @@
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 #include "VList.h"
+#include "paper/shared/Profiler.hpp"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -329,7 +330,11 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
                       ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings) {
 
+  CJDLogger::Logger.info("Converting v2 save data to beatmap data");
   CJDLogger::Logger.Backtrace(100);
+
+  Paper::Profiler profile;
+  profile.startTimer();
 
   // i hate this
   auto fancyCast = [](auto&& list) {
@@ -411,7 +416,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
       auto* obstacle = CustomObstacleData::New_ctor(
           num, o->lineIndex,
           ConvertNoteLineLayer(
-              BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::ObstacleConverter::GetLayerForObstacleType(
+              GetLayerForObstacleType(
                   o->type)),
           num2 - num, o->width, GetHeightForObstacleType(o->type));
 
@@ -510,7 +515,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
     for (auto const& e : events) {
       auto beatmapEventData = basicEventConverter(il2cpp_utils::cast<v2::CustomBeatmapSaveData_EventData>(e));
       if (beatmapEventData != nullptr) {
-        beatmapData->InsertBeatmapEventData(beatmapEventData);
+        beatmapData->InsertBeatmapEventDataOverride(beatmapEventData);
       }
     }
   }
@@ -549,6 +554,15 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   }
   beatmapData->ProcessRemainingData();
   beatmapData->ProcessAndSortBeatmapData();
+
+
+  profile.endTimer();
+
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished processing beatmap data");
+  auto stopTime = std::chrono::high_resolution_clock::now();
+  CJDLogger::Logger.fmtLog<LogLevel::DBG>(
+      "This took {}ms", static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(profile.elapsedTime()).count()));
+
   return beatmapData;
 }
 
