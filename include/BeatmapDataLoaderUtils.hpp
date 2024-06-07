@@ -184,6 +184,12 @@ constexpr int GetHeightForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::Ob
   }
   return 3;
 }
+constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType obstacleType) {
+  if (obstacleType != BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType::Top) {
+    return 0;
+  }
+  return 2;
+}
 
 constexpr int SpawnRotationForEventValue(int index) {
   if (index >= 0 &&
