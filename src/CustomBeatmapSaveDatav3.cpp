@@ -13,6 +13,7 @@
 #include "cpp-semver/shared/cpp-semver.hpp"
 #include "GlobalNamespace/NoteLineLayer.hpp"
 #include "GlobalNamespace/EaseType.hpp"
+#include "paper/shared/Profiler.hpp"
 
 #include <numeric>
 #include <type_traits>
@@ -593,6 +594,9 @@ CustomJSONData::v3::CustomBeatmapSaveData*
 CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson::Document> const& sharedDoc) {
   using namespace Parser;
 
+  Paper::Profiler profile;
+  profile.startTimer();
+
   auto const& doc = *sharedDoc;
 
   auto bpmEventsVec = NEJSON::ReadArrayOrEmpty<BeatmapSaveDataVersion3::BpmChangeEventData*>(
@@ -719,6 +723,11 @@ CustomJSONData::v3::CustomBeatmapSaveData::Deserialize(std::shared_ptr<rapidjson
   beatmap->customData = dataOpt;
   beatmap->doc = sharedDoc;
   beatmap->customEventsData = customEvents;
+
+  profile.endTimer();
+  CJDLogger::Logger.fmtLog<LogLevel::INF>(
+      "v3 json parse took {}ms",
+      static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(profile.elapsedTime()).count()));
 
   Parser::ParsedEvent.invoke(beatmap);
   return beatmap;
