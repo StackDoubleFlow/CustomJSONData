@@ -300,9 +300,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       [&BeatToTime](v3::CustomBeatmapSaveData_ObstacleData* data) constexpr {
         float beat = BeatToTime(data->b);
         auto* obstacle = CustomObstacleData::New_ctor(
-            beat, data->get_line(),
-            BeatmapDataLoaderVersion3::BeatmapDataLoader::ObstacleConverter::GetNoteLineLayer(data->get_layer()),
-            BeatToTime(data->b + data->get_duration()) - beat, data->get_width(), data->get_height());
+            beat, data->line,
+            GetNoteLineLayer(data->layer),
+            BeatToTime(data->b + data->duration) - beat, data->width, data->height);
 
         obstacle->customData = CustomJSONData::JSONWrapperOrNull(data->customData);
 
