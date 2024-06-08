@@ -1,6 +1,6 @@
 #include "CustomBeatmapSaveDatav3.h"
 #include "CustomBeatmapSaveDatav2.h"
-#include "BeatmapFieldUtils.hpp"
+#include "misc/BeatmapFieldUtils.hpp"
 
 #include "JsonUtils.h"
 #include "VList.h"

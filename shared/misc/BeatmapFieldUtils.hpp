@@ -1,8 +1,8 @@
 #pragma once
 
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
-#include "CustomBeatmapSaveDatav3.h"
-#include "JSONWrapper.h"
+#include "../CustomBeatmapSaveDatav3.h"
+#include "../JSONWrapper.h"
 
 namespace CustomJSONData {
 

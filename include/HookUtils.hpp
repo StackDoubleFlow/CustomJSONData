@@ -4,8 +4,8 @@
 
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
 
-#include "BeatmapDataLoaderUtils.hpp"
-#include "BeatmapFieldUtils.hpp"
+#include "misc/BeatmapDataLoaderUtils.hpp"
+#include "misc/BeatmapFieldUtils.hpp"
 
 // for rapidjson error parsing
 #include "beatsaber-hook/shared/rapidjson/include/rapidjson/error/en.h"

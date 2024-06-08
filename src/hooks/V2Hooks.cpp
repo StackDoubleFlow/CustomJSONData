@@ -35,8 +35,8 @@
 
 #include "CustomBeatmapSaveDatav2.h"
 #include "CustomBeatmapData.h"
-#include "BeatmapFieldUtils.hpp"
-#include "BeatmapDataLoaderUtils.hpp"
+#include "misc/BeatmapFieldUtils.hpp"
+#include "misc/BeatmapDataLoaderUtils.hpp"
 #include "CustomJSONDataHooks.h"
 #include "CJDLogger.h"
 #include "VList.h"

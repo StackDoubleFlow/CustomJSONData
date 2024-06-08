@@ -6,7 +6,6 @@
 #include "BeatmapDataLoaderVersion2_6_0AndEarlier/BeatmapDataLoader.hpp"
 
 #include "BeatmapSaveDataCommon/NoteLineLayer.hpp"
-#include "CustomBeatmapSaveDatav2.h"
 #include "GlobalNamespace/ColorBoostBeatmapEventData.hpp"
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/BeatmapDataItem.hpp"
@@ -45,12 +44,15 @@
 #include "System/Collections/Generic/IEnumerator_1.hpp"
 #include "GlobalNamespace/IEnvironmentLightGroups.hpp"
 
-#include "CustomBeatmapSaveDatav3.h"
-#include "CustomBeatmapData.h"
-#include "CustomEventData.h"
-#include "CJDLogger.h"
-#include "VList.h"
+#include "../CustomBeatmapSaveDatav3.h"
+#include "../CustomBeatmapSaveDatav2.h"
+#include "../CustomBeatmapData.h"
+#include "../CustomEventData.h"
+#include "../CJDLogger.h"
+#include "../VList.h"
 #include "BeatmapFieldUtils.hpp"
+
+#include <concepts>
 
 // this header exists purely for organizing
 
