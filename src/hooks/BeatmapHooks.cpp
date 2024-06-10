@@ -3,6 +3,7 @@
 
 #include "HookUtils.hpp"
 #include "CustomBeatmapData.h"
+#include "BeatmapDataLoaderUtils.hpp"
 
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/zzzz__EventData_def.hpp"
 #include "BeatmapSaveDataVersion2_6_0AndEarlier/BeatmapSaveDataItem.hpp"
@@ -30,6 +31,9 @@
 #include "GlobalNamespace/CallbacksInTime.hpp"
 #include "GlobalNamespace/IReadonlyBeatmapData.hpp"
 #include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
+#include "GlobalNamespace/BurstSliderSpawner.hpp"
+#include "GlobalNamespace/NoteCutDirectionExtensions.hpp"
+#include "GlobalNamespace/BeatmapObjectSpawnMovementData.hpp"
 
 #include "System/Action.hpp"
 
@@ -163,6 +167,64 @@ MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventDataInOrder, &BeatmapData::Ins
   self->InsertBeatmapEventDataInOrderOverride(item);
 }
 
+MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner::ProcessSliderData,
+                      void, ::GlobalNamespace::SliderData* sliderData,
+                      ByRef<::GlobalNamespace::BeatmapObjectSpawnMovementData::SliderSpawnData> sliderSpawnData,
+                      float_t rotation, bool forceIsFirstNote, ::GlobalNamespace::BurstSliderSpawner::ProcessNoteDataDelegate* processNoteData) {
+
+  static auto CustomKlass = classof(CustomJSONData::CustomSliderData*);
+
+  if (sliderData->klass != CustomKlass) return BurstSliderSpawner_ProcessSliderData(sliderData, sliderSpawnData, rotation, forceIsFirstNote, processNoteData);
+
+  auto* customSliderData = reinterpret_cast<CustomJSONData::CustomSliderData*>(sliderData);
+
+  float num = sliderSpawnData->jumpDuration * 0.5f;
+  float time = sliderData->time;
+  auto headMoveStartPos = sliderSpawnData->headMoveStartPos;
+  auto headJumpStartPos = sliderSpawnData->headJumpStartPos;
+  auto headJumpEndPos = sliderSpawnData->headJumpEndPos;
+  float headJumpGravity = sliderSpawnData->headJumpGravity;
+  auto vector = headJumpStartPos;
+  vector.y += headJumpGravity * num * num * 0.5f;
+  float tailTime = sliderData->tailTime;
+  auto tailJumpStartPos = sliderSpawnData->tailJumpStartPos;
+  float tailJumpGravity = sliderSpawnData->tailJumpGravity;
+  auto vector2 = tailJumpStartPos;
+  vector2.y += tailJumpGravity * num * num * 0.5f;
+  auto vector3 = Sombrero::FastVector2(vector2.x - vector.x, vector2.y - vector.y);
+  float magnitude = vector3.magnitude;
+  float angle = (NoteCutDirectionExtensions::RotationAngle(sliderData->headCutDirection) - 90.0f + sliderData->headCutDirectionAngleOffset) * 0.017453292f;
+  auto vector4 = Sombrero::FastVector2(std::cos(angle), std::sin(angle)) * 0.5f * magnitude;
+  int sliceCount = sliderData->sliceCount;
+  float squishAmount = sliderData->squishAmount;
+  float num3 = tailTime - time;
+  float num4 = 0.5f * num3;
+
+  auto bezierCurve = [](Sombrero::FastVector2 p0, Sombrero::FastVector2 p1, Sombrero::FastVector2 p2, float t, Sombrero::FastVector2& pos, Sombrero::FastVector2& tangent) {
+    float num = 1.0f - t;
+    pos = p0 * num * num + p1 * 2.0f * num * t + p2 * t * t;
+    tangent = (p1 - p0) * 2.0f * (1.0f - t) + (p2 - p1) * 2.0f * t;
+  };
+
+  for (int i = 1; i < sliceCount; i++)
+  {
+    float sliceT = (float)i / (float)(sliceCount - 1);
+    int index = ((i < sliceCount - 1) ? sliderData->headLineIndex : sliderData->tailLineIndex);
+    auto noteLineLayer = ((i < sliceCount - 1) ? sliderData->headLineLayer : sliderData->tailLineLayer);
+    /// TRANSPILE HERE
+    auto noteData = CreateCustomBurstNoteData(std::lerp(time, tailTime, sliceT), index, noteLineLayer, sliderData->headBeforeJumpLineLayer, sliderData->colorType, NoteCutDirection::Any, 1.0f, customSliderData->customData->value);
+    /// TRANSPILE HERE
+    noteData->timeToPrevColorNote = sliceT * num4;
+    Sombrero::FastVector2 position;
+    Sombrero::FastVector2 tangent;
+    bezierCurve(Sombrero::FastVector2::zero(), vector4, vector3, sliceT * squishAmount, position, tangent);
+    noteData->SetCutDirectionAngleOffset(Sombrero::FastVector2::SignedAngle({0.0f, -1.0f}, tangent));
+    noteData->timeToNextColorNote = ((i == sliceCount - 1) ? 1.0f : 0.4f);
+    auto noteSpawnData = BeatmapObjectSpawnMovementData::NoteSpawnData(Sombrero::FastVector3(headMoveStartPos.x + position.x, headMoveStartPos.y, headMoveStartPos.z), Sombrero::FastVector3(headJumpStartPos.x + position.x, headJumpStartPos.y, headJumpStartPos.z), Sombrero::FastVector3(headJumpEndPos.x + position.x, headJumpEndPos.y, headJumpEndPos.z), 2.0f * (vector.y + position.y - headJumpStartPos.y) / (num * num), sliderSpawnData->moveDuration, sliderSpawnData->jumpDuration);
+      processNoteData->Invoke(noteData, noteSpawnData, rotation, forceIsFirstNote);
+  }
+}
+
 void CustomJSONData::InstallBeatmapHooks() {
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectData);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectDataInOrder);
@@ -173,4 +235,6 @@ void CustomJSONData::InstallBeatmapHooks() {
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_RemoveItem);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetFilteredCopy);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, BeatmapData_GetCopy);
+
+  INSTALL_HOOK_ORIG(CJDLogger::Logger, BurstSliderSpawner_ProcessSliderData);
 }
