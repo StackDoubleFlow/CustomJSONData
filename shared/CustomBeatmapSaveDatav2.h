@@ -62,8 +62,6 @@ DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData, BeatmapSaveData
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc; 
     CustomDataOpt customData;
-    CustomDataOptUTF16 beatmapCustomData;
-    CustomDataOptUTF16 levelCustomData;
 )
 
 DECLARE_CLASS_CODEGEN(CustomJSONData::v2, CustomBeatmapSaveData_NoteData, BeatmapSaveDataVersion2_6_0AndEarlier::NoteData,

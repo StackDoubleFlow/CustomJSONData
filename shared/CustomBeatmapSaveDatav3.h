@@ -112,8 +112,6 @@ DECLARE_CLASS_CODEGEN(
     std::shared_ptr<std::vector<CustomJSONData::CustomEventSaveData>> customEventsData;
     std::shared_ptr<rapidjson::Document> doc;
     CustomDataOpt customData;
-    CustomDataOptUTF16 beatmapCustomData;
-    CustomDataOptUTF16 levelCustomData;
 
     DECLARE_INSTANCE_FIELD(bool, isV2);
 )

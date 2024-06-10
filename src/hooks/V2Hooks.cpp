@@ -367,8 +367,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
 
   if (auto cBeatmapSaveData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData>(beatmapSaveData)) {
     beatmapData->customData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->customData);
-    beatmapData->levelCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->levelCustomData);
-    beatmapData->beatmapCustomData = CustomJSONData::JSONWrapperOrNull(cBeatmapSaveData.value()->beatmapCustomData);
     beatmapData->v2orEarlier = true;
   }
 
