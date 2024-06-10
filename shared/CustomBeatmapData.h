@@ -147,6 +147,8 @@ DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
     DECLARE_INSTANCE_FIELD(bool, v2orEarlier);
     // optional
     DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapper*, customData);
+    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, beatmapCustomData);
+    DECLARE_INSTANCE_FIELD(CustomJSONData::JSONWrapperUTF16*, levelCustomData);
     DECLARE_INSTANCE_FIELD(CustomJSONData::DocumentWrapper*, doc);
   )
 
