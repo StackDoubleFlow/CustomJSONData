@@ -194,7 +194,7 @@ MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner:
   auto vector2 = tailJumpStartPos;
   vector2.y += tailJumpGravity * num * num * 0.5f;
   auto vector3 = Sombrero::FastVector2(vector2.x - vector.x, vector2.y - vector.y);
-  float magnitude = vector3.magnitude;
+  float magnitude = vector3.Magnitude();
   float angle = (NoteCutDirectionExtensions::RotationAngle(sliderData->headCutDirection) - 90.0f +
                  sliderData->headCutDirectionAngleOffset) *
                 0.017453292f;
@@ -205,7 +205,7 @@ MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner:
   float num4 = 0.5f * num3;
 
   auto bezierCurve = [](Sombrero::FastVector2 p0, Sombrero::FastVector2 p1, Sombrero::FastVector2 p2, float t,
-                        Sombrero::FastVector2& pos, Sombrero::FastVector2& tangent) {
+                        Sombrero::FastVector2& pos, Sombrero::FastVector2& tangent) constexpr {
     float num = 1.0f - t;
     pos = p0 * num * num + p1 * 2.0f * num * t + p2 * t * t;
     tangent = (p1 - p0) * 2.0f * (1.0f - t) + (p2 - p1) * 2.0f * t;
