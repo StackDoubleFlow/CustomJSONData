@@ -193,13 +193,12 @@ constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::Obs
   return 2;
 }
 
-constexpr int SpawnRotationForEventValue(int index) {
-  if (index >= 0 &&
-      index <
-          BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::BasicEventConverter::getStaticF__spawnRotations()
-              .size()) {
-    return BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::BasicEventConverter::getStaticF__spawnRotations()
-        [index];
+constexpr auto spawnRotation = { -60.0f, -45.0f, -30.0f, -15.0f, 15.0f, 30.0f, 45.0f, 60.0f };
+
+constexpr int
+SpawnRotationForEventValue(int index) {
+  if (index >= 0 && index < spawnRotation.size()) {
+    return std::span(spawnRotation)[index];
   }
   return 0.0f;
 }
