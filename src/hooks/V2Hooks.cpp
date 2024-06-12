@@ -333,6 +333,12 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   CJDLogger::Logger.info("Converting v2 save data to beatmap data");
   CJDLogger::Logger.Backtrace(100);
 
+  if (!beatmapSaveData) {
+    return BeatmapDataLoader_GetBeatmapDataFromSaveData_v2(
+        beatmapSaveData, defaultLightshowSaveData, beatmapDifficulty, startBpm, loadingForDesignatedEnvironment,
+        environmentKeywords, environmentLightGroups, playerSpecificSettings);
+  }
+
   Paper::Profiler profile;
   profile.startTimer();
 
@@ -408,22 +414,18 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
           return nullptr;
         });
 
-    objectConverter.AddConverter<v2::CustomBeatmapSaveData_ObstacleData*>([&BeatToTime](
-                                                                              v2::CustomBeatmapSaveData_ObstacleData*
-                                                                                  o) constexpr {
-      float num = BeatToTime(o->time);
-      float num2 = BeatToTime(o->time + o->duration);
-      auto* obstacle = CustomObstacleData::New_ctor(
-          num, o->lineIndex,
-          ConvertNoteLineLayer(
-              GetLayerForObstacleType(
-                  o->type)),
-          num2 - num, o->width, GetHeightForObstacleType(o->type));
+    objectConverter.AddConverter<v2::CustomBeatmapSaveData_ObstacleData*>(
+        [&BeatToTime](v2::CustomBeatmapSaveData_ObstacleData* o) constexpr {
+          float num = BeatToTime(o->time);
+          float num2 = BeatToTime(o->time + o->duration);
+          auto* obstacle =
+              CustomObstacleData::New_ctor(num, o->lineIndex, ConvertNoteLineLayer(GetLayerForObstacleType(o->type)),
+                                           num2 - num, o->width, GetHeightForObstacleType(o->type));
 
-      obstacle->customData = CustomJSONData::JSONWrapperOrNull(o->customData);
+          obstacle->customData = CustomJSONData::JSONWrapperOrNull(o->customData);
 
-      return obstacle;
-    });
+          return obstacle;
+        });
 
     objectConverter.AddConverter<v2::CustomBeatmapSaveData_SliderData*>(
         [&BeatToTime](v2::CustomBeatmapSaveData_SliderData* data) {
@@ -555,13 +557,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   beatmapData->ProcessRemainingData();
   beatmapData->ProcessAndSortBeatmapData();
 
-
   profile.endTimer();
 
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Finished processing beatmap data");
   auto stopTime = std::chrono::high_resolution_clock::now();
   CJDLogger::Logger.fmtLog<LogLevel::DBG>(
-      "This took {}ms", static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(profile.elapsedTime()).count()));
+      "This took {}ms",
+      static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(profile.elapsedTime()).count()));
 
   return beatmapData;
 }
