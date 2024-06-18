@@ -474,6 +474,9 @@ struct BpmChangeData {
 };
 
 struct BpmTimeProcessor {
+  BpmTimeProcessor(BpmTimeProcessor&&) = default;
+  BpmTimeProcessor(BpmTimeProcessor const&) = delete;
+
   std::vector<BpmChangeData> bpmChangeDataList{};
   int currentBpmChangesDataIdx = 0;
 
@@ -552,6 +555,7 @@ struct BpmTimeProcessor {
       if (e->type != BeatmapSaveDataCommon::BeatmapEventType::BpmChange) continue;
       array.emplace_back(e);
     }
+
     bool flag = array.size() != 0 && array[0]->time == 0.0f && array[0]->floatValue > 0.0f;
     if (flag) {
       startBpm = array[0]->floatValue;
@@ -606,8 +610,7 @@ struct BpmTimeProcessor {
            bpmChangeDataList[currentBpmChangesDataIdx + 1].bpmChangeStartBpmTime < beat) {
       currentBpmChangesDataIdx++;
     }
-    auto const& bpmChangeData = bpmChangeDataList[currentBpmChangesDataIdx];
-    return CalculateTime(bpmChangeData, beat);
+    return CalculateTime(bpmChangeDataList[currentBpmChangesDataIdx], beat);
   }
 };
 
@@ -788,7 +791,7 @@ struct EventBoxGroupConvertor {
     }
 
     if (auto dataForGroupUnity = il2cpp_utils::try_cast<UnityEngine::Object>(dataForGroup);
-        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr == nullptr)) {
+        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr.m_value == nullptr)) {
       return nullptr;
     }
 
