@@ -18,6 +18,10 @@ template <typename T> constexpr void addAllToVector(std::vector<T>& vec, auto co
   std::copy(vList.begin(), vList.end(), std::back_inserter(vec));
 };
 
+template <typename T> constexpr void sortInPlace(std::span<T> vec) {
+  std::stable_sort(vec.begin(), vec.end(), TimeCompare<typename std::span<T>::const_reference>);
+};
+
 template <typename T> constexpr void cleanAndSort(std::vector<T>& vec) {
   // remove nulls
   for (auto it = vec.begin(); it != vec.end();) {
@@ -30,7 +34,7 @@ template <typename T> constexpr void cleanAndSort(std::vector<T>& vec) {
     it++;
   }
 
-  std::stable_sort(vec.begin(), vec.end(), TimeCompare<typename std::vector<T>::const_reference>);
+  sortInPlace<T>({vec.begin(), vec.end()});
 };
 
 static std::optional<std::shared_ptr<rapidjson::Document>> parseDocument(std::string_view stringData) {
