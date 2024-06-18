@@ -382,15 +382,25 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   // fancyCast2(beatmapSaveData->events));
 
   ListW<::BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> bpmEvents = beatmapSaveData->events;
+  sortInPlace(std::span(bpmEvents));
+
   CustomJSONData::BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
   CJDLogger::Logger.info("BPM Events {}", bpmTimeProcessor.bpmChangeDataList.size());
+  CJDLogger::Logger.info("Events total {}", beatmapSaveData->events->_size);
 
-  auto const BeatToTime = [&bpmTimeProcessor](float beat) {
+  auto bpmTimeProcessor2 = GlobalNamespace::BpmTimeProcessor::New_ctor(startBpm, fancyCast2(bpmEvents));
+
+  auto const BeatToTime = [&bpmTimeProcessor, &bpmTimeProcessor2](float beat) constexpr {
     auto time = bpmTimeProcessor.ConvertBeatToTime(beat);
     return time;
   };
 
-  bpmTimeProcessor.Reset();
+  auto const ResetBPM = [&bpmTimeProcessor, bpmTimeProcessor2]() constexpr {
+    bpmTimeProcessor.Reset();
+    bpmTimeProcessor2->Reset();
+  };
+
+  ResetBPM();
   {
     CppConverter<GlobalNamespace::BeatmapObjectData*, BeatmapSaveDataVersion2_6_0AndEarlier::BeatmapSaveDataItem*>
         objectConverter;
@@ -470,13 +480,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
     }
   }
 
-  auto specialEventsFilter = BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::SpecialEventsFilter::New_ctor(
-      beatmapSaveData->specialEventsKeywordFilters, environmentKeywords);
-
-  bool canUseEnvironmentEventsAndShouldLoadDynamicEvents = flag3;
-
-  bpmTimeProcessor.Reset();
+  ResetBPM();
   {
+    auto specialEventsFilter =
+        BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::SpecialEventsFilter::New_ctor(
+            beatmapSaveData->specialEventsKeywordFilters, environmentKeywords);
+
+    bool canUseEnvironmentEventsAndShouldLoadDynamicEvents = flag3;
+
     auto basicEventConverter =
         [&BeatToTime, &specialEventsFilter, &canUseEnvironmentEventsAndShouldLoadDynamicEvents](
             v2::CustomBeatmapSaveData_EventData* e) constexpr -> GlobalNamespace::BeatmapEventData* {
@@ -522,7 +533,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
     }
   }
 
-  bpmTimeProcessor.Reset();
+  ResetBPM();
   if (auto customBeatmapSaveData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData>(beatmapSaveData)) {
     if (customBeatmapSaveData.value()->customEventsData) {
       std::stable_sort(customBeatmapSaveData.value()->customEventsData->begin(),
@@ -540,12 +551,10 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
     }
   }
 
-  bpmTimeProcessor.Reset();
+  ResetBPM();
   {
     CJDLogger::Logger.info("Lightshow time {} || {} != nullptr", flag3, fmt::ptr(defaultLightshowSaveData));
     if (!flag3 && defaultLightshowSaveData != nullptr) {
-      auto bpmTimeProcessor2 = GlobalNamespace::BpmTimeProcessor::New_ctor(startBpm, fancyCast2(bpmEvents));
-
       BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(
           beatmapData, defaultLightshowSaveData, bpmTimeProcessor2, environmentKeywords, environmentLightGroups);
     } else {
