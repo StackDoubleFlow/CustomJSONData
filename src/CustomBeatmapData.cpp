@@ -8,6 +8,8 @@
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "CustomJSONDataHooks.h"
 
+#include "System/Collections/Generic/HashSet_1.hpp"
+
 using namespace GlobalNamespace;
 
 DEFINE_TYPE(CustomJSONData, CustomBeatmapData);
@@ -126,6 +128,11 @@ CustomJSONData::CustomBeatmapData* CustomJSONData::CustomBeatmapData::BaseCopy()
   }
 
   copy->v2orEarlier = v2orEarlier;
+
+  auto enumerator = this->_specialBasicBeatmapEventKeywords->GetEnumerator();
+  while (enumerator.MoveNext()) {
+    copy->AddSpecialBasicBeatmapEventKeyword(enumerator.Current);
+  }
 
   return copy;
 }
