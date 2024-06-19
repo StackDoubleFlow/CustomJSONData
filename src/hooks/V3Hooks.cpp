@@ -266,6 +266,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   profile.mark("Converted special events");
 
   ListW<BeatmapSaveDataVersion3::BpmChangeEventData*> bpmEvents = beatmapSaveData->bpmEvents;
+  sortInPlace(std::span(bpmEvents));
   CustomJSONData::BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
 
   auto* bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<GlobalNamespace::BpmTimeProcessor*>(
