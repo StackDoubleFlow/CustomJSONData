@@ -470,7 +470,7 @@ struct BpmChangeData {
   float bpmChangeStartBpmTime;
   float bpm;
 
-  constexpr BpmChangeData(float const bpmChangeStartTime, float const bpmChangeStartBpmTime, float const bpm)
+  constexpr BpmChangeData(float bpmChangeStartTime, float bpmChangeStartBpmTime, float bpm)
       : bpmChangeStartTime(bpmChangeStartTime), bpmChangeStartBpmTime(bpmChangeStartBpmTime), bpm(bpm) {}
 };
 
@@ -504,7 +504,7 @@ struct BpmTimeProcessor {
 		}
 */
   // clang-format on
-  BpmTimeProcessor(float startBpm, VList<BeatmapSaveDataVersion3::BpmChangeEventData*> bpmEventsSaveData) {
+  BpmTimeProcessor(float startBpm, std::span<BeatmapSaveDataVersion3::BpmChangeEventData* const> bpmEventsSaveData) {
     bool hasBpm = !bpmEventsSaveData.empty() && bpmEventsSaveData[0]->beat == 0.0F;
     if (hasBpm) {
       startBpm = bpmEventsSaveData[0]->bpm;
@@ -548,7 +548,7 @@ struct BpmTimeProcessor {
 		}
 */
   // clang-format on
-  BpmTimeProcessor(float startBpm, VList<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> events) {
+  BpmTimeProcessor(float startBpm, std::span<BeatmapSaveDataVersion2_6_0AndEarlier::EventData* const> events) {
     std::vector<BeatmapSaveDataVersion2_6_0AndEarlier::EventData*> array;
     array.reserve(events.size());
 
