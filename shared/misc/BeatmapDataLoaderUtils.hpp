@@ -35,6 +35,7 @@
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 
+#include "LowLevelUtils.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "System/Collections/Generic/KeyValuePair_2.hpp"
@@ -616,56 +617,51 @@ struct BpmTimeProcessor {
 
 constexpr GlobalNamespace::IndexFilter* IndexFilterConvertor_Convert(BeatmapSaveDataVersion3::IndexFilter* indexFilter,
                                                                      int groupSize) {
-  int num =
-      (indexFilter->get_chunks() == 0)
-          ? 1
-          : static_cast<int>(std::ceil(static_cast<float>(groupSize) / static_cast<float>(indexFilter->get_chunks())));
-  int num2 = std::ceil(static_cast<float>(groupSize) / static_cast<float>(num));
-  auto type = indexFilter->get_type();
+  int num = (indexFilter->chunks == 0) ? 1 : std::ceil((float)groupSize / (float)indexFilter->chunks);
+  int num2 = std::ceil((float)groupSize / (float)num);
+  auto type = indexFilter->type;
   if (type != BeatmapSaveDataCommon::IndexFilterType::Division) {
     if (type != BeatmapSaveDataCommon::IndexFilterType::StepAndOffset) {
       return nullptr;
     }
-    int param = indexFilter->get_param0();
-    int param2 = indexFilter->get_param1();
+    int param = indexFilter->param0;
+    int param2 = indexFilter->param1;
     int num3 = num2 - param;
     if (num3 <= 0) {
       CJDLogger::Logger.fmtLog<LogLevel::ERR>("Error {}!", num3);
       throw il2cpp_utils::exceptions::StackTraceException("ArgumentOutOfRangeException");
     }
-    int count = (param2 == 0) ? 1 : static_cast<int>(std::ceil(static_cast<float>(num3) / static_cast<float>(param2)));
-    if (indexFilter->get_reversed()) {
+    int count = (param2 == 0) ? 1 : std::ceil((float)num3 / (float)param2);
+    if (indexFilter->reversed) {
       return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
           num2 - 1 - param, -param2, count, groupSize,
-          GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__),
-          indexFilter->get_seed(), num, indexFilter->get_limit(),
-          GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(
-              indexFilter->get_limitAlsoAffectsType().value__));
+          (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__, indexFilter->seed, num,
+          indexFilter->limit,
+          (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
     }
     return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
-        param, param2, count, groupSize,
-        GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(),
-        num, indexFilter->get_limit(),
-        GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
-  }
-
-  int param3 = indexFilter->get_param0();
-  int param4 = indexFilter->get_param1();
-  int num4 = std::ceil(static_cast<float>(num2) / static_cast<float>(param3));
-  if (indexFilter->get_reversed()) {
-    int num5 = num2 - num4 * param4 - 1;
+        param, param2, count, groupSize, (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__,
+        indexFilter->seed, num, indexFilter->limit,
+        (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
+  } else {
+    int param3 = indexFilter->param0;
+    int param4 = indexFilter->param1;
+    int num4 = std::ceil((float)num2 / (float)param3);
+    if (indexFilter->reversed) {
+      int num5 = num2 - num4 * param4 - 1;
+      return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
+          num5, std::max(0, num5 - num4 + 1), groupSize,
+          (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__, indexFilter->seed, num,
+          indexFilter->limit,
+          (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
+    }
+    int num6 = num4 * param4;
     return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
-        num5, std::max(0, num5 - num4 + 1), groupSize,
-        GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(),
-        num, indexFilter->get_limit(),
-        GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
+        num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
+        (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__, indexFilter->seed, num,
+        indexFilter->limit,
+        (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
   }
-  int num6 = num4 * param4;
-  return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
-      num6, std::min(num2 - 1, num6 + num4 - 1), groupSize,
-      GlobalNamespace::IndexFilter::IndexFilterRandomType(indexFilter->get_random().value__), indexFilter->get_seed(),
-      num, indexFilter->get_limit(),
-      GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType(indexFilter->get_limitAlsoAffectsType().value__));
 }
 
 constexpr GlobalNamespace::BeatmapEventDataBox::DistributionParamType
