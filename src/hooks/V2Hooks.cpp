@@ -364,9 +364,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
   CJDLogger::Logger.info("flag1 {} || {} == nullptr", loadingForDesignatedEnvironment,
                          fmt::ptr(defaultLightshowSaveData));
 
-  CJDLogger::Logger.info("flag2 {} == nullptr || {} != EnvironmentEffectsFilterPreset::NoEffects",
-                         fmt::ptr(playerSpecificSettings),
-                         playerSpecificSettings->GetEnvironmentEffectsFilterPreset(beatmapDifficulty).value__);
+  CJDLogger::Logger.info(
+      "flag2 {} == nullptr || {} != EnvironmentEffectsFilterPreset::NoEffects", fmt::ptr(playerSpecificSettings),
+      playerSpecificSettings && playerSpecificSettings->GetEnvironmentEffectsFilterPreset(beatmapDifficulty).value__);
 
   bool flag3 = flag && flag2;
   auto beatmapData = CustomBeatmapData::New_ctor(4);
