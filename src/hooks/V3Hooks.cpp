@@ -242,19 +242,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
     beatmapData->v2orEarlier = cBeatmapSaveData.value()->isV2;
   }
 
-  CRASH_UNLESS(beatmapSaveData->basicEventTypesWithKeywords);
-  if (beatmapSaveData->basicEventTypesWithKeywords->data) {
-    for (auto* basicEventTypesForKeyword :
-         VList<BeatmapSaveDataCommon::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(
-             beatmapSaveData->basicEventTypesWithKeywords->data)) {
-      if (!basicEventTypesForKeyword || !basicEventTypesForKeyword->k) {
-        continue;
-      }
-
-      beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->k);
-    }
-  }
-
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Special events list {} {}",
                                           fmt::ptr(beatmapSaveData->basicEventTypesWithKeywords->d),
                                           beatmapSaveData->basicEventTypesWithKeywords->d->_size);
