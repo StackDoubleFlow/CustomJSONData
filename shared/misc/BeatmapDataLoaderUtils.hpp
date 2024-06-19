@@ -196,8 +196,7 @@ constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::Obs
 
 constexpr auto spawnRotation = { -60.0f, -45.0f, -30.0f, -15.0f, 15.0f, 30.0f, 45.0f, 60.0f };
 
-constexpr int
-SpawnRotationForEventValue(int index) {
+constexpr int SpawnRotationForEventValue(int index) {
   if (index >= 0 && index < spawnRotation.size()) {
     return std::span(spawnRotation)[index];
   }
@@ -365,8 +364,9 @@ constexpr NoteLineLayer ConvertNoteLineLayer(BeatmapSaveDataCommon::NoteLineLaye
     return NoteLineLayer::Upper;
   case BeatmapSaveDataCommon::NoteLineLayer::Top:
     return NoteLineLayer::Top;
+    // don't clamp, let someone else handle the fallout
   default:
-    return NoteLineLayer::Base;
+    return layer.value__;
   }
 }
 
@@ -640,8 +640,9 @@ constexpr GlobalNamespace::IndexFilter* IndexFilterConvertor_Convert(BeatmapSave
           (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
     }
     return CustomJSONData::NewFast<GlobalNamespace::IndexFilter*>(
-        param, param2, count, groupSize, (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__,
-        indexFilter->seed, num, indexFilter->limit,
+        param, param2, count, groupSize,
+        (GlobalNamespace::IndexFilter::IndexFilterRandomType)indexFilter->random.value__, indexFilter->seed, num,
+        indexFilter->limit,
         (GlobalNamespace::IndexFilter::IndexFilterLimitAlsoAffectType)indexFilter->limitAlsoAffectsType.value__);
   } else {
     int param3 = indexFilter->param0;
