@@ -369,32 +369,33 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
     if (bpmEvents.size() == 0) {
       beatmapData->InsertBeatmapEventData(BPMChangeBeatmapEventData::New_ctor(0.0f, startBpm));
     } else {
-      CJDLogger::Logger.fmtLog<LogLevel::DBG>("bpm events");
-      addAllToVector(beatmapDataEventItems, bpmEvents.getPtr());
+      CJDLogger::Logger.fmtLog<LogLevel::DBG>("bpm events {}", bpmTimeProcessor.bpmChangeDataList.size());
+      bpmTimeProcessor.Reset();
+      bpmTimeProcessorIl2cpp->Reset();
+      for (auto const& bpmEvent : VList<BeatmapSaveDataVersion3::BpmChangeEventData*>(beatmapSaveData->bpmEvents)) {
+        auto event = CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(BeatToTime(bpmEvent->b), bpmEvent->m);
+        beatmapData->InsertBeatmapEventDataOverride(event);
+      }
     }
 
     // rotation
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events");
-    addAllToVector(beatmapDataEventItems, beatmapSaveData->rotationEvents);
+    bpmTimeProcessor.Reset();
+    bpmTimeProcessorIl2cpp->Reset();
+    for (auto const& rotationEvent :
+         VList<BeatmapSaveDataVersion3::RotationEventData*>(beatmapSaveData->rotationEvents)) {
+      SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
+          rotationEvent->get_executionTime() == BeatmapSaveDataCommon::ExecutionTime::Early
+              ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
+              : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
 
-    CppConverter<BeatmapEventData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> eventConverter;
-    eventConverter.AddConverter<BeatmapSaveDataVersion3::BpmChangeEventData*>(
-        [&BeatToTime](BeatmapSaveDataVersion3::BpmChangeEventData* data) constexpr {
-          return CustomJSONData::NewFast<BPMChangeBeatmapEventData*>(BeatToTime(data->b), data->m);
-        });
-
-    eventConverter.AddConverter<BeatmapSaveDataVersion3::RotationEventData*>(
-        [&BeatToTime](BeatmapSaveDataVersion3::RotationEventData* data) constexpr {
-          SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
-              data->get_executionTime() == BeatmapSaveDataCommon::ExecutionTime::Early
-                  ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
-                  : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
-
-          return CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(data->b), executionTime,
-                                                                         data->rotation);
-        });
+      auto event = CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(rotationEvent->b), executionTime,
+                                                                           rotationEvent->rotation);
+      beatmapData->InsertBeatmapEventDataOverride(event);
+    }
 
     if (flag3) {
+      CppConverter<BeatmapEventData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> eventConverter;
       // add basic event types
       for (auto const& basicEventTypesForKeyword :
            VList<BeatmapSaveDataCommon::BasicEventTypesWithKeywords::BasicEventTypesForKeyword*>(
@@ -431,6 +432,17 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       CJDLogger::Logger.fmtLog<LogLevel::DBG>("color boost events");
       addAllToVector(beatmapDataEventItems, beatmapSaveData->colorBoostBeatmapEvents);
 
+      bpmTimeProcessor.Reset();
+      bpmTimeProcessorIl2cpp->Reset();
+      cleanAndSort(beatmapDataEventItems);
+      for (auto const& o : beatmapDataEventItems) {
+        auto* beatmapEventData = eventConverter.ProcessItem(o);
+
+        if (beatmapEventData != nullptr) {
+          beatmapData->InsertBeatmapEventDataOverride(beatmapEventData);
+        }
+      }
+
       BeatmapDataLoaderVersion3::BeatmapDataLoader::ConvertEventBoxGroups(
           beatmapData, beatmapSaveData, bpmTimeProcessorIl2cpp, environmentLightGroups);
     } else if (defaultLightshowSaveData != nullptr) {
@@ -445,16 +457,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
 
     profile.mark("Grouped beatmap events");
 
-    cleanAndSort(beatmapDataEventItems);
-    bpmTimeProcessor.Reset();
-    bpmTimeProcessorIl2cpp->Reset();
-    for (auto const& o : beatmapDataEventItems) {
-      auto* beatmapEventData = eventConverter.ProcessItem(o);
 
-      if (beatmapEventData != nullptr) {
-        beatmapData->InsertBeatmapEventDataOverride(beatmapEventData);
-      }
-    }
   }
 
   CJDLogger::Logger.fmtLog<LogLevel::INF>("Beatmap events {}", beatmapData->beatmapEventDatas.size());
