@@ -402,8 +402,10 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
         beatmapData->AddSpecialBasicBeatmapEventKeyword(basicEventTypesForKeyword->keyword);
       }
 
-      auto specialEventsFilter = SafePtr(BeatmapDataLoaderVersion3::BeatmapDataLoader::SpecialEventsFilter::New_ctor(
-          beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords));
+      auto specialEventsFilter = BeatmapDataLoaderVersion3::BeatmapDataLoader::SpecialEventsFilter::New_ctor(
+          beatmapSaveData->basicEventTypesWithKeywords, environmentKeywords);
+
+      CJDLogger::Logger.info("Special events filter {}", fmt::ptr(specialEventsFilter->____eventTypesToFilter));
 
       eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>(
           [&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
