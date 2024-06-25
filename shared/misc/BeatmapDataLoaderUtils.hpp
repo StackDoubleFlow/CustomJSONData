@@ -787,7 +787,7 @@ struct EventBoxGroupConvertor {
     }
 
     if (auto dataForGroupUnity = il2cpp_utils::try_cast<UnityEngine::Object>(dataForGroup);
-        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr == nullptr)) {
+        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr.m_value == nullptr)) {
       return nullptr;
     }
 
