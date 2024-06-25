@@ -231,7 +231,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
               (beatmapSaveData->useNormalEventsAsCompatibleEvents && defaultLightshowSaveData == nullptr);
   bool flag2 = playerSpecificSettings == nullptr || playerSpecificSettings->GetEnvironmentEffectsFilterPreset(
                                                         beatmapDifficulty) != EnvironmentEffectsFilterPreset::NoEffects;
-  bool flag3 = flag && flag2;
+  bool canUseEnvironmentEventsAndShouldLoadDynamicEvents = flag && flag2;
 
   CustomBeatmapData* beatmapData = CustomBeatmapData::New_ctor(4);
 
@@ -394,7 +394,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       beatmapData->InsertBeatmapEventDataOverride(event);
     }
 
-    if (flag3) {
+    if (canUseEnvironmentEventsAndShouldLoadDynamicEvents) {
       CppConverter<BeatmapEventData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> eventConverter;
       // add basic event types
       for (auto const& basicEventTypesForKeyword :
@@ -468,7 +468,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
 
   // Convert event boxes (remove)
   {
-    if (flag3) {
+    if (canUseEnvironmentEventsAndShouldLoadDynamicEvents) {
       // bpmTimeProcessor.Reset();
       // ListW<BeatmapSaveDataVersion3::LightColorEventBoxGroup*> lightColorEventBoxGroups =
       //     beatmapSaveData->lightColorEventBoxGroups;
