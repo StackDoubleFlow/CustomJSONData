@@ -512,8 +512,8 @@ struct BpmTimeProcessor {
     this->bpmChangeDataList = { BpmChangeData(0.0F, 0.0F, startBpm) };
     bpmChangeDataList.reserve(bpmEventsSaveData.size());
 
-    for (int i = hasBpm ? 1 : 0; i < bpmEventsSaveData.size(); i++) {
-      auto bpmChangeDataList = this->bpmChangeDataList;
+    auto size = bpmEventsSaveData.size();
+    for (int i = hasBpm ? 1 : 0; i < size; i++) {
       auto const& prevBpmChangeData = bpmChangeDataList.back();
       float beat = bpmEventsSaveData[i]->beat;
       float bpm = bpmEventsSaveData[i]->bpm;
@@ -564,7 +564,6 @@ struct BpmTimeProcessor {
     this->bpmChangeDataList = { BpmChangeData(0.0F, 0.0F, startBpm) };
 
     for (int i = flag ? 1 : 0; i < array.size(); i++) {
-      auto bpmChangeDataList = this->bpmChangeDataList;
       auto const& prevBpmChangeData = bpmChangeDataList.back();
       float time = array[i]->time;
       float floatValue = array[i]->floatValue;
@@ -788,7 +787,7 @@ struct EventBoxGroupConvertor {
     }
 
     if (auto dataForGroupUnity = il2cpp_utils::try_cast<UnityEngine::Object>(dataForGroup);
-        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr.m_value == nullptr)) {
+        !dataForGroupUnity || (dataForGroupUnity.value()->m_CachedPtr == nullptr)) {
       return nullptr;
     }
 
