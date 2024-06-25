@@ -368,7 +368,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
       "flag2 {} == nullptr || {} != EnvironmentEffectsFilterPreset::NoEffects", fmt::ptr(playerSpecificSettings),
       playerSpecificSettings && playerSpecificSettings->GetEnvironmentEffectsFilterPreset(beatmapDifficulty).value__);
 
-  bool flag3 = flag && flag2;
+  bool canUseEnvironmentEventsAndShouldLoadDynamicEvents = flag && flag2;
   auto beatmapData = CustomBeatmapData::New_ctor(4);
 
   if (auto cBeatmapSaveData = il2cpp_utils::try_cast<v2::CustomBeatmapSaveData>(beatmapSaveData)) {
@@ -486,8 +486,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
         BeatmapDataLoaderVersion2_6_0AndEarlier::BeatmapDataLoader::SpecialEventsFilter::New_ctor(
             beatmapSaveData->specialEventsKeywordFilters, environmentKeywords);
 
-    bool canUseEnvironmentEventsAndShouldLoadDynamicEvents = flag3;
-
     auto basicEventConverter =
         [&BeatToTime, &specialEventsFilter, &canUseEnvironmentEventsAndShouldLoadDynamicEvents](
             v2::CustomBeatmapSaveData_EventData* e) constexpr -> GlobalNamespace::BeatmapEventData* {
@@ -553,14 +551,20 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
 
   ResetBPM();
   {
-    CJDLogger::Logger.info("Lightshow time {} || {} != nullptr", flag3, fmt::ptr(defaultLightshowSaveData));
-    if (!flag3 && defaultLightshowSaveData != nullptr) {
-      BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(
-          beatmapData, defaultLightshowSaveData, bpmTimeProcessor2, environmentKeywords, environmentLightGroups);
-    } else {
-      CJDLogger::Logger.info("Inserting default environment events flag1 {} flag2 {} flag3 {}", flag, flag2, flag3);
+    CJDLogger::Logger.info("Lightshow time {} || {} != nullptr", canUseEnvironmentEventsAndShouldLoadDynamicEvents, fmt::ptr(defaultLightshowSaveData));
+    // FIX STATIC LIGHTS BEING ENABLED IN
+    // CUSTOMS
+    // BY MAKING EITHER BRANCH DEPEND ON canUseEnvironmentEventsAndShouldLoadDynamicEvents
+    if (!canUseEnvironmentEventsAndShouldLoadDynamicEvents) {
+      if (defaultLightshowSaveData != nullptr) {
+        BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(
+            beatmapData, defaultLightshowSaveData, bpmTimeProcessor2, environmentKeywords, environmentLightGroups);
+      } else {
+        CJDLogger::Logger.info("Inserting default environment events flag1 {} flag2 {} flag3 {}", flag, flag2,
+                               canUseEnvironmentEventsAndShouldLoadDynamicEvents);
 
-      DefaultEnvironmentEventsFactory::InsertDefaultEvents(beatmapData);
+        DefaultEnvironmentEventsFactory::InsertDefaultEvents(beatmapData);
+      }
     }
   }
   beatmapData->ProcessRemainingData();
