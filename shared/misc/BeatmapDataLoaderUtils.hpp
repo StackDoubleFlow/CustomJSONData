@@ -35,7 +35,7 @@
 #include "GlobalNamespace/PlayerSpecificSettings.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
 
-#include "LowLevelUtils.hpp"
+#include "../LowLevelUtils.hpp"
 #include "System/Collections/Generic/IReadOnlyDictionary_2.hpp"
 #include "System/Collections/Generic/Dictionary_2.hpp"
 #include "System/Collections/Generic/KeyValuePair_2.hpp"
