@@ -197,11 +197,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapSaveData_ConvertBeatmapSaveDataPreV2_5_0Inline,
     auto customData = customEventData.has_value() ? customEventData.value()->customData : std::nullopt;
 
     newEventData->customData = customData;
-
-    if (newEventData->_type == BeatmapSaveDataCommon::BeatmapEventType::Event10) {
-      newEventData->_type = BeatmapSaveDataCommon::BeatmapEventType::BpmChange;
-    }
-
+    // Legacy BPM conversion here is deliberately ommited.
+    // There are no maps using these events, but plenty missversioned
     if (newEventData->_type == BeatmapSaveDataCommon::BeatmapEventType::BpmChange) {
       if (newEventData->_value != 0) {
         newEventData->_floatValue = (float)newEventData->_value;

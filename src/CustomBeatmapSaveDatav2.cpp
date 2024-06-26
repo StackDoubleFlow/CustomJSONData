@@ -97,11 +97,9 @@ static void ConvertBeatmapSaveDataPreV2_5_0(CustomJSONData::v2::CustomBeatmapSav
   for (auto* originalEventData : ListW<EventData*>(beatmapSaveData->events)) {
     auto* eventData = il2cpp_utils::cast<CustomBeatmapSaveData_EventData>(originalEventData);
     CustomBeatmapSaveData_EventData* newData = nullptr;
-    if (eventData->type == BeatmapSaveDataCommon::BeatmapEventType::Event10) {
-      newData = CRASH_UNLESS(
-          CustomBeatmapSaveData_EventData::New_ctor(eventData->time, BeatmapSaveDataCommon::BeatmapEventType::BpmChange,
-                                                    eventData->value, eventData->floatValue));
-    }
+
+    // Legacy BPM conversion here is deliberately ommited.
+    // There are no maps using these events, but plenty missversioned
 
     if (eventData->type == BeatmapSaveDataCommon::BeatmapEventType::BpmChange) {
       if (eventData->value != 0) {
