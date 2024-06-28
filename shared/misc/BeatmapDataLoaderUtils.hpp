@@ -153,7 +153,8 @@ constexpr NoteLineLayer GetNoteLineLayer(int lineLayer) {
   case 2:
     return NoteLineLayer::Top;
   default:
-    return NoteLineLayer::Base;
+    // ME fixup
+    return lineLayer;
   }
 }
 
@@ -182,12 +183,26 @@ constexpr BasicBeatmapEventType ConvertBasicBeatmapEventType(BeatmapSaveDataComm
 }
 
 constexpr int GetHeightForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType obstacleType) {
+  // ME FIXUPS
+  if (obstacleType.value__ >= 1000 && obstacleType.value__ <= 4005000) {
+    return ((obstacleType.value__ >= 4001 && obstacleType.value__ <= 4100000) ? (obstacleType.value__ - 4001) / 1000
+                                                                              : obstacleType.value__ - 1000) *
+               5 +
+           1000;
+  }
+
   if (obstacleType != BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType::Top) {
     return 5;
   }
   return 3;
 }
 constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType obstacleType) {
+  // ME FIXUPS
+  if (obstacleType.value__ >= 1000 && obstacleType.value__ <= 4005000) {
+    int32_t const startHeight = (obstacleType.value__ >= 4001 && obstacleType.value__ <= 4100000) ? (obstacleType.value__ - 4001) % 1000 : 0;
+    return static_cast<int32_t>(static_cast<float>(startHeight) * (20.f / 3)) + 1334;
+  }
+
   if (obstacleType != BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType::Top) {
     return 0;
   }
@@ -197,6 +212,9 @@ constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::Obs
 constexpr auto spawnRotation = { -60.0f, -45.0f, -30.0f, -15.0f, 15.0f, 30.0f, 45.0f, 60.0f };
 
 constexpr int SpawnRotationForEventValue(int index) {
+  // ME FIXUPS
+  if (index >= 1000 && index <= 1720) return static_cast<float>(index - 1360);
+
   if (index >= 0 && index < spawnRotation.size()) {
     return std::span(spawnRotation)[index];
   }
@@ -238,9 +256,11 @@ ConvertNoteCutDirection(BeatmapSaveDataCommon::NoteCutDirection noteCutDirection
     noteCutDirection2 = GlobalNamespace::NoteCutDirection::None;
     break;
   default:
-    noteCutDirection2 = GlobalNamespace::NoteCutDirection::Any;
+    // ME: No default, just original
+    noteCutDirection2 = noteCutDirection.value__;
     break;
   }
+
   return noteCutDirection2;
 }
 
@@ -364,7 +384,8 @@ constexpr NoteLineLayer ConvertNoteLineLayer(BeatmapSaveDataCommon::NoteLineLaye
     return NoteLineLayer::Upper;
   case BeatmapSaveDataCommon::NoteLineLayer::Top:
     return NoteLineLayer::Top;
-    // don't clamp, let someone else handle the fallout
+
+    // ME: don't clamp, let someone else handle the fallout
   default:
     return layer.value__;
   }
