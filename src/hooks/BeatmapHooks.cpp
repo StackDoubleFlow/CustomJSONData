@@ -151,19 +151,9 @@ MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapOb
   self->AddBeatmapObjectDataOverride(item);
 }
 
-MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectDataInOrder, &BeatmapData::AddBeatmapObjectDataInOrder, BeatmapData,
-                          CustomBeatmapData, BeatmapObjectData*, item) {
-  self->AddBeatmapObjectDataInOrderOverride(item);
-}
-
 MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, BeatmapData,
                           CustomBeatmapData, BeatmapEventData*, item) {
   self->InsertBeatmapEventDataOverride(item);
-}
-
-MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventDataInOrder, &BeatmapData::InsertBeatmapEventDataInOrder, BeatmapData,
-                          CustomBeatmapData, BeatmapEventData*, item) {
-  self->InsertBeatmapEventDataInOrderOverride(item);
 }
 
 MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner::ProcessSliderData, void,
@@ -239,9 +229,7 @@ MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner:
 
 void CustomJSONData::InstallBeatmapHooks() {
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectData);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomAddBeatmapObjectDataInOrder);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomInsertBeatmapEventData);
-  INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomInsertBeatmapEventDataInOrder);
 
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_InsertItem);
   INSTALL_HOOK_ORIG(CJDLogger::Logger, CustomBeatmapDataSortedListForTypes_RemoveItem);

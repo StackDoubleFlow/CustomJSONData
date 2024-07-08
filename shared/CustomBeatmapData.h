@@ -48,9 +48,7 @@ DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
 
     public:
     void AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
-    void AddBeatmapObjectDataInOrderOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
     void InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
-    void InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
 
     inline CustomBeatmapData* GetCopyOverride() { return GetFilteredCopyOverride([](auto i) constexpr { return i; }); }
 
@@ -72,11 +70,11 @@ DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
         if (!beatmapDataItem) continue;
 
         if (auto event = il2cpp_utils::try_cast<GlobalNamespace::BeatmapEventData>(beatmapDataItem)) {
-          copy->InsertBeatmapEventDataInOrderOverride(*event);
+          copy->InsertBeatmapEventDataInOrder(*event);
         }
 
         if (auto object = il2cpp_utils::try_cast<GlobalNamespace::BeatmapObjectData>(beatmapDataItem)) {
-          copy->AddBeatmapObjectDataInOrderOverride(*object);
+          copy->AddBeatmapObjectDataInOrder(*object);
         }
 
         if (auto customEvent = il2cpp_utils::try_cast<CustomEventData>(beatmapDataItem)) {
