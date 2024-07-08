@@ -10,11 +10,11 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  pull-requests: write
-  contents: write
-  repository-projects: write # add permission for forking
-  
+permissions: write
+  # pull-requests: write
+  # contents: write
+  # repository-projects: write # add permission for forking
+
 jobs:
   publish:
     runs-on: ubuntu-latest
