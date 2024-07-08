@@ -113,6 +113,6 @@ jobs:
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           # first asset URL
-          qmod_url: ${{ fromJSON(steps.<step-id>.outputs.assets)[0].browser_download_url }}
+          qmod_url: ${{ fromJSON(steps.upload_file_release.outputs.assets)[0].browser_download_url }}
           qmod_repo_owner: 'dantheman827'
           qmod_repo_name: 'bsqmods'
