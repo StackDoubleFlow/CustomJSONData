@@ -48,7 +48,9 @@ DECLARE_INSTANCE_METHOD(CustomBeatmapData*, BaseCopy);
 
     public:
     void AddBeatmapObjectDataOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
+    void AddBeatmapObjectDataInOrderOverride(GlobalNamespace::BeatmapObjectData* beatmapObjectData);
     void InsertBeatmapEventDataOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
+    void InsertBeatmapEventDataInOrderOverride(GlobalNamespace::BeatmapEventData* beatmapObjectData);
 
     inline CustomBeatmapData* GetCopyOverride() { return GetFilteredCopyOverride([](auto i) constexpr { return i; }); }
 
