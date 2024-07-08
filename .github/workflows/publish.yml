@@ -10,10 +10,10 @@ on:
     tags:
       - 'v*'
 
-permissions: write-all
-  # pull-requests: write
-  # contents: write
-  # repository-projects: write # add permission for forking
+permissions:
+  pull-requests: write
+  contents: write
+  repository-projects: write # add permission for forking
 
 jobs:
   publish:
@@ -115,6 +115,8 @@ jobs:
       - name: Make PR to QeatMods3
         id: qmod-release
         uses: QuestPackageManager/qmod-repo-publish-action@main
+        # TODO: Make this work!
+        continue-on-error: true
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           # first asset URL
