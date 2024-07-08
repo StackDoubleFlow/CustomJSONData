@@ -50,10 +50,10 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
+& qpm qmod manifest
 $modJson = Get-Content "./mod.json" -Raw | ConvertFrom-Json
 
-$modFiles = $modJson.modFiles
-
+$modFiles = $modJson.lateModFiles
 foreach ($fileName in $modFiles) {
     if ($useDebug -eq $true) {
         & adb push build/debug/$fileName /sdcard/ModData/com.beatgames.beatsaber/Modloader/mods/$fileName
