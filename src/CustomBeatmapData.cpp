@@ -32,11 +32,12 @@ void CustomJSONData::CustomBeatmapData::ctor(int numberOfLines) {
   //                                                SortedList_2<CustomEventData*, BeatmapDataItem*>::New_ctor(nullptr)));
 }
 
+[[deprecated("to remove")]]
 void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataOverride(
     GlobalNamespace::BeatmapObjectData* beatmapObjectData) {
   static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "AddBeatmapObjectData", 1);
 
-  beatmapObjectDatas.emplace_back(beatmapObjectData);
+
   il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);
 }
 
@@ -48,11 +49,13 @@ void CustomJSONData::CustomBeatmapData::AddBeatmapObjectDataInOrderOverride(
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
 }
 
+
+[[deprecated("to remove")]]
 void CustomJSONData::CustomBeatmapData::InsertBeatmapEventDataOverride(
     GlobalNamespace::BeatmapEventData* beatmapObjectData) {
   static auto const* base = il2cpp_utils::FindMethodUnsafe("", "BeatmapData", "InsertBeatmapEventData", 1);
 
-  beatmapEventDatas.emplace_back(beatmapObjectData);
+
   PAPER_IL2CPP_CATCH_HANDLER(il2cpp_utils::RunMethodRethrow(this, base, beatmapObjectData);)
 }
 

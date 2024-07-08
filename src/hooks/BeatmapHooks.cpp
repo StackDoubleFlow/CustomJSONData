@@ -146,14 +146,20 @@ MAKE_PAPER_HOOK_MATCH(
   }                                                                                                                    \
   void name##__override(Child* self, ParamT1 param1)
 
-MAKE_HOOK_OVERRIDE_1PARAM(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, BeatmapData,
-                          CustomBeatmapData, BeatmapObjectData*, item) {
-  self->AddBeatmapObjectDataOverride(item);
+MAKE_PAPER_HOOK_MATCH(CustomAddBeatmapObjectData, &BeatmapData::AddBeatmapObjectData, void, BeatmapData* self,
+                      BeatmapObjectData* item) {
+  if (auto customSelf = il2cpp_utils::try_cast<CustomBeatmapData>(self).value_or(nullptr)) {
+    customSelf->beatmapObjectDatas.emplace_back(item);
+  }
+  CustomAddBeatmapObjectData(self, item);
 }
 
-MAKE_HOOK_OVERRIDE_1PARAM(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, BeatmapData,
-                          CustomBeatmapData, BeatmapEventData*, item) {
-  self->InsertBeatmapEventDataOverride(item);
+MAKE_PAPER_HOOK_MATCH(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapEventData, void, BeatmapData* self,
+                      BeatmapEventData* item) {
+  if (auto customSelf = il2cpp_utils::try_cast<CustomBeatmapData>(self).value_or(nullptr)) {
+    customSelf->beatmapEventDatas.emplace_back(item);
+  }
+  CustomInsertBeatmapEventData(self, item);
 }
 
 MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner::ProcessSliderData, void,
