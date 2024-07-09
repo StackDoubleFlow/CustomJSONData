@@ -272,6 +272,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
               BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->layer),
               ConvertColorType(data->get_color()), ConvertNoteCutDirection(data->get_cutDirection()), data->customData);
 
+          noteData->SetCutDirectionAngleOffset((float)data->angleOffset);
+
           return noteData;
         });
 
