@@ -106,13 +106,13 @@ static CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, Note
 static auto CustomSliderData_CreateCustomBurstSliderData(
     ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
     NoteLineLayer headBeforeJumpLineLayer, NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
-    NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, NoteCutDirection tailCutDirection,
-    int sliceCount, float squishAmount, CustomJSONData::v2::CustomDataOpt const& customData) {
+    NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, int sliceCount, float squishAmount,
+    CustomJSONData::v3::CustomDataOpt const& customData) {
   auto* slider =
       CustomSliderData::New_ctor(GlobalNamespace::SliderData::Type::Burst, colorType, false, headTime, headLineIndex,
-                                 headLineLayer, headBeforeJumpLineLayer, 0.0F, headCutDirection, 0.0F, false, tailTime,
-                                 tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0F, tailCutDirection, 0.0F,
-                                 SliderMidAnchorMode(SliderMidAnchorMode::Straight), sliceCount, squishAmount);
+                                 headLineLayer, headBeforeJumpLineLayer, 0.0f, headCutDirection, 0.0f, false, tailTime,
+                                 tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0f, NoteCutDirection::Any,
+                                 0.0f, SliderMidAnchorMode::Straight, sliceCount, squishAmount);
 
   slider->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
@@ -124,7 +124,7 @@ static auto CustomSliderData_CreateCustomSliderData(
     NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier, NoteCutDirection headCutDirection,
     float tailTime, int tailLineIndex, NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer,
     float tailControlPointLengthMultiplier, NoteCutDirection tailCutDirection, SliderMidAnchorMode midAnchorMode,
-    CustomJSONData::v2::CustomDataOpt const& customData) {
+    CustomJSONData::v3::CustomDataOpt const& customData) {
   auto* slider = CustomSliderData::New_ctor(
       GlobalNamespace::SliderData::Type::Normal, colorType, false, headTime, headLineIndex, headLineLayer,
       headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0F, false, tailTime, tailLineIndex,
@@ -199,7 +199,8 @@ constexpr int GetHeightForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::Ob
 constexpr int GetLayerForObstacleType(BeatmapSaveDataVersion2_6_0AndEarlier::ObstacleType obstacleType) {
   // ME FIXUPS
   if (obstacleType.value__ >= 1000 && obstacleType.value__ <= 4005000) {
-    int32_t const startHeight = (obstacleType.value__ >= 4001 && obstacleType.value__ <= 4100000) ? (obstacleType.value__ - 4001) % 1000 : 0;
+    int32_t const startHeight =
+        (obstacleType.value__ >= 4001 && obstacleType.value__ <= 4100000) ? (obstacleType.value__ - 4001) % 1000 : 0;
     return static_cast<int32_t>(static_cast<float>(startHeight) * (20.f / 3)) + 1334;
   }
 

@@ -299,24 +299,24 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>(
         [&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) {
           return CustomSliderData_CreateCustomSliderData(
-              ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
-              ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_headLayer()),
-              data->get_headControlPointLengthMultiplier(), ConvertNoteCutDirection(data->get_headCutDirection()),
-              BeatToTime(data->get_tailBeat()), data->get_tailLine(), ConvertNoteLineLayer(data->get_tailLayer()),
-              ConvertNoteLineLayer(data->get_tailLayer()), data->get_tailControlPointLengthMultiplier(),
-              ConvertNoteCutDirection(data->get_tailCutDirection()),
-              ConvertSliderMidAnchorMode(data->get_sliderMidAnchorMode()), data->customData);
+              ConvertColorType(data->colorType), BeatToTime(data->beat), data->headLine,
+              ConvertNoteLineLayer(data->headLayer), ConvertNoteLineLayer(data->headLayer),
+              data->headControlPointLengthMultiplier,
+              ConvertNoteCutDirection(data->headCutDirection), BeatToTime(data->tailBeat),
+              data->tailLine, ConvertNoteLineLayer(data->tailLayer),
+              ConvertNoteLineLayer(data->tailLayer), data->tailControlPointLengthMultiplier,
+              ConvertNoteCutDirection(data->tailCutDirection),
+              ConvertSliderMidAnchorMode(data->sliderMidAnchorMode), data->customData);
         });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>(
         [&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) {
           return CustomSliderData_CreateCustomBurstSliderData(
-              ConvertColorType(data->get_colorType()), BeatToTime(data->b), data->get_headLine(),
-              ConvertNoteLineLayer(data->get_headLayer()), ConvertNoteLineLayer(data->get_tailLayer()),
-              ConvertNoteCutDirection(data->get_headCutDirection()), BeatToTime(data->get_tailBeat()),
-              data->get_tailLine(), ConvertNoteLineLayer(data->get_tailLayer()),
-              ConvertNoteLineLayer(data->get_tailLayer()), NoteCutDirection::Any, data->get_sliceCount(),
-              data->get_squishAmount(), data->customData);
+              ConvertColorType(data->colorType), BeatToTime(data->beat), data->headLine,
+              ConvertNoteLineLayer(data->headLayer), ConvertNoteLineLayer(data->headLayer),
+              ConvertNoteCutDirection(data->headCutDirection), BeatToTime(data->tailBeat), data->tailLine,
+              ConvertNoteLineLayer(data->tailLayer), ConvertNoteLineLayer(data->tailLayer), data->sliceCount,
+              data->squishAmount, data->customData);
         });
 
     objectConverter.AddConverter<BeatmapSaveDataVersion3::WaypointData*>(
@@ -458,8 +458,6 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
     }
 
     profile.mark("Grouped beatmap events");
-
-
   }
 
   CJDLogger::Logger.fmtLog<LogLevel::INF>("Beatmap events {}", beatmapData->beatmapEventDatas.size());
