@@ -108,7 +108,7 @@ void CustomBeatmapSaveData::ctor(
       colorBoostBeatmapEvents, lightColorEventBoxGroups, lightRotationEventBoxGroups, lightTranslationEventBoxGroups,
       lightFxEventBoxGroups, eventsCollection, basicEventTypesWithKeywords, useNormalEventsAsCompatibleEvents);
   if (rotationEvents && !il2cpp_utils ::AssignableFrom<
-                            ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::RotationEventData*>>(
+                            ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::RotationEventData*>*>(
                             rotationEvents->klass)) {
     CJDLogger::Logger.fmtThrowError("Rotation events is bad! {}", il2cpp_utils::ClassStandardName(rotationEvents->klass, true));
   }
