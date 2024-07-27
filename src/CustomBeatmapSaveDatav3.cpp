@@ -1,4 +1,6 @@
 #include "CustomBeatmapSaveDatav3.h"
+#include "BeatmapSaveDataVersion3/BeatmapSaveData.hpp"
+#include "CJDLogger.h"
 #include "CustomBeatmapSaveDatav2.h"
 #include "misc/BeatmapFieldUtils.hpp"
 
@@ -101,11 +103,15 @@ void CustomBeatmapSaveData::ctor(
     BeatmapSaveDataCommon::BasicEventTypesWithKeywords* basicEventTypesWithKeywords,
     bool useNormalEventsAsCompatibleEvents) {
   INVOKE_CTOR();
-  static auto const* ctor = il2cpp_utils::FindMethodUnsafe(classof(BeatmapSaveData*), ".ctor", 17);
-  il2cpp_utils::RunMethodRethrow(
-      this, ctor, bpmEvents, rotationEvents, colorNotes, bombNotes, obstacles, sliders, burstSliders, waypoints,
-      basicBeatmapEvents, colorBoostBeatmapEvents, lightColorEventBoxGroups, lightRotationEventBoxGroups,
-      lightTranslationEventBoxGroups, lightFxEventBoxGroups, eventsCollection, basicEventTypesWithKeywords, useNormalEventsAsCompatibleEvents);
+  this->BeatmapSaveDataVersion3::BeatmapSaveData::_ctor(
+      bpmEvents, rotationEvents, colorNotes, bombNotes, obstacles, sliders, burstSliders, waypoints, basicBeatmapEvents,
+      colorBoostBeatmapEvents, lightColorEventBoxGroups, lightRotationEventBoxGroups, lightTranslationEventBoxGroups,
+      lightFxEventBoxGroups, eventsCollection, basicEventTypesWithKeywords, useNormalEventsAsCompatibleEvents);
+  if (rotationEvents && !il2cpp_utils ::AssignableFrom<
+                            ::System::Collections::Generic::List_1<::BeatmapSaveDataVersion3::RotationEventData*>>(
+                            rotationEvents->klass)) {
+    CJDLogger::Logger.fmtThrowError("Rotation events is bad! {}", il2cpp_utils::ClassStandardName(rotationEvents->klass, true));
+  }
 }
 
 void CustomBeatmapSaveData_ColorNoteData::ctor(float beat, int line, int layer,

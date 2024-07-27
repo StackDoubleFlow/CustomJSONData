@@ -381,11 +381,12 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
     }
 
     // rotation
-    CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events");
+    CJDLogger::Logger.fmtLog<LogLevel::DBG>("rotation events {}",
+                                            il2cpp_utils::ClassStandardName(beatmapSaveData->rotationEvents->klass));
     bpmTimeProcessor.Reset();
     bpmTimeProcessorIl2cpp->Reset();
     for (auto const& rotationEvent :
-         VList<BeatmapSaveDataVersion3::RotationEventData*>(beatmapSaveData->rotationEvents)) {
+         VList<BeatmapSaveDataVersion3::RotationEventData* > (beatmapSaveData->rotationEvents)) {
       SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
           rotationEvent->get_executionTime() == BeatmapSaveDataCommon::ExecutionTime::Early
               ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
