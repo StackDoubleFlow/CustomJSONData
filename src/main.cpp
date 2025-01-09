@@ -5,7 +5,7 @@
 
 CJD_MOD_EXTERN_FUNC void setup(CModInfo* info) {
   *info = CustomJSONData::modInfo.to_c();
-  Paper::Logger::RegisterFileContextId(CJDLogger::Logger.tag, "CustomJSONDataPaper");
+  Paper::Logger::RegisterFileContextId(CJDLogger::Logger.tag);
 }
 
 CJD_MOD_EXTERN_FUNC void late_load() {

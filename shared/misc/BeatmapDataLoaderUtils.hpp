@@ -25,7 +25,6 @@
 #include "GlobalNamespace/LightRotationBeatmapEventDataBox.hpp"
 #include "GlobalNamespace/LightRotationBaseData.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupLists.hpp"
-#include "GlobalNamespace/SpawnRotationBeatmapEventData.hpp"
 #include "GlobalNamespace/DefaultEnvironmentEventsFactory.hpp"
 #include "GlobalNamespace/BeatmapEventDataBoxGroupList.hpp"
 #include "GlobalNamespace/EnvironmentLightGroups.hpp"
@@ -64,22 +63,24 @@ using namespace GlobalNamespace;
 using namespace CustomJSONData;
 using namespace BeatmapSaveDataVersion3;
 
-static CustomNoteData* CreateCustomBasicNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
-                                                 ColorType colorType, NoteCutDirection cutDirection,
+static CustomNoteData* CreateCustomBasicNoteData(float time, float beat, int rotation, int lineIndex,
+                                                 NoteLineLayer noteLineLayer, ColorType colorType,
+                                                 NoteCutDirection cutDirection,
                                                  CustomJSONData::v2::CustomDataOpt const& customData) {
-  auto* b = CustomNoteData::New_ctor(time, lineIndex, NoteLineLayer(noteLineLayer), NoteLineLayer(noteLineLayer),
-                                     NoteData::GameplayType(NoteData::GameplayType::Normal),
-                                     NoteData::ScoringType(NoteData::ScoringType::Normal), ColorType(colorType),
-                                     NoteCutDirection(cutDirection), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
+  auto* b = CustomNoteData::New_ctor(
+      time, beat, rotation, lineIndex, NoteLineLayer(noteLineLayer), NoteLineLayer(noteLineLayer),
+      NoteData::GameplayType(NoteData::GameplayType::Normal), NoteData::ScoringType(NoteData::ScoringType::Normal),
+      ColorType(colorType), NoteCutDirection(cutDirection), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
 
   b->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
   return b;
 }
 
-static CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
+static CustomNoteData* CreateCustomBombNoteData(float time, float beat, int rotation, int lineIndex,
+                                                NoteLineLayer noteLineLayer,
                                                 CustomJSONData::v2::CustomDataOpt const& customData) {
-  auto* b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, noteLineLayer,
+  auto* b = CustomNoteData::New_ctor(time, beat, rotation, lineIndex, noteLineLayer, noteLineLayer,
                                      NoteData::GameplayType(NoteData::GameplayType::Bomb),
                                      NoteData::ScoringType(NoteData::ScoringType::NoScore), ColorType(ColorType::None),
                                      NoteCutDirection(NoteCutDirection::None), 0.0F, 0.0F, lineIndex, 0.0F, 0.0F, 1.0F);
@@ -89,14 +90,15 @@ static CustomNoteData* CreateCustomBombNoteData(float time, int lineIndex, NoteL
   return b;
 }
 
-static CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, NoteLineLayer noteLineLayer,
-                                                 NoteLineLayer beforeJumpNoteLineLayer, ColorType colorType,
-                                                 NoteCutDirection cutDirection, float cutSfxVolumeMultiplier,
+static CustomNoteData* CreateCustomBurstNoteData(float time, float beat, int rotation, int lineIndex,
+                                                 NoteLineLayer noteLineLayer, NoteLineLayer beforeJumpNoteLineLayer,
+                                                 ColorType colorType, NoteCutDirection cutDirection,
+                                                 float cutSfxVolumeMultiplier,
                                                  CustomJSONData::v2::CustomDataOpt const& customData) {
-  auto* b = CustomNoteData::New_ctor(time, lineIndex, noteLineLayer, beforeJumpNoteLineLayer,
+  auto* b = CustomNoteData::New_ctor(time, beat, rotation, lineIndex, noteLineLayer, beforeJumpNoteLineLayer,
                                      NoteData::GameplayType(NoteData::GameplayType::BurstSliderElement),
-                                     NoteData::ScoringType(NoteData::ScoringType::BurstSliderElement), colorType,
-                                     cutDirection, 0, 0, lineIndex, 0, 0, cutSfxVolumeMultiplier);
+                                     NoteData::ScoringType(NoteData::ScoringType::ChainLink), colorType, cutDirection,
+                                     0, 0, lineIndex, 0, 0, cutSfxVolumeMultiplier);
 
   b->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
@@ -104,15 +106,16 @@ static CustomNoteData* CreateCustomBurstNoteData(float time, int lineIndex, Note
 }
 
 static auto CustomSliderData_CreateCustomBurstSliderData(
-    ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
-    NoteLineLayer headBeforeJumpLineLayer, NoteCutDirection headCutDirection, float tailTime, int tailLineIndex,
-    NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer, int sliceCount, float squishAmount,
+    ColorType colorType, float headTime, float headBeat, int headRotation, int headLineIndex,
+    NoteLineLayer headLineLayer, NoteLineLayer headBeforeJumpLineLayer, NoteCutDirection headCutDirection,
+    float tailTime, int tailRotation, int tailLineIndex, NoteLineLayer tailLineLayer,
+    NoteLineLayer tailBeforeJumpLineLayer, int sliceCount, float squishAmount,
     CustomJSONData::v3::CustomDataOpt const& customData) {
-  auto* slider =
-      CustomSliderData::New_ctor(GlobalNamespace::SliderData::Type::Burst, colorType, false, headTime, headLineIndex,
-                                 headLineLayer, headBeforeJumpLineLayer, 0.0f, headCutDirection, 0.0f, false, tailTime,
-                                 tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0f, NoteCutDirection::Any,
-                                 0.0f, SliderMidAnchorMode::Straight, sliceCount, squishAmount);
+  auto* slider = CustomSliderData::New_ctor(
+      GlobalNamespace::SliderData::Type::Burst, colorType, false, headTime, headBeat, headRotation, headLineIndex,
+      headLineLayer, headBeforeJumpLineLayer, 0.0f, headCutDirection, 0.0f, false, tailTime, tailRotation,
+      tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, 0.0f, NoteCutDirection::Any, 0.0f,
+      SliderMidAnchorMode::Straight, sliceCount, squishAmount);
 
   slider->customData = CustomJSONData::JSONWrapperOrNull(customData);
 
@@ -120,16 +123,16 @@ static auto CustomSliderData_CreateCustomBurstSliderData(
 }
 
 static auto CustomSliderData_CreateCustomSliderData(
-    ColorType colorType, float headTime, int headLineIndex, NoteLineLayer headLineLayer,
-    NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier, NoteCutDirection headCutDirection,
-    float tailTime, int tailLineIndex, NoteLineLayer tailLineLayer, NoteLineLayer tailBeforeJumpLineLayer,
-    float tailControlPointLengthMultiplier, NoteCutDirection tailCutDirection, SliderMidAnchorMode midAnchorMode,
-    CustomJSONData::v3::CustomDataOpt const& customData) {
+    ColorType colorType, float headTime, float headBeat, int headRotation, int headLineIndex,
+    NoteLineLayer headLineLayer, NoteLineLayer headBeforeJumpLineLayer, float headControlPointLengthMultiplier,
+    NoteCutDirection headCutDirection, float tailTime, int tailRotation, int tailLineIndex, NoteLineLayer tailLineLayer,
+    NoteLineLayer tailBeforeJumpLineLayer, float tailControlPointLengthMultiplier, NoteCutDirection tailCutDirection,
+    SliderMidAnchorMode midAnchorMode, CustomJSONData::v3::CustomDataOpt const& customData) {
   auto* slider = CustomSliderData::New_ctor(
-      GlobalNamespace::SliderData::Type::Normal, colorType, false, headTime, headLineIndex, headLineLayer,
-      headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0F, false, tailTime, tailLineIndex,
-      tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier, tailCutDirection, 0.0F, midAnchorMode,
-      0, 1.0F);
+      GlobalNamespace::SliderData::Type::Normal, colorType, false, headTime, headBeat, headRotation, headLineIndex,
+      headLineLayer, headBeforeJumpLineLayer, headControlPointLengthMultiplier, headCutDirection, 0.0F, false, tailTime,
+      tailRotation, tailLineIndex, tailLineLayer, tailBeforeJumpLineLayer, tailControlPointLengthMultiplier,
+      tailCutDirection, 0.0F, midAnchorMode, 0, 1.0F);
 
   slider->customData = CustomJSONData::JSONWrapperOrNull(customData);
 

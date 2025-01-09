@@ -31,6 +31,8 @@
 #include "GlobalNamespace/IReadonlyBeatmapData.hpp"
 #include "GlobalNamespace/BeatmapEventDataLightsExtensions.hpp"
 #include "GlobalNamespace/BurstSliderSpawner.hpp"
+#include "GlobalNamespace/VariableMovementDataProvider.hpp"
+#include "GlobalNamespace/NoteSpawnData.hpp"
 #include "GlobalNamespace/NoteCutDirectionExtensions.hpp"
 #include "GlobalNamespace/BeatmapObjectSpawnMovementData.hpp"
 
@@ -49,7 +51,7 @@
 
 #include "cpp-semver/shared/cpp-semver.hpp"
 
-#include "paper/shared/Profiler.hpp"
+#include "paper2_scotland2/shared/Profiler.hpp"
 
 #include "sombrero/shared/linq_functional.hpp"
 #include "sombrero/shared/Vector2Utils.hpp"
@@ -142,75 +144,78 @@ MAKE_PAPER_HOOK_MATCH(CustomInsertBeatmapEventData, &BeatmapData::InsertBeatmapE
   }
   CustomInsertBeatmapEventData(self, item);
 }
-
 MAKE_PAPER_HOOK_MATCH(BurstSliderSpawner_ProcessSliderData, &BurstSliderSpawner::ProcessSliderData, void,
-                      ::GlobalNamespace::SliderData* sliderData,
-                      ByRef<::GlobalNamespace::BeatmapObjectSpawnMovementData::SliderSpawnData> sliderSpawnData,
-                      float_t rotation, bool forceIsFirstNote,
-                      ::GlobalNamespace::BurstSliderSpawner::ProcessNoteDataDelegate* processNoteData) {
+            ::GlobalNamespace::SliderData* sliderData,
+            ::ByRef<::GlobalNamespace::SliderSpawnData> sliderSpawnData, bool forceIsFirstNote,
+            ::GlobalNamespace::VariableMovementDataProvider* variableMovementDataProvider,
+            ::GlobalNamespace::BurstSliderSpawner_ProcessNoteDataDelegate* processNoteData) {
 
   static auto CustomKlass = classof(CustomJSONData::CustomSliderData*);
 
   auto* customSliderData = il2cpp_utils::try_cast<CustomJSONData::CustomSliderData>(sliderData).value_or(nullptr);
   if (customSliderData == nullptr) {
-    return BurstSliderSpawner_ProcessSliderData(sliderData, sliderSpawnData, rotation, forceIsFirstNote,
-                                                processNoteData);
+  return BurstSliderSpawner_ProcessSliderData(sliderData, sliderSpawnData, forceIsFirstNote,
+                        variableMovementDataProvider, processNoteData);
   }
-  float num = sliderSpawnData->jumpDuration * 0.5f;
-  float time = sliderData->time;
-  auto headMoveStartPos = sliderSpawnData->headMoveStartPos;
-  auto headJumpStartPos = sliderSpawnData->headJumpStartPos;
-  auto headJumpEndPos = sliderSpawnData->headJumpEndPos;
-  float headJumpGravity = sliderSpawnData->headJumpGravity;
-  auto vector = headJumpStartPos;
-  vector.y += headJumpGravity * num * num * 0.5f;
-  float tailTime = sliderData->tailTime;
-  auto tailJumpStartPos = sliderSpawnData->tailJumpStartPos;
-  float tailJumpGravity = sliderSpawnData->tailJumpGravity;
-  auto vector2 = tailJumpStartPos;
-  vector2.y += tailJumpGravity * num * num * 0.5f;
-  auto vector3 = Sombrero::FastVector2(vector2.x - vector.x, vector2.y - vector.y);
+
+  float halfJumpDuration = variableMovementDataProvider->halfJumpDuration;
+  float headGravity = variableMovementDataProvider->CalculateCurrentNoteJumpGravity(sliderSpawnData->headGravityBase);
+  float tailGravity = variableMovementDataProvider->CalculateCurrentNoteJumpGravity(sliderSpawnData->tailGravityBase);
+
+  auto vector = Sombrero::FastVector2(sliderSpawnData->headNoteOffset.x, 
+    sliderSpawnData->headNoteOffset.y + headGravity * halfJumpDuration * halfJumpDuration * 0.5f);
+  
+  auto vector2 = Sombrero::FastVector2(sliderSpawnData->tailNoteOffset.x,
+    sliderSpawnData->tailNoteOffset.y + tailGravity * halfJumpDuration * halfJumpDuration * 0.5f);
+
+  auto vector3 = vector2 - vector;
   float magnitude = vector3.Magnitude();
+  
   float angle = (NoteCutDirectionExtensions::RotationAngle(sliderData->headCutDirection) - 90.0f +
-                 sliderData->headCutDirectionAngleOffset) *
-                0.017453292f;
+         sliderData->headCutDirectionAngleOffset) * 0.017453292f;
   auto vector4 = Sombrero::FastVector2(std::cos(angle), std::sin(angle)) * 0.5f * magnitude;
+  
   int sliceCount = sliderData->sliceCount;
   float squishAmount = sliderData->squishAmount;
-  float num3 = tailTime - time;
-  float num4 = 0.5f * num3;
+  float time = sliderData->time;
+  float tailTime = sliderData->tailTime;
+  float num3 = (tailTime - time) * 0.5f;
 
   auto bezierCurve = [](Sombrero::FastVector2 p0, Sombrero::FastVector2 p1, Sombrero::FastVector2 p2, float t,
-                        Sombrero::FastVector2& pos, Sombrero::FastVector2& tangent) constexpr {
-    float num = 1.0f - t;
-    pos = p0 * num * num + p1 * 2.0f * num * t + p2 * t * t;
-    tangent = (p1 - p0) * 2.0f * (1.0f - t) + (p2 - p1) * 2.0f * t;
+            Sombrero::FastVector2& pos, Sombrero::FastVector2& tangent) constexpr {
+  float num = 1.0f - t;
+  pos = p0 * num * num + p1 * 2.0f * num * t + p2 * t * t;
+  tangent = (p1 - p0) * 2.0f * (1.0f - t) + (p2 - p1) * 2.0f * t;
   };
 
   for (int i = 1; i < sliceCount; i++) {
-    float sliceT = (float)i / (float)(sliceCount - 1);
-    int index = ((i < sliceCount - 1) ? sliderData->headLineIndex : sliderData->tailLineIndex);
-    auto noteLineLayer = ((i < sliceCount - 1) ? sliderData->headLineLayer : sliderData->tailLineLayer);
-    /// TRANSPILE HERE
-    auto noteData = CreateCustomBurstNoteData(std::lerp(time, tailTime, sliceT), index, noteLineLayer,
-                                              sliderData->headBeforeJumpLineLayer, sliderData->colorType,
-                                              NoteCutDirection::Any, 1.0f, customSliderData->customData->value);
-    // copy the AD from the head note
-    noteData->customData->associatedData = customSliderData->customData->associatedData;
-    /// END TRANSPILE HERE
-    noteData->timeToPrevColorNote = sliceT * num4;
-    Sombrero::FastVector2 position;
-    Sombrero::FastVector2 tangent;
-    bezierCurve(Sombrero::FastVector2::zero(), vector4, vector3, sliceT * squishAmount, position, tangent);
-    noteData->SetCutDirectionAngleOffset(Sombrero::FastVector2::SignedAngle({ 0.0f, -1.0f }, tangent));
-    noteData->timeToNextColorNote = ((i == sliceCount - 1) ? 1.0f : 0.4f);
-    auto noteSpawnData = BeatmapObjectSpawnMovementData::NoteSpawnData(
-        Sombrero::FastVector3(headMoveStartPos.x + position.x, headMoveStartPos.y, headMoveStartPos.z),
-        Sombrero::FastVector3(headJumpStartPos.x + position.x, headJumpStartPos.y, headJumpStartPos.z),
-        Sombrero::FastVector3(headJumpEndPos.x + position.x, headJumpEndPos.y, headJumpEndPos.z),
-        2.0f * (vector.y + position.y - headJumpStartPos.y) / (num * num), sliderSpawnData->moveDuration,
-        sliderSpawnData->jumpDuration);
-    processNoteData->Invoke(noteData, noteSpawnData, rotation, forceIsFirstNote);
+  float sliceT = (float)i / (float)(sliceCount - 1);
+  int index = ((i < sliceCount - 1) ? sliderData->headLineIndex : sliderData->tailLineIndex);
+  auto noteLineLayer = ((i < sliceCount - 1) ? sliderData->headLineLayer : sliderData->tailLineLayer);
+
+  // TRANSPILE HERE
+  auto noteData =
+      CreateCustomBurstNoteData(std::lerp(time, tailTime, sliceT), sliderData->beat, sliderData->rotation, index,
+                                noteLineLayer, sliderData->headBeforeJumpLineLayer, sliderData->colorType,
+                                NoteCutDirection::Any, 1.0f, customSliderData->customData->value);
+  // copy the AD from the original note
+  noteData->customData->associatedData = customSliderData->customData->associatedData;
+  // TRANSPILE END
+  
+  noteData->timeToPrevColorNote = sliceT * num3;
+  Sombrero::FastVector2 position;
+  Sombrero::FastVector2 tangent;
+  bezierCurve(Sombrero::FastVector2::zero(), vector4, vector3, sliceT * squishAmount, position, tangent);
+  noteData->SetCutDirectionAngleOffset(Sombrero::FastVector2::SignedAngle({ 0.0f, -1.0f }, tangent));
+  noteData->timeToNextColorNote = ((i == sliceCount - 1) ? 1.0f : 0.4f);
+
+  auto headNoteOffset = Sombrero::FastVector3(sliderSpawnData->headNoteOffset);
+  auto noteSpawnData = NoteSpawnData(headNoteOffset + Sombrero::FastVector3(vector.x, 0.0f, 0.0f),
+                                     headNoteOffset + Sombrero::FastVector3(vector.x, 0.0f, 0.0f),
+                                     headNoteOffset + Sombrero::FastVector3(vector.x, 0.0f, 0.0f),
+                                     headGravity * halfJumpDuration * halfJumpDuration * 0.5f + vector.y);
+
+  processNoteData->Invoke(noteData, noteSpawnData, forceIsFirstNote);
   }
 }
 

@@ -21,6 +21,7 @@
 #include "GlobalNamespace/EnvironmentKeywords.hpp"
 #include "GlobalNamespace/IEnvironmentLightGroups.hpp"
 #include "GlobalNamespace/EnvironmentEffectsFilterPreset.hpp"
+#include "GlobalNamespace/RotationTimeProcessor.hpp"
 
 #include "UnityEngine/JsonUtility.hpp"
 
@@ -34,7 +35,7 @@
 
 #include "cpp-semver/shared/cpp-semver.hpp"
 
-#include "paper/shared/Profiler.hpp"
+#include "paper2_scotland2/shared/Profiler.hpp"
 
 #include "custom-types/shared/register.hpp"
 
@@ -59,22 +60,24 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3,
                       GlobalNamespace::BeatmapData*, ::StringW beatmapJson, ::StringW defaultLightshowJson,
                       ::GlobalNamespace::BeatmapDifficulty beatmapDifficulty, float_t startBpm,
                       bool loadingForDesignatedEnvironment, ::GlobalNamespace::IEnvironmentInfo* environmentInfo,
-                      ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings) {
+                      ::GlobalNamespace::BeatmapLevelDataVersion beatmapLevelDataVersion,
+                      ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings,
+                      ::GlobalNamespace::IBeatmapLightEventConverter* lightEventConverter) {
   CJDLogger::Logger.fmtLog<LogLevel::DBG>("Loading Beatmap Data");
 
   auto sharedDoc = parseDocument(std::string(beatmapJson));
 
   if (!sharedDoc) {
-    return BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3(beatmapJson, defaultLightshowJson, beatmapDifficulty,
-                                                               startBpm, loadingForDesignatedEnvironment,
-                                                               environmentInfo, playerSpecificSettings);
+    return BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3(
+        beatmapJson, defaultLightshowJson, beatmapDifficulty, startBpm, loadingForDesignatedEnvironment,
+        environmentInfo, beatmapLevelDataVersion, playerSpecificSettings, lightEventConverter);
   }
 
   auto saveData = v3::CustomBeatmapSaveData::Deserialize(*sharedDoc);
   if (!saveData) {
-    return BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3(beatmapJson, defaultLightshowJson, beatmapDifficulty,
-                                                               startBpm, loadingForDesignatedEnvironment,
-                                                               environmentInfo, playerSpecificSettings);
+    return BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3(
+        beatmapJson, defaultLightshowJson, beatmapDifficulty, startBpm, loadingForDesignatedEnvironment,
+        environmentInfo, beatmapLevelDataVersion, playerSpecificSettings, lightEventConverter);
   }
 
   LightshowSaveData* defaultLightshowSaveData =
@@ -100,7 +103,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveDataJson_v3,
 
   auto beatmapData = BeatmapDataLoaderVersion3::BeatmapDataLoader::GetBeatmapDataFromSaveData(
       saveData, defaultLightshowSaveData, beatmapDifficulty, startBpm, loadingForDesignatedEnvironment,
-      environmentKeywords, environmentLightGroups, playerSpecificSettings, nullptr);
+      environmentKeywords, environmentLightGroups, playerSpecificSettings, lightEventConverter, nullptr);
   return beatmapData;
 }
 
@@ -219,6 +222,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
                       bool loadingForDesignatedEnvironment, ::GlobalNamespace::EnvironmentKeywords* environmentKeywords,
                       ::GlobalNamespace::IEnvironmentLightGroups* environmentLightGroups,
                       ::GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings,
+                      ::GlobalNamespace::IBeatmapLightEventConverter* lightEventConverter,
                       ::System::Diagnostics::Stopwatch* stopwatch) {
   CJDLogger::Logger.Backtrace(100);
 
@@ -251,6 +255,8 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   ListW<BeatmapSaveDataVersion3::BpmChangeEventData*> bpmEvents = beatmapSaveData->bpmEvents;
   CustomJSONData::BpmTimeProcessor bpmTimeProcessor(startBpm, bpmEvents);
 
+  auto rotationTimeProcessor = RotationTimeProcessor::New_ctor(
+      beatmapSaveData->rotationEvents->i___System__Collections__Generic__IReadOnlyList_1_T_());
   auto* bpmTimeProcessorIl2cpp = CustomJSONData::NewFast<GlobalNamespace::BpmTimeProcessor*>(
       startBpm, bpmEvents->i___System__Collections__Generic__IReadOnlyList_1_T_());
 
@@ -267,10 +273,11 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
   {
     CppConverter<GlobalNamespace::BeatmapObjectData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> objectConverter;
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_ColorNoteData*>(
-        [&BeatToTime](v3::CustomBeatmapSaveData_ColorNoteData* data) {
+        [&BeatToTime, &rotationTimeProcessor](v3::CustomBeatmapSaveData_ColorNoteData* data) {
           auto* noteData = CreateCustomBasicNoteData(
-              BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->layer),
-              ConvertColorType(data->get_color()), ConvertNoteCutDirection(data->get_cutDirection()), data->customData);
+              BeatToTime(data->b), data->b, rotationTimeProcessor->ConvertBeatToRotation(data->b), data->get_line(),
+              ConvertNoteLineLayer(data->layer), ConvertColorType(data->get_color()),
+              ConvertNoteCutDirection(data->get_cutDirection()), data->customData);
 
           noteData->SetCutDirectionAngleOffset((float)data->angleOffset);
 
@@ -278,18 +285,19 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
         });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BombNoteData*>(
-        [&BeatToTime](v3::CustomBeatmapSaveData_BombNoteData* data) constexpr {
-          auto* b = CreateCustomBombNoteData(BeatToTime(data->b), data->get_line(),
+        [&BeatToTime, &rotationTimeProcessor](v3::CustomBeatmapSaveData_BombNoteData* data) constexpr {
+          auto* b = CreateCustomBombNoteData(BeatToTime(data->b), data->b,
+                                             rotationTimeProcessor->ConvertBeatToRotation(data->b), data->get_line(),
                                              ConvertNoteLineLayer(data->get_layer()), data->customData);
           return b;
         });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_ObstacleData*>(
-        [&BeatToTime](v3::CustomBeatmapSaveData_ObstacleData* data) constexpr {
+        [&BeatToTime, &rotationTimeProcessor](v3::CustomBeatmapSaveData_ObstacleData* data) constexpr {
           float beat = BeatToTime(data->b);
-          auto* obstacle =
-              CustomObstacleData::New_ctor(beat, data->line, GetNoteLineLayer(data->layer),
-                                           BeatToTime(data->b + data->duration) - beat, data->width, data->height);
+          auto* obstacle = CustomObstacleData::New_ctor(
+              BeatToTime(data->b), data->b, rotationTimeProcessor->ConvertBeatToRotation(data->b), data->line,
+              GetNoteLineLayer(data->layer), BeatToTime(data->b + data->duration) - beat, data->width, data->height);
 
           obstacle->customData = CustomJSONData::JSONWrapperOrNull(data->customData);
 
@@ -297,33 +305,35 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
         });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_SliderData*>(
-        [&BeatToTime](v3::CustomBeatmapSaveData_SliderData* data) {
+        [&BeatToTime, &rotationTimeProcessor](v3::CustomBeatmapSaveData_SliderData* data) {
           return CustomSliderData_CreateCustomSliderData(
-              ConvertColorType(data->colorType), BeatToTime(data->beat), data->headLine,
+              ConvertColorType(data->colorType), BeatToTime(data->beat), data->beat,
+              rotationTimeProcessor->ConvertBeatToRotation(data->beat), data->headLine,
               ConvertNoteLineLayer(data->headLayer), ConvertNoteLineLayer(data->headLayer),
-              data->headControlPointLengthMultiplier,
-              ConvertNoteCutDirection(data->headCutDirection), BeatToTime(data->tailBeat),
-              data->tailLine, ConvertNoteLineLayer(data->tailLayer),
-              ConvertNoteLineLayer(data->tailLayer), data->tailControlPointLengthMultiplier,
-              ConvertNoteCutDirection(data->tailCutDirection),
+              data->headControlPointLengthMultiplier, ConvertNoteCutDirection(data->headCutDirection),
+              BeatToTime(data->tailBeat), rotationTimeProcessor->ConvertBeatToRotation(data->tailBeat), data->tailLine,
+              ConvertNoteLineLayer(data->tailLayer), ConvertNoteLineLayer(data->tailLayer),
+              data->tailControlPointLengthMultiplier, ConvertNoteCutDirection(data->tailCutDirection),
               ConvertSliderMidAnchorMode(data->sliderMidAnchorMode), data->customData);
         });
 
     objectConverter.AddConverter<v3::CustomBeatmapSaveData_BurstSliderData*>(
-        [&BeatToTime](v3::CustomBeatmapSaveData_BurstSliderData* data) {
+        [&BeatToTime, &rotationTimeProcessor](v3::CustomBeatmapSaveData_BurstSliderData* data) {
           return CustomSliderData_CreateCustomBurstSliderData(
-              ConvertColorType(data->colorType), BeatToTime(data->beat), data->headLine,
+              ConvertColorType(data->colorType), BeatToTime(data->beat), data->beat,
+              rotationTimeProcessor->ConvertBeatToRotation(data->beat), data->headLine,
               ConvertNoteLineLayer(data->headLayer), ConvertNoteLineLayer(data->headLayer),
-              ConvertNoteCutDirection(data->headCutDirection), BeatToTime(data->tailBeat), data->tailLine,
+              ConvertNoteCutDirection(data->headCutDirection), BeatToTime(data->tailBeat),
+              rotationTimeProcessor->ConvertBeatToRotation(data->tailBeat), data->tailLine,
               ConvertNoteLineLayer(data->tailLayer), ConvertNoteLineLayer(data->tailLayer), data->sliceCount,
               data->squishAmount, data->customData);
         });
 
     objectConverter.AddConverter<BeatmapSaveDataVersion3::WaypointData*>(
-        [&BeatToTime](BeatmapSaveDataVersion3::WaypointData* data) constexpr {
+        [&BeatToTime, &rotationTimeProcessor](BeatmapSaveDataVersion3::WaypointData* data) constexpr {
           return CustomJSONData::NewFast<GlobalNamespace::WaypointData*>(
-              BeatToTime(data->b), data->get_line(), ConvertNoteLineLayer(data->get_layer()),
-              GlobalNamespace::OffsetDirection(data->get_offsetDirection().value__));
+              BeatToTime(data->b), data->b, rotationTimeProcessor->ConvertBeatToRotation(data->b), data->get_line(),
+              data->get_layer(), GlobalNamespace::OffsetDirection(data->get_offsetDirection().value__));
         });
 
     CJDLogger::Logger.fmtLog<LogLevel::DBG>("Creating object list");
@@ -385,17 +395,7 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
                                             il2cpp_utils::ClassStandardName(beatmapSaveData->rotationEvents->klass));
     bpmTimeProcessor.Reset();
     bpmTimeProcessorIl2cpp->Reset();
-    for (auto const& rotationEvent :
-         VList<BeatmapSaveDataVersion3::RotationEventData* > (beatmapSaveData->rotationEvents)) {
-      SpawnRotationBeatmapEventData::SpawnRotationEventType executionTime =
-          rotationEvent->get_executionTime() == BeatmapSaveDataCommon::ExecutionTime::Early
-              ? SpawnRotationBeatmapEventData::SpawnRotationEventType::Early
-              : SpawnRotationBeatmapEventData::SpawnRotationEventType::Late;
-
-      auto event = CustomJSONData::NewFast<SpawnRotationBeatmapEventData*>(BeatToTime(rotationEvent->b), executionTime,
-                                                                           rotationEvent->rotation);
-      beatmapData->InsertBeatmapEventDataOverride(event);
-    }
+    rotationTimeProcessor->Reset();
 
     if (canUseEnvironmentEventsAndShouldLoadDynamicEvents) {
       CppConverter<BeatmapEventData*, BeatmapSaveDataVersion3::BeatmapSaveDataItem*> eventConverter;
@@ -412,13 +412,13 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       CJDLogger::Logger.info("Special events filter {}", fmt::ptr(specialEventsFilter->____eventTypesToFilter));
 
       eventConverter.AddConverter<v3::CustomBeatmapSaveData_BasicEventData*>(
-          [&BeatToTime, &specialEventsFilter](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
+          [&BeatToTime, &specialEventsFilter, rotationTimeProcessor](v3::CustomBeatmapSaveData_BasicEventData* data) constexpr {
             if (!specialEventsFilter->IsEventValid(data->eventType)) {
               return static_cast<CustomBeatmapEventData*>(nullptr);
             }
 
-            auto* event = CustomBeatmapEventData::New_ctor(BeatToTime(data->b), data->eventType.value__, data->value,
-                                                           data->floatValue);
+            auto* event = CustomBeatmapEventData::New_ctor(BeatToTime(data->b), 
+                                                           data->eventType.value__, data->value, data->floatValue);
 
             event->customData = CustomJSONData::JSONWrapperOrNull(data->customData);
 
@@ -426,8 +426,9 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
           });
 
       eventConverter.AddConverter<BeatmapSaveDataVersion3::ColorBoostEventData*>(
-          [&BeatToTime](BeatmapSaveDataVersion3::ColorBoostEventData* data) constexpr {
-            return CustomJSONData::NewFast<ColorBoostBeatmapEventData*>(BeatToTime(data->beat), data->boost);
+          [&BeatToTime, rotationTimeProcessor](BeatmapSaveDataVersion3::ColorBoostEventData* data) constexpr {
+            return CustomJSONData::NewFast<ColorBoostBeatmapEventData*>(
+                BeatToTime(data->beat), data->boost);
           });
 
       CJDLogger::Logger.fmtLog<LogLevel::DBG>("basic events");
@@ -447,13 +448,14 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v3,
       }
 
       BeatmapDataLoaderVersion3::BeatmapDataLoader::ConvertEventBoxGroups(
-          beatmapData, beatmapSaveData, bpmTimeProcessorIl2cpp, environmentLightGroups);
+          beatmapData, beatmapSaveData, bpmTimeProcessorIl2cpp, environmentLightGroups, lightEventConverter);
     } else if (defaultLightshowSaveData != nullptr) {
       // this will generate non custom events
       // we need to be safe about this some day
       // not today though
-      BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(
-          beatmapData, defaultLightshowSaveData, bpmTimeProcessorIl2cpp, environmentKeywords, environmentLightGroups);
+      BeatmapDataLoaderVersion4::BeatmapDataLoader::LoadLightshow(beatmapData, defaultLightshowSaveData,
+                                                                  bpmTimeProcessorIl2cpp, environmentKeywords,
+                                                                  environmentLightGroups, lightEventConverter);
     } else {
       DefaultEnvironmentEventsFactory::InsertDefaultEvents(beatmapData);
     }

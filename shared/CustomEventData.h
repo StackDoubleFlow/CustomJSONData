@@ -22,40 +22,36 @@ class BeatmapCallbacksController;
 
 #define FindMethodGetter(methodName) ::il2cpp_utils::il2cpp_type_check::MetadataGetter<methodName>::methodInfo()
 
-// clang-format off
-DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem,
+DECLARE_CLASS_CODEGEN(CustomJSONData, CustomEventData, GlobalNamespace::BeatmapDataItem) {
 
 private:
-                      DECLARE_FASTER_CTOR(ctor, float time);
+  DECLARE_FASTER_CTOR(ctor, float time);
+
 public:
-  static CustomEventData* New(float time, std::string_view type, size_t typeHash,
-                                            rapidjson::Value const* data);
+  static CustomEventData* New(float time, std::string_view type, size_t typeHash, rapidjson::Value const* data);
 
+  DECLARE_OVERRIDE_METHOD(CustomEventData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
 
-                      DECLARE_OVERRIDE_METHOD(CustomEventData*, GetCopy,
-                                              il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));
+public:
+  std::string_view type;
+  size_t typeHash;
+  rapidjson::Value const* data;
+};
 
-                      public
-                      : std::string_view type;
-                      size_t typeHash; rapidjson::Value const* data;)
+DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapDataCallbackWrapper, GlobalNamespace::BeatmapDataCallbackWrapper) {
+  DECLARE_FASTER_CTOR(ctor);
 
-DECLARE_CLASS_CODEGEN(
-    CustomJSONData, CustomBeatmapDataCallbackWrapper, GlobalNamespace::BeatmapDataCallbackWrapper,
-    DECLARE_FASTER_CTOR(ctor);
+  DECLARE_SIMPLE_DTOR();
 
-    DECLARE_SIMPLE_DTOR();
+  DECLARE_OVERRIDE_METHOD(void, CallCallback,
+                          FindMethodGetter(&GlobalNamespace::BeatmapDataCallbackWrapper::CallCallback),
+                          GlobalNamespace::BeatmapDataItem* item);
 
-    DECLARE_OVERRIDE_METHOD(void, CallCallback,
-                            FindMethodGetter(&GlobalNamespace::BeatmapDataCallbackWrapper::CallCallback),
-                            GlobalNamespace::BeatmapDataItem* item);
+  DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCallbacksController*, controller);
 
-    DECLARE_INSTANCE_FIELD(GlobalNamespace::BeatmapCallbacksController*, controller);
-
-    std::function<void(GlobalNamespace::BeatmapCallbacksController* controller, GlobalNamespace::BeatmapDataItem* item)>
-        redirectEvent;
-)
-
-// clang-format on
+  std::function<void(GlobalNamespace::BeatmapCallbacksController * controller, GlobalNamespace::BeatmapDataItem * item)>
+      redirectEvent;
+};
 
 namespace CustomJSONData {
 

@@ -40,7 +40,7 @@
 
 #include "cpp-semver/shared/cpp-semver.hpp"
 
-#include "paper/shared/Profiler.hpp"
+#include "paper2_scotland2/shared/Profiler.hpp"
 
 #include "sombrero/shared/linq_functional.hpp"
 #include "sombrero/shared/Vector2Utils.hpp"

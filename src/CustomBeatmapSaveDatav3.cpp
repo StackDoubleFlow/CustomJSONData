@@ -15,7 +15,7 @@
 #include "cpp-semver/shared/cpp-semver.hpp"
 #include "GlobalNamespace/NoteLineLayer.hpp"
 #include "GlobalNamespace/EaseType.hpp"
-#include "paper/shared/Profiler.hpp"
+#include "paper2_scotland2/shared/Profiler.hpp"
 
 #include <numeric>
 #include <type_traits>

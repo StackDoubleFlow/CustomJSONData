@@ -13,38 +13,34 @@
 #include "songcore/shared/CustomJSONData.hpp"
 #include "LowLevelUtils.hpp"
 
-// clang-format off
+DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject) {
 
-DECLARE_CLASS_CODEGEN(CustomJSONData, DocumentWrapper, Il2CppObject, 
+  DECLARE_DEFAULT_CTOR();
+  DECLARE_SIMPLE_DTOR();
 
-    DECLARE_DEFAULT_CTOR();
-    DECLARE_SIMPLE_DTOR();
+public:
+  std::shared_ptr<rapidjson::Document> doc;
+};
 
-    public:
-    std::shared_ptr<rapidjson::Document> doc;
-)
+DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject) {
+  DECLARE_FASTER_CTOR(ctor);
+  DECLARE_SIMPLE_DTOR();
 
-DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapper, Il2CppObject, 
-        DECLARE_FASTER_CTOR(ctor); 
-        DECLARE_SIMPLE_DTOR();
+  DECLARE_INSTANCE_METHOD(JSONWrapper*, GetCopy);
 
-DECLARE_INSTANCE_METHOD(JSONWrapper*, GetCopy);
+public:
+  std::optional<std::reference_wrapper<rapidjson::Value const>> value;
+  std::unordered_map<char, std::any> associatedData;
+};
 
-    public:
-    std::optional<std::reference_wrapper<const rapidjson::Value>> value;
-    std::unordered_map<char, std::any> associatedData;
-)
+DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject) {
 
-DECLARE_CLASS_CODEGEN(CustomJSONData, JSONWrapperUTF16, Il2CppObject, 
+  DECLARE_FASTER_CTOR(ctor);
+  DECLARE_SIMPLE_DTOR();
 
-    DECLARE_FASTER_CTOR(ctor);
-    DECLARE_SIMPLE_DTOR();
+public:
+  std::optional<std::reference_wrapper<SongCore::CustomJSONData::ValueUTF16 const>> value;
+  std::unordered_map<char, std::any> associatedData;
 
-                      public:
-    std::optional<std::reference_wrapper<const SongCore::CustomJSONData::ValueUTF16>> value;
-    std::unordered_map<char, std::any> associatedData;
-
-    DECLARE_INSTANCE_METHOD(JSONWrapperUTF16*, GetCopy);
-)
-
-// clang-format on
+  DECLARE_INSTANCE_METHOD(JSONWrapperUTF16*, GetCopy);
+};

@@ -5,47 +5,61 @@
   "info": {
     "name": "CustomJSONData",
     "id": "custom-json-data",
-    "version": "0.21.0",
+    "version": "0.22.0",
     "url": "https://github.com/StackDoubleFlow/CustomJSONData",
     "additionalData": {
       "overrideSoName": "libcustom-json-data.so",
       "compileOptions": {
-        "cppFlags": ["-DRAPIDJSON_NEON"]
+        "cppFlags": [
+          "-DRAPIDJSON_NEON"
+        ]
       },
       "cmake": true
     }
   },
   "workspace": {
     "scripts": {
-      "build": ["pwsh ./scripts/build.ps1"],
-      "copy": ["pwsh ./scripts/copy.ps1"],
-      "log": ["pwsh ./scripts/copy.ps1 -log"],
-      "ndk-stack": ["pwsh ./scripts/ndk-stack.ps1"]
+      "build": [
+        "pwsh ./scripts/build.ps1"
+      ],
+      "copy": [
+        "pwsh ./scripts/copy.ps1"
+      ],
+      "log": [
+        "pwsh ./scripts/copy.ps1 -log"
+      ],
+      "ndk-stack": [
+        "pwsh ./scripts/ndk-stack.ps1"
+      ]
     },
-    "qmodIncludeDirs": ["./build", "./extern/libs"],
+    "qmodIncludeDirs": [
+      "./build",
+      "./extern/libs"
+    ],
+    "qmodIncludeFiles": [],
     "qmodOutput": "custom-json-data.qmod"
   },
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^5.1.3",
+      "versionRange": "^6.1.3",
       "additionalData": {}
     },
     {
       "id": "bs-cordl",
-      "versionRange": "^3700.0.0",
+      "versionRange": "^4000.0.0",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.17.0",
+      "versionRange": "^0.18.0",
       "additionalData": {
         "includeQmod": true
       }
     },
     {
       "id": "songcore",
-      "versionRange": "^1.1.10",
+      "versionRange": "^1.2.0",
       "additionalData": {
         "includeQmod": true,
         "private": true
@@ -59,8 +73,8 @@
       }
     },
     {
-      "id": "paper",
-      "versionRange": "^3.0.0",
+      "id": "paper2_scotland2",
+      "versionRange": "^4.0.0",
       "additionalData": {}
     },
     {
