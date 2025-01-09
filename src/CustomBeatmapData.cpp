@@ -141,9 +141,8 @@ void CustomJSONData::CustomBeatmapEventData::ctor(float time,
                                                   ::GlobalNamespace::BasicBeatmapEventType basicBeatmapEventType,
                                                   int value, float floatValue) {
   static auto const* BeatmapEventData_Ctor =
-      CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BasicBeatmapEventData*), ".ctor", 6));
-  il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time, -100,
-                                              BasicBeatmapEventData::SubtypeIdentifier(basicBeatmapEventType),
+      CRASH_UNLESS(il2cpp_utils::FindMethodUnsafe(classof(BasicBeatmapEventData*), ".ctor", 4));
+  il2cpp_utils::RunMethodRethrow<void, false>(this, BeatmapEventData_Ctor, time,
                                               basicBeatmapEventType, value, floatValue);
   INVOKE_CTOR();
   this->_time_k__BackingField = time;
@@ -169,12 +168,12 @@ CustomJSONData::CustomBeatmapEventData* CustomJSONData::CustomBeatmapEventData::
   }
   return copy;
 }
-void CustomJSONData::CustomObstacleData::ctor(float time, float beat, int rotation, int lineIndex,
+void CustomJSONData::CustomObstacleData::ctor(float time, float beat, float endBeat, int rotation, int lineIndex,
                                               ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width,
                                               int height) {
-  static auto const* ObstacleData_Ctor = il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 8);
-  il2cpp_utils::RunMethodRethrow<void, false>(this, ObstacleData_Ctor, time, beat, rotation, lineIndex, lineLayer,
-                                              duration, width, height);
+  static auto const* ObstacleData_Ctor = il2cpp_utils::FindMethodUnsafe(classof(ObstacleData*), ".ctor", 9);
+  il2cpp_utils::RunMethodRethrow<void, false>(this, ObstacleData_Ctor, time, beat, endBeat, rotation, lineIndex,
+                                              lineLayer, duration, width, height);
   INVOKE_CTOR();
   this->____executionOrder_k__BackingField = beat;
   this->____subtypeIdentifier_k__BackingField = rotation;
@@ -182,9 +181,9 @@ void CustomJSONData::CustomObstacleData::ctor(float time, float beat, int rotati
 }
 
 CustomJSONData::CustomObstacleData* CustomJSONData::CustomObstacleData::GetCopy() {
-  auto* copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->executionOrder, this->subtypeIdentifier,
-                                                            this->lineIndex, this->lineLayer, this->duration,
-                                                            this->width, height);
+  auto* copy = CustomJSONData::CustomObstacleData::New_ctor(this->time, this->executionOrder, this->endBeat,
+                                                            this->subtypeIdentifier, this->lineIndex, this->lineLayer,
+                                                            this->duration, this->width, height);
   if (this->customData) {
     copy->customData = this->customData->GetCopy();
   }
@@ -234,7 +233,7 @@ void CustomJSONData::CustomNoteData::ctor(
     ::GlobalNamespace::NoteData::ScoringType scoringType, ::GlobalNamespace::ColorType colorType,
     ::GlobalNamespace::NoteCutDirection cutDirection, float timeToNextColorNote, float timeToPrevColorNote,
     int flipLineIndex, float flipYSide, float cutDirectionAngleOffset, float cutSfxVolumeMultiplier) {
-  static auto const* NoteData_Ctor = il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 17);
+  static auto const* NoteData_Ctor = il2cpp_utils::FindMethodUnsafe(classof(NoteData*), ".ctor", 16);
   il2cpp_utils::RunMethodRethrow<void, false>(this, NoteData_Ctor, time, beat, rotation, lineIndex, noteLineLayer,
                                               beforeJumpNoteLineLayer, gameplayType, scoringType, colorType,
                                               cutDirection, timeToNextColorNote, timeToPrevColorNote, flipLineIndex,

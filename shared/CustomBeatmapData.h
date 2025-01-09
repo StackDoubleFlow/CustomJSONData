@@ -157,7 +157,7 @@ DECLARE_CLASS_CODEGEN(CustomJSONData, CustomBeatmapEventData, GlobalNamespace::B
 };
 
 DECLARE_CLASS_CODEGEN(CustomJSONData, CustomObstacleData, GlobalNamespace::ObstacleData) {
-  DECLARE_FASTER_CTOR(ctor, float time, float beat, int rotation, int lineIndex,
+  DECLARE_FASTER_CTOR(ctor, float time, float endBeat, float beat, int rotation, int lineIndex,
                       ::GlobalNamespace::NoteLineLayer lineLayer, float duration, int width, int height);
 
   DECLARE_OVERRIDE_METHOD(CustomObstacleData*, GetCopy, il2cpp_utils::FindMethod("", "BeatmapDataItem", "GetCopy"));

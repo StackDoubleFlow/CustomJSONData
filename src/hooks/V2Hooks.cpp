@@ -432,10 +432,10 @@ MAKE_PAPER_HOOK_MATCH(BeatmapDataLoader_GetBeatmapDataFromSaveData_v2,
 
     objectConverter.AddConverter<v2::CustomBeatmapSaveData_ObstacleData*>(
         [&BeatToTime, &rotationTimeProcessor](v2::CustomBeatmapSaveData_ObstacleData* o) constexpr {
-          float num = BeatToTime(o->time);
-          float num2 = BeatToTime(o->time + o->duration);
+          float num = BeatToTime(o->_time);
+          float num2 = BeatToTime(o->_time + o->_duration);
           auto* obstacle =
-              CustomObstacleData::New_ctor(num, o->time, rotationTimeProcessor->ConvertBeatToRotation(o->time),
+              CustomObstacleData::New_ctor(num, o->_time, o->_time + o->_duration, rotationTimeProcessor->ConvertBeatToRotation(o->time),
                                            o->lineIndex, ConvertNoteLineLayer(GetLayerForObstacleType(o->type)),
                                            num2 - num, o->width, GetHeightForObstacleType(o->type));
 
