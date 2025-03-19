@@ -48,7 +48,7 @@
       },
       {
         "id": "bs-cordl",
-        "versionRange": "^4000.0.0",
+        "versionRange": "^4030.0.0",
         "additionalData": {}
       },
       {
@@ -164,10 +164,10 @@
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=4000.1.1",
+        "versionRange": "=4030.0.0",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v4000_1_1",
+          "branchName": "version/v4030_0_0",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -183,7 +183,7 @@
           }
         }
       },
-      "version": "4000.1.1"
+      "version": "4030.0.0"
     },
     {
       "dependency": {
