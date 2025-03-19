@@ -59,7 +59,7 @@
     },
     {
       "id": "songcore",
-      "versionRange": "^1.2.0",
+      "versionRange": "^1.1.0",
       "additionalData": {
         "includeQmod": true,
         "private": true
