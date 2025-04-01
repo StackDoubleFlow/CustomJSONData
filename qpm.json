@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/QuestPackageManager/QPM.Package/refs/heads/main/qpm.schema.json",
   "version": "0.4.0",
   "sharedDir": "shared",
   "dependenciesDir": "extern",
@@ -32,6 +33,7 @@
         "pwsh ./scripts/ndk-stack.ps1"
       ]
     },
+    "ndk": "^27.2.12479018",
     "qmodIncludeDirs": [
       "./build",
       "./extern/libs"
@@ -42,24 +44,24 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^6.1.3",
+      "versionRange": "^6.4.1",
       "additionalData": {}
     },
     {
       "id": "bs-cordl",
-      "versionRange": "^4030.0.0",
+      "versionRange": "^4004.0.0",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.18.0",
+      "versionRange": "^0.18.2",
       "additionalData": {
         "includeQmod": true
       }
     },
     {
       "id": "songcore",
-      "versionRange": "^1.1.0",
+      "versionRange": "^1.1.20",
       "additionalData": {
         "includeQmod": true,
         "private": true
@@ -67,26 +69,26 @@
     },
     {
       "id": "scotland2",
-      "versionRange": "^0.1.3",
+      "versionRange": "^0.1.6",
       "additionalData": {
         "includeQmod": false
       }
     },
     {
       "id": "paper2_scotland2",
-      "versionRange": "^4.0.0",
+      "versionRange": "^4.6.1",
       "additionalData": {}
     },
     {
       "id": "cpp-semver",
-      "versionRange": "^0.1.1",
+      "versionRange": "^0.1.2",
       "additionalData": {
         "private": true
       }
     },
     {
       "id": "sombrero",
-      "versionRange": "^0.1.35",
+      "versionRange": "^0.1.43",
       "additionalData": {
         "private": true
       }
