@@ -44,24 +44,24 @@
     "dependencies": [
       {
         "id": "beatsaber-hook",
-        "versionRange": "^6.1.7",
+        "versionRange": "^6.4.1",
         "additionalData": {}
       },
       {
         "id": "bs-cordl",
-        "versionRange": "^4004.0.0",
+        "versionRange": "^4005.0.0",
         "additionalData": {}
       },
       {
         "id": "custom-types",
-        "versionRange": "^0.18.0",
+        "versionRange": "^0.18.2",
         "additionalData": {
           "includeQmod": true
         }
       },
       {
         "id": "songcore",
-        "versionRange": "^1.1.20",
+        "versionRange": "^1.1.21",
         "additionalData": {
           "includeQmod": true,
           "private": true
@@ -81,7 +81,7 @@
       },
       {
         "id": "cpp-semver",
-        "versionRange": "^0.1.1",
+        "versionRange": "^0.1.2",
         "additionalData": {
           "private": true
         }
@@ -130,10 +130,10 @@
     {
       "dependency": {
         "id": "bs-cordl",
-        "versionRange": "=4004.0.0",
+        "versionRange": "=4005.0.0",
         "additionalData": {
           "headersOnly": true,
-          "branchName": "version/v4004_0_0",
+          "branchName": "version/v4005_0_0",
           "compileOptions": {
             "includePaths": [
               "include"
@@ -149,7 +149,7 @@
           }
         }
       },
-      "version": "4004.0.0"
+      "version": "4005.0.0"
     },
     {
       "dependency": {
@@ -218,17 +218,13 @@
     {
       "dependency": {
         "id": "songcore",
-        "versionRange": "=1.1.20",
+        "versionRange": "=1.1.21",
         "additionalData": {
-          "soLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.20/libsongcore.so",
-          "debugSoLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.20/debug_libsongcore.so",
           "overrideSoName": "libsongcore.so",
-          "modLink": "https://github.com/raineaeternal/Quest-SongCore/releases/download/v1.1.20/SongCore.qmod",
-          "branchName": "version/v1_1_20",
           "cmake": true
         }
       },
-      "version": "1.1.20"
+      "version": "1.1.21"
     },
     {
       "dependency": {
